@@ -55,5 +55,93 @@
   keyboard. All this can be achieved by the portable API defined in
   this work.}
 
+\secao{1. Introduction}
+
+A graphical computer program needs a space where it can draw in the
+screen. In some environments, lke video-games, each program always
+controll the entire screen automatically, without asking for it to
+some operating system. But when a computer program runs in a computer
+with some modern graphical environment, usually it is necessary to ask
+for the creation of some region called ``window''. There the program
+have control over the content and can draw freely.
+
+Besides creating the window, it is also important to have control if
+we are in full-screen or not if we are in an environment that allows
+this. And also change the size of our window in pixels. If we are in
+fullscreen mode, this means changing the resolution of the
+screen. Otherwise, this means changing the window size. This is
+important because depending on the used visual effects, we could need
+to draw less pixels in the screen for performance reasons.
+
+\subsecao{1.1. Leterary Programming and Notation}
+
+This article uses the technique of ``Literary Programming'' to develop
+our random number generator API. This technique was presented at
+[Knuth, 1984] and have as objective develop software in a way that a
+computer program to be compiled is exactly equal a document written
+for human beings detailing and explaining the code. This document is
+not independent of the source code, it is the project source
+code. Automated tools are used to extract the code from this document,
+sort it in the right order and produce the code that is passed to a
+compiler.
+
+For example, in this article we will define two different
+files: \monoespaco{window.c} and \monoespaco{window.h}. Both of them
+can be inserted statically in any project or compiled as a shared
+library. The content of \monoespaco{window.h} is:
+
+\iniciocodigo
+@(src/window.h@>=
+#ifndef WEAVER_WINDOW
+#define WEAVER_WINDOW
+#ifdef __cplusplus
+extern "C" {
+#endif
+@<Window Declarations@>
+#ifdef __cplusplus
+}
+#endif
+#endif
+@
+\fimcodigo
+
+The two first lines and the last one are macros that ensure that the
+function declaration and variables from this file will always be
+included at most once in a compiling unit. We also put macros to check
+if we are compiling this as C or C++. If we are in C++, we assure the
+compiler that all our functions will be in C-style. We never will
+modify them with operator overload, for example. This makes the code
+became more compact.
+
+The red parts in the above code shows that some code will be inserted
+there in the future. In ``RNG Declarations'', for example, we will put
+there function declarations.
+
+Each piece of code have a title, that in the above example is
+\monoespaco{src/window.h}. The title shows where the code will be placed.
+In the case above, the code will directly to a file. In future pieces
+of code, we will have different titles, including titles matching
+exactly the names present in the red code above. If a piece of code
+have as title a name matching the red part in some code, then that
+code is positioned exactly in that red part when compiling the code.
+
+\subsecao{1.2. API functions that will be defined}
+
+In this article we will define the following functions:
+
+\iniciocodigo
+@<Window Declarations@>=
+void _Wcreate_window(void);
+@
+\fimcodigo
+
+This function will create a new window. By default, it will create a
+fullscreen window. If the macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN}
+is defined, instead it will create a non-fullscreen window.
+
+If the macro \monoespaco{W\_DEBUG\_WINDOW} is defined, this function
+also will print in the screen information about the graphical
+environment. Its resolution for example. But possibly other
+information that can be relevant.
 
 \fim

@@ -65,4 +65,102 @@
   OpenGL e obter entrada do mouse e teclado. Tudo isso pode ser obtido
   pela interface de aplicação portável definida neste trabalho.}
 
+\secao{1. Introdução}
+
+Um programa de computador gráfico precisa de um espaço no qual ele
+pode desenhar na tela. Em alguns ambientes, como videogames, por
+exemplo, cada programa em execução simplesmente tem controle de toda a
+tela automaticamente sem que seja necessário reservá-lo ou pedi-lo
+para um Sistema Operacional. Por outro lado, quando um programa
+executa em um computador com algum ambiente gráfico moderno, é
+necessário pedir para que uma região chamada ``janela'' seja
+criada. Nela o programa passa a ter controle sobre o seu conteúdo e
+pode desenhar na região.
+
+Além de criar uma janela, é importante que tenhamos a capacidade de
+entrar e sair do modo tela-cheia se estivermos em ambiente que permite
+isso. E também modificar o tamanho em pixels da nossa janela. Fazer
+isso em modo de tela-cheia muda a resolução da tela. Já fora da tela
+cheia, o efeito é o de redimencionar a janela. Isso é importanto, pois
+dependendo dos efeitos visuais usados, pode ser necessário diminuir a
+quantidade de pixels desenhados por questões de performance.
+
+\subsecao{1.1. Programação Literária e Notação}
+
+Este artigo utiliza a técnica de ``Programação Literária'' para
+desenvolver a API de gerador de números aleatórios. Esta técnica foi
+apresentada em [Knuth, 1984] e tem por objetivo desenvolver
+\italico{softwares} de tal forma que um programa de computador a ser compilado
+é exatamente igual a um documento escrito para pessoas detalhando e
+explicando o código. O presente documento não é algo independente do
+código, mas sim consiste no próprio código-fonte do projeto.
+Ferramentas automáticas são utilizadas para extrair o código deste
+documento, colocá-lo na ordem correta e produzir o código que é
+passado para o compilador.
+
+Por exemplo, neste artigo serão definidos dois arquivos
+diferentes: \monoespaco{window.c} e \monoespaco{window.h}, os quais
+podem ser inseridos estaticamente em qualquer projeto, ou compilados
+como uma biblioteca compartilhada. O conteúdo de \monoespaco{window.h}
+é:
+
+\iniciocodigo
+@(src/window.h@>=
+#ifndef WEAVER_WINDOW
+#define WEAVER_WINDOW
+#ifdef __cplusplus
+extern "C" {
+#endif
+@<Declarações de Janela@>
+#ifdef __cplusplus
+}
+#endif
+#endif
+@
+\fimcodigo
+
+As duas primeiras linhas assim como a última são macros que impedem
+que garantem que as funções e variáveis declaradas ali serão inseridas
+no máximo uma só vez em cada unidade de compilação. Também colocamos
+macros para checar se estamos compilando o código como C ou C++. Se
+estivermos em C++, avisamos o compilador que estamos definindo tudo
+como código C e garantimos que não vamos modificar nada usando
+sobrecarga de operadores. O código poderá assim ser armazenado de
+maneira mais compacta.
+
+As partes vermelhas no código acima mostram que código será inserido
+ali no futuro.
+
+Cada trecho de código tem um título, que no caso acima
+é \monoespaco{src/window.h}. O título indica onde o código será
+inserido. No caso acima, o código irá para um arquivo. Em trechos de
+código futuros, haverá diversos títulos, inclusive um com exatamente o
+nome das partes em vermelho do código acima. Se o título de um trecho
+de código é igual um trecho em vermelho a ser inserido, é ali que tal
+trecho de código deve ser posicionado no processo de compilação.
+
+\subsecao{1.2. Funções de API a serem Definidas}
+
+Neste artigo iremos definir as seguintes funções:
+
+\iniciocodigo
+@<Declarações de Janela@>=
+void _Wcreate_window(void);
+@
+\fimcodigo
+
+Esta é a função que irá criar uma nova janela. Por padrão, uma janela
+em tela cheia. Se a macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN}
+estiver definida, ao invés disso, ele criará uma janela que não está
+em modo de tela-cheia (se suportado pelo sistema).
+
+Se a macro \monoespaco{W\_DEBUG\_WINDOW} estiver definida, esta função
+também imprimirá na tela informação sobre o ambiente gráfico. Sua
+resolução, por exemplo, ou possivelmente outras informações que possam
+ser relevantes.
+
+
+
+
+
 \fim
