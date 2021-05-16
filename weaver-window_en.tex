@@ -73,7 +73,7 @@ screen. Otherwise, this means changing the window size. This is
 important because depending on the used visual effects, we could need
 to draw less pixels in the screen for performance reasons.
 
-\subsecao{1.1. Leterary Programming and Notation}
+\subsecao{1.1. Literary Programming and Notation}
 
 This article uses the technique of ``Literary Programming'' to develop
 our random number generator API. This technique was presented at
@@ -97,6 +97,7 @@ library. The content of \monoespaco{window.h} is:
 #ifdef __cplusplus
 extern "C" {
 #endif
+@<Macro Definition@>
 @<Window Declarations@>
 #ifdef __cplusplus
 }
@@ -143,5 +144,168 @@ If the macro \monoespaco{W\_DEBUG\_WINDOW} is defined, this function
 also will print in the screen information about the graphical
 environment. Its resolution for example. But possibly other
 information that can be relevant.
+
+\secao{2. Creating and Managing the Window}
+
+\subsecao{2.1. Creating a Window in X}
+
+The X Window System, also known as X11, is a windowing system present
+in many Operating System, as Linux, BSD and even in MacOX, where it
+exists to ensure compatibility with older programs developed before
+their current windowing system. We will begin our window creation with
+X11 because is the most widely present windowing system.
+
+X11 works in a client-server architecture. When we create a graphical
+program, we create a client that communicates with X server using
+sockets. All operations like window creation, resizing windows and
+more are made when with the client asking for them sending requests to
+the server, which executes the requests if possible.
+
+We expect to use X11 when we are not compiling programs to Windows or
+to Web Assembly, as both the Windows Operating System and web browsers
+do not have a X11 server. If we will use X11, we need the following
+header:
+
+\iniciocodigo
+@<Headers@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <X11/Xlib.h>
+#endif
+@
+\fimcodigo
+
+In X11, as we need to communicate with a server, we create a window
+following the steps below:
+
+1. We open a connection with the server. If we succeed, we get as
+response a list of relevant information about the screen.
+
+2. We read from the response which is the default screen where we
+should create our window (a computer could have many different
+monitors and screens).
+
+3. We also read the screen resolution.
+
+4. We send a new message to the server asking to create a new
+window. We will do it in the default screen, The window sizecan be
+controlled by macros \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_X} and
+\monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_Y}. If one of these macros
+have a non-positive value, we interpret this as a instruction to
+create the largest possible window that still fits in the screen.
+
+The above steps are implemented using the functions and macros below:
+
+\iniciocodigo
+@<X11: Create Window@>=
+/* Step 1: */
+display = XOpenDisplay(NULL);
+if(display == NULL){
+  fprintf(stderr, "ERROR: Could not connect to a X Server.\n");
+  exit(1);
+}
+/* Step 2: */
+screen = DefaultScreen(display);
+/* Step 3: */
+screen_resolution_x = DisplayWidth(display, screen);
+screen_resolution_y = DisplayHeight(display, screen);
+/* Step 4: */
+window = XCreateSimpleWindow(display, // X11 connection
+                             DefaultRootWindow(display),// Parent window
+                             0, 0, // Window position
+                             (W_WINDOW_DEFAULT_RESOLUTION_X <= 0)?
+                               (screen_resolution_x):
+                               (W_WINDOW_DEFAULT_RESOLUTION_X), // Width
+                             (W_WINDOW_DEFAULT_RESOLUTION_Y <= 0)?
+                               (screen_resolution_y):
+                               (W_WINDOW_DEFAULT_RESOLUTION_Y), // Height
+                             0, 0, // Border width and color
+                             0); // Default window color
+@
+\fimcodigo
+
+This code assumes that we have the following declared variables:
+
+\iniciocodigo
+@<Local Variables@>=
+static Display *display; // Connection with server and screen info
+static Window window;    // Created window struct
+static int screen_resolution_x, screen_resolution_y; //Screen resolution
+@
+\fimcodigo
+
+Now we need to consider the scenario where the macros that determines
+the default window resolution are not defined. In this case we define
+it to have the standard value zero:
+
+\iniciocodigo
+@<Macro Definition@>=
+#if !defined(W_WINDOW_DEFAULT_RESOLUTION_X)
+#define W_WINDOW_DEFAULT_RESOLUTION_X 0
+#endif
+#if !defined(W_WINDOW_DEFAULT_RESOLUTION_Y)
+#define W_WINDOW_DEFAULT_RESOLUTION_Y 0
+#endif
+@
+\fimcodigo
+
+The code defined above creates a window, but it does not mean that the
+created window is drawn in the screen. Before drawing the window in
+the screen we can adjust some of its properties.
+
+One of the relevant information is what kind of events is relevant to
+pass to the program when something happen to the window. For example,
+we do not consider relevant if the user interacts with another window
+making our window lose focus. But other events, like the information
+that the user pressed a key is relevant and our program should be
+informed.
+
+The list of events that we consider relevant is: the window is created
+or destroyed, the user presses or releases a mouse button, presses or
+releases a key in keyboard and if the user moves the mouse pointer. If
+we do not ask the server to send this information, our program would
+not be able to know if the user interacts with it pressing keys.
+
+\iniciocodigo
+@<X11: Criar Create Window@>+=
+XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
+                              KeyReleaseMask | ButtonPressMask |
+                              ButtonReleaseMask | PointerMotionMask);
+@
+\fimcodigo
+
+Another important thing is choose the name for our window. Usually
+this name is presented by the window manager. We let the user choose
+the name setting the macro \monoespaco{W\_WINDOW\_NAME}:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+XStoreName(display, window, W_WINDOW_NAME);
+@
+\fimcodigo
+
+If this macro is not defined, we use an empty string:
+
+@<Macro Definition@>+=
+#if !defined(W_WINDOW_NAME)
+#define W_WINDOW_NAME ""
+#endif
+@
+\fimcodigo
+
+
+\subsecao{X. Final File Sctructure}
+
+The file with all the necessary source code for the functions defined
+in this article will have the following organization:
+
+\iniciocodigo
+@(src/window.c)@>=
+#include "window.h"
+@<Headers@>
+@<Local Variables@>
+@<Functions@>
+@
+\fimcodigo
+
 
 \fim

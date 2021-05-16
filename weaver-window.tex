@@ -111,6 +111,7 @@ como uma biblioteca compartilhada. O conteúdo de \monoespaco{window.h}
 #ifdef __cplusplus
 extern "C" {
 #endif
+@<Define Macros@>
 @<Declarações de Janela@>
 #ifdef __cplusplus
 }
@@ -159,8 +160,175 @@ também imprimirá na tela informação sobre o ambiente gráfico. Sua
 resolução, por exemplo, ou possivelmente outras informações que possam
 ser relevantes.
 
+\secao{2. Criando e Gerenciando a Janela}
+
+\subsecao{2.1. Criando uma Janela no X}
+
+O Sistema de Janelas X, também conhecido como X11, é um sistema de
+janelas presente em muitos Sistemas Operacionais, como Linux, BSD, e
+até mesmo no MacOX X, onde ele está presente para garantir
+compatibilidade com programas mais antigos desenvolvidos antes de seu
+sistema de janelas atual. Iremos começar com a criação de janelas no
+X11 por ser o sistema de janelas mais amplamente presente.
+
+O X11 funciona em uma arquitetura de cliente-servidor. Quando criamos
+um programa gráfico, criamos um cliente que se comunica com o servidor
+X usando \italico{sockets}. Todas as operações como a criação de
+janelas, redimencionar a janela e mais, são feitas com o cliente
+pedindo para que elas sejam feitas para o servidor, que executa os
+pedidos se possível.
+
+Iremos usar o X11 sempre que não estivermos usando o Windows (que não
+o fornece) e nem estivermos compilando Web Assembly (navegadores de
+Internet também não o implementam). Antes de usar o X11, precisamos
+inserir seu cabeçalho relevante:
+
+\iniciocodigo
+@<Cabeçalhos@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <X11/Xlib.h>
+#endif
+@
+\fimcodigo
+
+No X11, como temos que nos comunicar com um servidor, criamos uma
+janela fazendo os seguintes passos:
+
+1. Abrimos uma conexão com o servidor. Se isso for bem-sucedido, o
+servidor nos revela várias informações relevantes sobre a tela.
+
+2. Obtemos da resposta dada pelo servidor qual é a tela padrão onde
+devemos criar nossa janela (um computador pode ter muitos monitores e
+telas diferentes).
+
+3. Também checamos na resposta dada a resolução da tela.
+
+4. Enviamos uma nova mensagem para o servidor pedindo que a janela
+seja criada. Faremos isso na tela padrão. O tamanho da janela poderá
+ser controlado pelas
+macros \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_X}
+e \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_Y} sendo que se elas
+tiverem um valor não-positivo, interpretamos isso como uma instrução
+para criar a janela com o maior valor possível que ainda caiba dentro
+da tela.
+
+Estes passos são implementados por meio das seguintes funções e
+macros:
+
+\iniciocodigo
+@<X11: Criar Janela@>=
+/* Passo 1: */
+display = XOpenDisplay(NULL);
+if(display == NULL){
+  fprintf(stderr, "ERROR: Could not connect to a X Server.\n");
+  exit(1);
+}
+/* Passo 2: */
+screen = DefaultScreen(display);
+/* Passo 3: */
+screen_resolution_x = DisplayWidth(display, screen);
+screen_resolution_y = DisplayHeight(display, screen);
+/* Passo 4: */
+window = XCreateSimpleWindow(display, // Conexão com o X11
+                             DefaultRootWindow(display), // Janela-mãe
+                             0, 0, // Posição da janela criada
+                             (W_WINDOW_DEFAULT_RESOLUTION_X <= 0)?
+                              (screen_resolution_x):
+                              (W_WINDOW_DEFAULT_RESOLUTION_X), // Largura
+                             (W_WINDOW_DEFAULT_RESOLUTION_Y <= 0)?
+                               (screen_resolution_y):
+                               (W_WINDOW_DEFAULT_RESOLUTION_Y), // Altura
+                             0, 0, // Espessura e cor da borda
+                             0); // Cor padrão da janela
+@
+\fimcodigo
+
+Este código assume que temos as seguintes variáveis declaradas:
+
+\iniciocodigo
+@<Variáveis Locais@>=
+static Display *display; // Conexão com servidor e info sobre tela
+static Window window;    // Estrutura da janela criada
+static int screen_resolution_x, screen_resolution_y; // Resolução da tela
+@
+\fimcodigo
+
+Agora temos que levar em conta que as macros que determinam a
+resolução padrão da janela podem não estar definidas. Se for o caso,
+por padrão iremos definir elas com zero:
+
+\iniciocodigo
+@<Define Macros@>=
+#if !defined(W_WINDOW_DEFAULT_RESOLUTION_X)
+#define W_WINDOW_DEFAULT_RESOLUTION_X 0
+#endif
+#if !defined(W_WINDOW_DEFAULT_RESOLUTION_Y)
+#define W_WINDOW_DEFAULT_RESOLUTION_Y 0
+#endif
+@
+\fimcodigo
+
+O código que temos até agora cria a janela. Mas não a desenha na
+tela. Não desenhar ela na tela automaticamente permite que nós
+ajustemos atributos da janela antes que ela seja finalmente exibida.
+
+Uma das coisas que é relevante ajustar nessa estrutura é em que tipo
+de eventos nosso programa quer prestar atenção quando estiver
+executando. Exemplo de evento que não consideraremos interessante: o
+usuário move a janela pela tela. Exemplo de evento interessante: o
+usuário pressiona um botão enquanto nossa janela está ativa.
+
+A lista de eventos que considerearemos importantes o bastante para que
+nosso programa seja notificado é: janela é criada ou destruída,
+usuário aperta ou solta botão de teclado, usuário aperta ou solta
+botão do mouse e usuário move o mouse. Se não pedirmos para sermos
+informados disso, nenhum evento será informado para nosso programa e
+ele não saberá quando o usuário interage com ele por meio de mouse e
+teclado.
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
+                              KeyReleaseMask | ButtonPressMask |
+                              ButtonReleaseMask | PointerMotionMask);
+@
+\fimcodigo
+
+Outra coisa importante é definir o nome da janela que será
+criada. Geralmetne essa informação é apresentada de alguma forma pelo
+gerenciador de janelas. Podemos deixar que o usuário escolha isso
+ajustando a macro \monoespaco{W\_WINDOW\_NAME}:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+XStoreName(display, window, W_WINDOW_NAME);
+@
+\fimcodigo
+
+Se essta macro não estiver definida, deixamos apenas uma string vazia:
+
+@<Define Macros@>=
+#if !defined(W_WINDOW_NAME)
+#define W_WINDOW_NAME ""
+#endif
+@
+\fimcodigo
 
 
+
+\subsecao{X. Estrutura Final do Arquivo}
+
+O arquivo com o código-fonte de todas as funções definidas neste
+artigo terá a seguinte forma:
+
+\iniciocodigo
+@(src/window.c)@>=
+#include "window.h"
+@<Cabeçalhos@>
+@<Variáveis Locais@>
+@<Funções@>
+@
+\fimcodigo
 
 
 \fim
