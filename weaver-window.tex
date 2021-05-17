@@ -111,6 +111,7 @@ como uma biblioteca compartilhada. O conteúdo de \monoespaco{window.h}
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <stdbool.h> // Define tipo 'bool'
 @<Define Macros@>
 @<Declarações de Janela@>
 #ifdef __cplusplus
@@ -146,7 +147,7 @@ Neste artigo iremos definir as seguintes funções:
 
 \iniciocodigo
 @<Declarações de Janela@>=
-void _Wcreate_window(void);
+bool _Wcreate_window(void);
 @
 \fimcodigo
 
@@ -160,15 +161,18 @@ também imprimirá na tela informação sobre o ambiente gráfico. Sua
 resolução, por exemplo, ou possivelmente outras informações que possam
 ser relevantes.
 
+Em caso de erro, a função retornará falso.
+
 \iniciocodigo
 @<Declarações de Janela@>=
-void _Wdestroy_window(void);
+bool _Wdestroy_window(void);
 @
 \fimcodigo
 
 Esta função vai fechar a janela aberta, liberando qualquer recurso que
 tenha sido alocado pela função anterior ao criar janela. A função deve
-ser invocada sempre após a janela já ter sido criada.
+ser invocada sempre após a janela já ter sido criada. Em caso de erro,
+retorna falso.
 
 
 \secao{2. Criando e Gerenciando a Janela}
@@ -231,10 +235,8 @@ macros:
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 /* Passo 1: */
 display = XOpenDisplay(NULL);
-if(display == NULL){
-  fprintf(stderr, "ERROR: Could not connect to a X Server.\n");
-  exit(1);
-}
+if(display == NULL)
+  return false; // Não conseguiu se conectar
 /* Passo 2: */
 screen = DefaultScreen(display);
 /* Passo 3: */
@@ -262,20 +264,10 @@ Este código assume que temos as seguintes variáveis declaradas:
 @<Variáveis Locais@>=
 static int screen_resolution_x, screen_resolution_y; // Resolução da tela
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static Display *display; // Conexão com servidor e info sobre tela
+static Display *display = NULL; //Conexão com servidor e info sobre tela
 static int screen;       // Identificação da tela padrão
 static Window window;    // Estrutura da janela criada
 #endif
-@
-\fimcodigo
-
-E também assume termos o cabeçalho para imprimir mensagens na saída de
-erro e para encerrar o programa se algo der errado:
-
-\iniciocodigo
-@<Cabeçalhos@>+=
-#include <stdio.h>
-#include <stdlib.h>
 @
 \fimcodigo
 
@@ -348,7 +340,9 @@ Uma vez que tenhamos ajustado as configurações de nossa janela,
 podemos enfim começar a desenhar ela. Para isso enviamos uma
 requisição para o servidor X e ficamos esperando em um laço até que
 recebamos o evento de que a janela foi criada (já que pedimos para
-sermos avisados deste evento). O código para isso é:
+sermos avisados deste evento passando a
+flag \monoespaco{StructureNotifyMask} para a
+função \monoespaco{XSelectInput} anteriormente). O código para isso é:
 
 \iniciocodigo
 @<X11: Criar Janela@>+=
@@ -364,15 +358,21 @@ XMapWindow(display, window);
 @
 \fimcodigo
 
-\subsecao{2.X. Estrutura da Função de Criação de Janelas}
+\subsecao{2.X. Função de Criação de Janelas}
 
 Nossa função de geração de nova janela então executará o código
-adequado, dependendo do ambiente gráfico em que estamos:
+adequado, dependendo do ambiente gráfico em que estamos. Mas antes de
+fazer isso, faremos uma checagem para ver se já não temos uma janela
+criada. Isso ocorre sempre que já temos uma conexão ativa com o
+servidor X.
 
 \iniciocodigo
 @<Funções@>=
-void _Wcreate_window(void){
+bool _Wcreate_window(void){
+  if(display != NULL)
+    return false;
   @<X11: Criar Janela@>
+  return true;
 }
 @
 \fimcodigo
@@ -381,14 +381,21 @@ void _Wcreate_window(void){
 
 Fechar uma janela no X11 significa invocar a função do X que pede ao
 servidor para que a janela seja fechada. E além disso, fechar a
-conexão com o servidor. Isso é feito chamando as duas funções abaixo:
+conexão com o servidor. Isso é feito chamando
+respectivamente \monoespaco{XDestroyWindow}
+e \monoespaco{XCloseDisplay}. Também fazemos uma checagem para ver se
+realmente existe uma janela a serfechada e destruída.
 
 \iniciocodigo
 @<Funções@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-void _Wdestroy_window(void){
+bool _Wdestroy_window(void){
+  if(display == NULL)
+    return false;
   XDestroyWindow(display, window);
   XCloseDisplay(display);
+  display = NULL;
+  return true;
 }
 #endif
 @

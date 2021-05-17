@@ -42,10 +42,19 @@ void assert(char *descricao, bool valor){
 }
 
 void test_create_destroy_window(void){
-  _Wcreate_window();
-  assert("Creating window", true);
-  _Wdestroy_window();
-  assert("Destroying window", true);
+  bool ret;
+  ret = _Wcreate_window();
+  assert("Creating window", ret);
+  ret = _Wcreate_window();
+  assert("Not creating window if it exists", ret == false);
+  ret = _Wdestroy_window();
+  assert("Destroying window", ret);
+  ret = _Wdestroy_window();
+  assert("Do not try to destroy window twice", ret == false);
+  ret = _Wcreate_window();
+  if(ret)
+    ret = _Wdestroy_window();
+  assert("Can create successive windows", ret);
 }
 
 

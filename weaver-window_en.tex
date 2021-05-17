@@ -97,6 +97,7 @@ library. The content of \monoespaco{window.h} is:
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <stdbool.h> // Define type 'bool'
 @<Macro Definition@>
 @<Window Declarations@>
 #ifdef __cplusplus
@@ -132,7 +133,7 @@ In this article we will define the following functions:
 
 \iniciocodigo
 @<Window Declarations@>=
-void _Wcreate_window(void);
+bool _Wcreate_window(void);
 @
 \fimcodigo
 
@@ -145,15 +146,18 @@ also will print in the screen information about the graphical
 environment. Its resolution for example. But possibly other
 information that can be relevant.
 
+In case of error, the function will return false.
+
 \iniciocodigo
 @<Window Declarations@>=
-void _Wdestroy_window(void);
+bool _Wdestroy_window(void);
 @
 \fimcodigo
 
 This function closes the window, freeing any resource allocated during
 the window creation by the previous function. This function must be
-invoked only after a window was created.
+invoked only after a window was created. In case of error, it returns
+false.
 
 \secao{2. Creating and Managing the Window}
 
@@ -210,10 +214,8 @@ The above steps are implemented using the functions and macros below:
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 /* Step 1: */
 display = XOpenDisplay(NULL);
-if(display == NULL){
-  fprintf(stderr, "ERROR: Could not connect to a X Server.\n");
-  exit(1);
-}
+if(display == NULL)
+  return false; // Couldn't connect
 /* Step 2: */
 screen = DefaultScreen(display);
 /* Step 3: */
@@ -241,20 +243,10 @@ This code assumes that we have the following declared variables:
 @<Local Variables@>=
 static int screen_resolution_x, screen_resolution_y; //Screen resolution
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static Display *display; // Connection with server and screen info
+static Display *display = NULL; //Connection with server and screen info
 static int screen;       // Deafult screen id
 static Window window;    // Created window struct
 #endif
-@
-\fimcodigo
-
-And also assumes that we included the header to print messages in the
-standard error output and to exit the procram in case of error:
-
-\iniciocodigo
-@<Headers@>+=
-#include <stdio.h>
-#include <stdlib.h>
 @
 \fimcodigo
 
@@ -324,7 +316,9 @@ If this macro is not defined, we use an empty string:
 After adjusting all the configurations, we can draw the created
 window. For this, we send a request to the server X and wait in a loop
 until we are notified that the window was created (we asked to be
-notified of this event). The code for this is:
+notified of this event when we passed
+flag \monoespaco{StructureNotifyMask} to
+function \monoespaco{XSelectInput} previously). The code for this is:
 
 \iniciocodigo
 @<X11: Create Window@>+=
@@ -340,16 +334,20 @@ XMapWindow(display, window);
 @
 \fimcodigo
 
-
-\subsecao{2.X. Structure of Window Creation Function}
+\subsecao{2.X. Window Creation Function}
 
 Our function that creates a new window will execute the adequate code,
-depending on the graphical environment where it is being executed:
+depending on the graphical environment where it is being executed. But
+before this we will add code ro check if we already do not have an
+active connection with the X server.
 
 \iniciocodigo
 @<Functions@>=
-void _Wcreate_window(void){
+bool _Wcreate_window(void){
+  if(display != NULL)
+    return false;
   @<X11: Create Window@>
+  return true;
 }
 @
 \fimcodigo
@@ -358,13 +356,19 @@ void _Wcreate_window(void){
 
 Closing a window in X11 means calling the function that asks the
 server to close the window and also closing the connection with the
-server. This is done calling the two functions below:
+server. This is done calling respectively \monoespaco{XDestroyWindow}
+and \monoespaco{XCloseDisplay}. We also check if we really have an
+existing window before trying to close and destroy it.
 
 \iniciocodigo
 @<Functions@>=
-void _Wdestroy_window(void){
+bool _Wdestroy_window(void){
+  if(display == NULL)
+    return false;
   XDestroyWindow(display, window);
   XCloseDisplay(display);
+  display = NULL;
+  return true;
 }
 @
 \fimcodigo
