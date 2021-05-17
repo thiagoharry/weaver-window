@@ -145,6 +145,16 @@ also will print in the screen information about the graphical
 environment. Its resolution for example. But possibly other
 information that can be relevant.
 
+\iniciocodigo
+@<Window Declarations@>=
+void _Wdestroy_window(void);
+@
+\fimcodigo
+
+This function closes the window, freeing any resource allocated during
+the window creation by the previous function. This function must be
+invoked only after a window was created.
+
 \secao{2. Creating and Managing the Window}
 
 \subsecao{2.1. Creating a Window in X}
@@ -197,6 +207,7 @@ The above steps are implemented using the functions and macros below:
 
 \iniciocodigo
 @<X11: Create Window@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 /* Step 1: */
 display = XOpenDisplay(NULL);
 if(display == NULL){
@@ -220,6 +231,7 @@ window = XCreateSimpleWindow(display, // X11 connection
                                (W_WINDOW_DEFAULT_RESOLUTION_Y), // Height
                              0, 0, // Border width and color
                              0); // Default window color
+#endif
 @
 \fimcodigo
 
@@ -227,9 +239,22 @@ This code assumes that we have the following declared variables:
 
 \iniciocodigo
 @<Local Variables@>=
-static Display *display; // Connection with server and screen info
-static Window window;    // Created window struct
 static int screen_resolution_x, screen_resolution_y; //Screen resolution
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static Display *display; // Connection with server and screen info
+static int screen;       // Deafult screen id
+static Window window;    // Created window struct
+#endif
+@
+\fimcodigo
+
+And also assumes that we included the header to print messages in the
+standard error output and to exit the procram in case of error:
+
+\iniciocodigo
+@<Headers@>+=
+#include <stdio.h>
+#include <stdlib.h>
 @
 \fimcodigo
 
@@ -267,9 +292,11 @@ not be able to know if the user interacts with it pressing keys.
 
 \iniciocodigo
 @<X11: Criar Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
                               KeyReleaseMask | ButtonPressMask |
                               ButtonReleaseMask | PointerMotionMask);
+#endif
 @
 \fimcodigo
 
@@ -279,7 +306,9 @@ the name setting the macro \monoespaco{W\_WINDOW\_NAME}:
 
 \iniciocodigo
 @<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XStoreName(display, window, W_WINDOW_NAME);
+#endif
 @
 \fimcodigo
 
@@ -289,6 +318,54 @@ If this macro is not defined, we use an empty string:
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
+@
+\fimcodigo
+
+After adjusting all the configurations, we can draw the created
+window. For this, we send a request to the server X and wait in a loop
+until we are notified that the window was created (we asked to be
+notified of this event). The code for this is:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+XMapWindow(display, window);
+{
+  XEvent e;
+  do{
+    XNextEvent(display, &e);
+  } while(e.type != MapNotify);
+}
+#endif
+@
+\fimcodigo
+
+
+\subsecao{2.X. Structure of Window Creation Function}
+
+Our function that creates a new window will execute the adequate code,
+depending on the graphical environment where it is being executed:
+
+\iniciocodigo
+@<Functions@>=
+void _Wcreate_window(void){
+  @<X11: Create Window@>
+}
+@
+\fimcodigo
+
+\subsecao{2.X+1. Closing a Window in X}
+
+Closing a window in X11 means calling the function that asks the
+server to close the window and also closing the connection with the
+server. This is done calling the two functions below:
+
+\iniciocodigo
+@<Functions@>=
+void _Wdestroy_window(void){
+  XDestroyWindow(display, window);
+  XCloseDisplay(display);
+}
 @
 \fimcodigo
 

@@ -160,6 +160,17 @@ também imprimirá na tela informação sobre o ambiente gráfico. Sua
 resolução, por exemplo, ou possivelmente outras informações que possam
 ser relevantes.
 
+\iniciocodigo
+@<Declarações de Janela@>=
+void _Wdestroy_window(void);
+@
+\fimcodigo
+
+Esta função vai fechar a janela aberta, liberando qualquer recurso que
+tenha sido alocado pela função anterior ao criar janela. A função deve
+ser invocada sempre após a janela já ter sido criada.
+
+
 \secao{2. Criando e Gerenciando a Janela}
 
 \subsecao{2.1. Criando uma Janela no X}
@@ -206,8 +217,8 @@ telas diferentes).
 4. Enviamos uma nova mensagem para o servidor pedindo que a janela
 seja criada. Faremos isso na tela padrão. O tamanho da janela poderá
 ser controlado pelas
-macros \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_X}
-e \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_Y} sendo que se elas
+macros \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION\_X}
+e \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION\_Y} sendo que se elas
 tiverem um valor não-positivo, interpretamos isso como uma instrução
 para criar a janela com o maior valor possível que ainda caiba dentro
 da tela.
@@ -217,6 +228,7 @@ macros:
 
 \iniciocodigo
 @<X11: Criar Janela@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 /* Passo 1: */
 display = XOpenDisplay(NULL);
 if(display == NULL){
@@ -240,6 +252,7 @@ window = XCreateSimpleWindow(display, // Conexão com o X11
                                (W_WINDOW_DEFAULT_RESOLUTION_Y), // Altura
                              0, 0, // Espessura e cor da borda
                              0); // Cor padrão da janela
+#endif
 @
 \fimcodigo
 
@@ -247,9 +260,22 @@ Este código assume que temos as seguintes variáveis declaradas:
 
 \iniciocodigo
 @<Variáveis Locais@>=
-static Display *display; // Conexão com servidor e info sobre tela
-static Window window;    // Estrutura da janela criada
 static int screen_resolution_x, screen_resolution_y; // Resolução da tela
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static Display *display; // Conexão com servidor e info sobre tela
+static int screen;       // Identificação da tela padrão
+static Window window;    // Estrutura da janela criada
+#endif
+@
+\fimcodigo
+
+E também assume termos o cabeçalho para imprimir mensagens na saída de
+erro e para encerrar o programa se algo der errado:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#include <stdio.h>
+#include <stdlib.h>
 @
 \fimcodigo
 
@@ -288,9 +314,11 @@ teclado.
 
 \iniciocodigo
 @<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
                               KeyReleaseMask | ButtonPressMask |
                               ButtonReleaseMask | PointerMotionMask);
+#endif
 @
 \fimcodigo
 
@@ -301,7 +329,9 @@ ajustando a macro \monoespaco{W\_WINDOW\_NAME}:
 
 \iniciocodigo
 @<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XStoreName(display, window, W_WINDOW_NAME);
+#endif
 @
 \fimcodigo
 
@@ -314,15 +344,64 @@ Se essta macro não estiver definida, deixamos apenas uma string vazia:
 @
 \fimcodigo
 
+Uma vez que tenhamos ajustado as configurações de nossa janela,
+podemos enfim começar a desenhar ela. Para isso enviamos uma
+requisição para o servidor X e ficamos esperando em um laço até que
+recebamos o evento de que a janela foi criada (já que pedimos para
+sermos avisados deste evento). O código para isso é:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+XMapWindow(display, window);
+{
+  XEvent e;
+  do{
+    XNextEvent(display, &e);
+  } while(e.type != MapNotify);
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.X. Estrutura da Função de Criação de Janelas}
+
+Nossa função de geração de nova janela então executará o código
+adequado, dependendo do ambiente gráfico em que estamos:
+
+\iniciocodigo
+@<Funções@>=
+void _Wcreate_window(void){
+  @<X11: Criar Janela@>
+}
+@
+\fimcodigo
+
+\subsecao{2.X+1. Fechando uma Janela no X}
+
+Fechar uma janela no X11 significa invocar a função do X que pede ao
+servidor para que a janela seja fechada. E além disso, fechar a
+conexão com o servidor. Isso é feito chamando as duas funções abaixo:
+
+\iniciocodigo
+@<Funções@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+void _Wdestroy_window(void){
+  XDestroyWindow(display, window);
+  XCloseDisplay(display);
+}
+#endif
+@
+\fimcodigo
 
 
-\subsecao{X. Estrutura Final do Arquivo}
+\secao{X. Estrutura Final do Arquivo}
 
 O arquivo com o código-fonte de todas as funções definidas neste
 artigo terá a seguinte forma:
 
 \iniciocodigo
-@(src/window.c)@>=
+@(src/window.c@>=
 #include "window.h"
 @<Cabeçalhos@>
 @<Variáveis Locais@>

@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdbool.h>
 
 #include "../src/window.h"
 
@@ -8,7 +11,46 @@ void imprime_resultado(void){
 	 numero_de_testes, acertos, falhas);
 }
 
+void assert(char *descricao, bool valor){
+  char pontos[72], *s = descricao;
+  size_t tamanho_string = 0;
+  int i;
+  while(*s)
+    tamanho_string += (*s++ & 0xC0) != 0x80;
+  pontos[0] = ' ';
+  for(i = 1; i < 71 - tamanho_string; i ++)
+    pontos[i] = '.';
+  pontos[i] = '\0';
+  numero_de_testes ++;
+  printf("%s%s", descricao, pontos);
+  if(valor){
+#if defined(__unix__) && !defined(__EMSCRIPTEN__)
+    printf("\e[32m[OK]\033[0m\n");
+#else
+    printf("[OK]\n");
+#endif
+    acertos ++;
+  }
+  else{
+#if defined(__unix__) && !defined(__EMSCRIPTEN__)
+    printf("\033[0;31m[FAIL]\033[0m\n");
+#else
+    printf("[FAIL]\n");
+#endif
+    falhas ++;
+  }
+}
+
+void test_create_destroy_window(void){
+  _Wcreate_window();
+  assert("Creating window", true);
+  _Wdestroy_window();
+  assert("Destroying window", true);
+}
+
+
 int main(int argc, char **argv){
+  test_create_destroy_window();
   imprime_resultado();
   return 0;
 }
