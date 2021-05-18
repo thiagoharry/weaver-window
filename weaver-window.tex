@@ -209,6 +209,11 @@ inserir seu cabeçalho relevante:
 No X11, como temos que nos comunicar com um servidor, criamos uma
 janela fazendo os seguintes passos:
 
+0. Avisamos a biblioteca X que pode ser que múltiplas threads tentem
+se comunicar com ele. É raro haver motivos para se fazer isso, mas é
+útil se preparar só para o caso de acontecer. Essa precisa ser a
+primeira coisa a ser feita antes de usar outras funções da biblioteca.
+
 1. Abrimos uma conexão com o servidor. Se isso for bem-sucedido, o
 servidor nos revela várias informações relevantes sobre a tela.
 
@@ -219,13 +224,8 @@ telas diferentes).
 3. Também checamos na resposta dada a resolução da tela.
 
 4. Enviamos uma nova mensagem para o servidor pedindo que a janela
-seja criada. Faremos isso na tela padrão. O tamanho da janela poderá
-ser controlado pelas
-macros \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION\_X}
-e \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION\_Y} sendo que se elas
-tiverem um valor não-positivo, interpretamos isso como uma instrução
-para criar a janela com o maior valor possível que ainda caiba dentro
-da tela.
+seja criada. Em princípio criaremos uma janela com o máximo de tamanho
+permitido dada a resolução da tela.
 
 Estes passos são implementados por meio das seguintes funções e
 macros:
@@ -233,6 +233,8 @@ macros:
 \iniciocodigo
 @<X11: Criar Janela@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+/* Passo 0: */
+XInitThreads();
 /* Passo 1: */
 display = XOpenDisplay(NULL);
 if(display == NULL)
@@ -246,12 +248,8 @@ screen_resolution_y = DisplayHeight(display, screen);
 window = XCreateSimpleWindow(display, // Conexão com o X11
                              DefaultRootWindow(display), // Janela-mãe
                              0, 0, // Posição da janela criada
-                             (W_WINDOW_DEFAULT_RESOLUTION_X <= 0)?
-                              (screen_resolution_x):
-                              (W_WINDOW_DEFAULT_RESOLUTION_X), // Largura
-                             (W_WINDOW_DEFAULT_RESOLUTION_Y <= 0)?
-                               (screen_resolution_y):
-                               (W_WINDOW_DEFAULT_RESOLUTION_Y), // Altura
+                             screen_resolution_x, // Largura
+                             screen_resolution_y, // Altura
                              0, 0, // Espessura e cor da borda
                              0); // Cor padrão da janela
 #endif
@@ -271,30 +269,142 @@ static Window window;    // Estrutura da janela criada
 @
 \fimcodigo
 
-Agora temos que levar em conta que as macros que determinam a
-resolução padrão da janela podem não estar definidas. Se for o caso,
-por padrão iremos definir elas com zero:
-
-\iniciocodigo
-@<Define Macros@>=
-#if !defined(W_WINDOW_DEFAULT_RESOLUTION_X)
-#define W_WINDOW_DEFAULT_RESOLUTION_X 0
-#endif
-#if !defined(W_WINDOW_DEFAULT_RESOLUTION_Y)
-#define W_WINDOW_DEFAULT_RESOLUTION_Y 0
-#endif
-@
-\fimcodigo
-
 O código que temos até agora cria a janela. Mas não a desenha na
 tela. Não desenhar ela na tela automaticamente permite que nós
 ajustemos atributos da janela antes que ela seja finalmente exibida.
 
-Uma das coisas que é relevante ajustar nessa estrutura é em que tipo
-de eventos nosso programa quer prestar atenção quando estiver
-executando. Exemplo de evento que não consideraremos interessante: o
-usuário move a janela pela tela. Exemplo de evento interessante: o
-usuário pressiona um botão enquanto nossa janela está ativa.
+A primeira coisa que precisaremos ajustar é que queremos que a janela
+seja em tela-cheia por padrão. Há duas formas de fazer isso. A
+primeira é pedir para que o servidor X ignore o gerenciador de janelas
+e crie a nossa janela. Podemos pedir aí que ele a crie ocupando a tela
+inteira. Isso sempre irá funcionar, mas como isso ignora o gerenciador
+de janelas, decoração de janela como bordas e botões não irão
+aparecer. Por causa disso, usaremos isso somente se o usuário definir
+a macro \monoespaco{W\_WINDOW\_FORCE\_FULLSCREEN}. Neste caso o
+programa nunca sairá de tela cheia e isso não será um problema:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(W_WINDOW_FORCE_FULLSCREEN)
+{
+  XSetWindowAttributes attributes;
+  attributes.override_redirect = true;
+  XChangeWindowAttributes(display, window, CWOverrideRedirect, &attributes);
+}
+#endif
+#endif
+@
+\fimcodigo
+
+Mas caso o usuário não tenha criado esta macro, iremos obter o efeito
+pedindo para o gerenciador de janelas. Alguns gerenciadores de janela
+mais antigos ou simples podem não entender o pedido ou ignorá-lo. Mas
+isso deve funcionar nos principais gerenciadores de janela usados. Mas
+só entraremos de fato no modo tela-cheia se o usuário não ajustou a
+macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN}, que significa que por
+padrão devemos criar a janela sem ser em tela cheia:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if !defined(W_WINDOW_NO_FULLSCREEN)
+{
+  Atom atoms[2] = { XInternAtom(display, "_NET_WM_STATE_FULLSCREEN",
+                                False), None };
+  XChangeProperty(display, window, XInternAtom(display, "_NET_WM_STATE",
+                                               False),
+                  XA_ATOM, 32, PropModeReplace, (unsigned char *) atoms, 1);
+}
+#endif
+#endif
+@
+\fimcodigo
+
+Mas o código acima requer que usemos a extensão definida no seguinte
+cabeçalho:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#include <X11/Xatom.h>
+@
+\fimcodigo
+
+Mas e se estivermos em modo fora de tela cheia e o usuário definiu
+macros que dizem que o tamanho padrão da janela deve ser diferente de
+ocupar a tela inteira? Neste caso, precisaremos redimencionar a janela
+antes de desenhá-la na tela pela primeira vez. As macros que
+controlarão o tamanho da janela quando não estamos em tela cheia
+são \monoespaco{W\_WINDOW\_RESOLUTION\_X}
+e \monoespaco{W\_WINDOW\_RESOLUTION\_Y}. Se elas valerem zero ou
+menos, isso significa que o tamanho deve ser igual o da resolução da
+tela. Caso contrário, seu valor representará o tamanho em pixels da
+janela. Mas isso só se aplica quando não estamos em tela cheia:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(W_WINDOW_NO_FULLSCREEN) && !defined(W_WINDOW_FORCE_FULLSCREEN)
+{
+  int size_x, size_y;
+#if W_WINDOW_RESOLUTION_X > 0
+  size_x = W_WINDOW_RESOLUTION_X;
+#else
+  size_x = screen_resolution_x;
+#endif
+#if W_WINDOW_RESOLUTION_Y > 0
+  size_y = W_WINDOW_RESOLUTION_Y;
+#else
+  size_y = screen_resolution_y;
+#endif
+  XResizeWindow(display, window, size_x, size_y);
+}
+#endif
+#endif
+@
+\fimcodigo
+
+Também tentaremos avisar o gerenciador de janelas que ele não deve
+permitir o redimencionamento da janela. Este deve ocorrer somente por
+meio do uso de funções de redimencionamento que definiremos em breve:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+{
+  XSizeHints hints;
+  hints.flags = PMinSize | PMaxSize;
+#if defined(W_WINDOW_NO_FULLSCREEN) && \
+    !defined(W_WINDOW_FORCE_FULLSCREEN) && W_WINDOW_RESOLUTION_X > 0
+  hints.min_width = hints.max_width = W_WINDOW_RESOLUTION_X;
+#else
+  hints.min_width = hints.max_width = screen_resolution_x;
+#endif
+#if defined(W_WINDOW_NO_FULLSCREEN) && \
+    !defined(W_WINDOW_FORCE_FULLSCREEN) && W_WINDOW_RESOLUTION_Y > 0
+  hints.min_height = hints.max_height = W_WINDOW_RESOLUTION_Y;
+#else
+  hints.min_height = hints.max_height = screen_resolution_y;
+#endif
+  XSetWMNormalHints(display, window, &hints);
+}
+#endif
+@
+\fimcodigo
+
+Mas o recurso acima precisa de código definido no cabeçalho abaixo:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#include <X11/Xutil.h>
+@
+\fimcodigo
+
+Outra coisa relevante a ajustar é em que tipo de eventos nosso
+programa quer prestar atenção quando estiver executando. Exemplo de
+evento que não consideraremos interessante: o usuário move a janela
+pela tela. Exemplo de evento interessante: o usuário pressiona um
+botão enquanto nossa janela está ativa.
 
 A lista de eventos que considerearemos importantes o bastante para que
 nosso programa seja notificado é: janela é criada ou destruída,

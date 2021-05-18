@@ -191,6 +191,12 @@ header:
 In X11, as we need to communicate with a server, we create a window
 following the steps below:
 
+0. We ask the X libraryq to be prepared for simultaneous
+communications caming from multiple threads. It is not common needing
+to do this, but it is a good practice to be prepared if this
+happens. This must be the first thing to do, before using other
+library functions.
+
 1. We open a connection with the server. If we succeed, we get as
 response a list of relevant information about the screen.
 
@@ -201,17 +207,16 @@ monitors and screens).
 3. We also read the screen resolution.
 
 4. We send a new message to the server asking to create a new
-window. We will do it in the default screen, The window sizecan be
-controlled by macros \monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_X} and
-\monoespaco{W\_WINDOW\_DEFAULT\_RESOLUTION_Y}. If one of these macros
-have a non-positive value, we interpret this as a instruction to
-create the largest possible window that still fits in the screen.
+window. We will do it in the default screen, The window size will be
+the greatest value allowed given the screen resolution.
 
 The above steps are implemented using the functions and macros below:
 
 \iniciocodigo
 @<X11: Create Window@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+/* Step 0: */
+XInitThreads();
 /* Step 1: */
 display = XOpenDisplay(NULL);
 if(display == NULL)
@@ -225,12 +230,8 @@ screen_resolution_y = DisplayHeight(display, screen);
 window = XCreateSimpleWindow(display, // X11 connection
                              DefaultRootWindow(display),// Parent window
                              0, 0, // Window position
-                             (W_WINDOW_DEFAULT_RESOLUTION_X <= 0)?
-                               (screen_resolution_x):
-                               (W_WINDOW_DEFAULT_RESOLUTION_X), // Width
-                             (W_WINDOW_DEFAULT_RESOLUTION_Y <= 0)?
-                               (screen_resolution_y):
-                               (W_WINDOW_DEFAULT_RESOLUTION_Y), // Height
+                             screen_resolution_x, // Width
+                             screen_resolution_y, // Height
                              0, 0, // Border width and color
                              0); // Default window color
 #endif
@@ -250,31 +251,135 @@ static Window window;    // Created window struct
 @
 \fimcodigo
 
-Now we need to consider the scenario where the macros that determines
-the default window resolution are not defined. In this case we define
-it to have the standard value zero:
-
-\iniciocodigo
-@<Macro Definition@>=
-#if !defined(W_WINDOW_DEFAULT_RESOLUTION_X)
-#define W_WINDOW_DEFAULT_RESOLUTION_X 0
-#endif
-#if !defined(W_WINDOW_DEFAULT_RESOLUTION_Y)
-#define W_WINDOW_DEFAULT_RESOLUTION_Y 0
-#endif
-@
-\fimcodigo
-
 The code defined above creates a window, but it does not mean that the
 created window is drawn in the screen. Before drawing the window in
 the screen we can adjust some of its properties.
 
-One of the relevant information is what kind of events is relevant to
-pass to the program when something happen to the window. For example,
-we do not consider relevant if the user interacts with another window
-making our window lose focus. But other events, like the information
-that the user pressed a key is relevant and our program should be
-informed.
+The first thing that we need to adjust is that by default the window
+should be created in fullscreen mode. There are two ways to do it. The
+first is ask the X server to ignore the window manager and create the
+window directly. We ask the window to occupy all the screen. This
+always will work, but as we are ignoring the window manager, the
+window decorators like borders and buttons will not appear. Because of
+this we only do this if the user defines the
+macro \monoespaco{W\_WINDOW\_FORCE\_FULLSCREEN}. In this case we will
+never leave the fullscreen window and this will not be a problem:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(W_WINDOW_FORCE_FULLSCREEN)
+{
+  XSetWindowAttributes attributes;
+  attributes.override_redirect = true;
+  XChangeWindowAttributes(display, window, CWOverrideRedirect, &attributes);
+}
+#endif
+#endif
+@
+\fimcodigo
+
+But if the user did not define this macro, we will obtain the full
+screen effect askinf for the window manager. Some older or
+simplerwindow managers will not understand this request or can ignore
+it. But this should work in the most used window managers. But we only
+enter in fullscreen mode if the user did not set the
+macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN}, which means that by default we should not create a fullscreen window:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if !defined(W_WINDOW_NO_FULLSCREEN)
+{
+  Atom atoms[2] = { XInternAtom(display, "_NET_WM_STATE_FULLSCREEN",
+                                False), None };
+  XChangeProperty(display, window, XInternAtom(display, "_NET_WM_STATE",
+                                               False),
+                  XA_ATOM, 32, PropModeReplace, (unsigned char *) atoms, 1);
+}
+#endif
+#endif
+@
+\fimcodigo
+
+The above code requires the extension defined in the following header:
+
+\iniciocodigo
+@<Headers@>+=
+#include <X11/Xatom.h>
+@
+\fimcodigo
+
+But what if we are running outside the fullscreen mode and the user
+has defined macros that configure the window size to a different size
+than occupy the whole screen? In this case, we need to resize the
+window before drawing it for the first time. The macros that control
+the window size when we are not in fullscreen mode
+are \monoespaco{W\_WINDOW\_RESOLUTION\_X}
+and \monoespaco{W\_WINDOW\_RESOLUTION\_Y}. If they are non-positive,
+then this means that we should set their values as the greatest
+possible given the screen resolution. Otherwise, their values
+represent the size in pixels for the window. But this is true only
+outside fullscreen mode:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(W_WINDOW_NO_FULLSCREEN) && !defined(W_WINDOW_FORCE_FULLSCREEN)
+{
+  int size_x, size_y;
+#if W_WINDOW_RESOLUTION_X > 0
+  size_x = W_WINDOW_RESOLUTION_X;
+#else
+  size_x = screen_resolution_x;
+#endif
+#if W_WINDOW_RESOLUTION_Y > 0
+  size_y = W_WINDOW_RESOLUTION_Y;
+#else
+  size_y = screen_resolution_y;
+#endif
+  XResizeWindow(display, window, size_x, size_y);
+}
+#endif
+#endif
+@
+\fimcodigo
+
+We also will warn the window manager to not allow window resizing. The
+window should be resized only using resizing functions that we will
+soon define:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+{
+  XSizeHints hints;
+  hints.flags = PMinSize | PMaxSize;
+#if defined(W_WINDOW_NO_FULLSCREEN) && \
+    !defined(W_WINDOW_FORCE_FULLSCREEN) && W_WINDOW_RESOLUTION_X > 0
+  hints.min_width = hints.max_width = W_WINDOW_RESOLUTION_X;
+#else
+  hints.min_width = hints.max_width = screen_resolution_x;
+#endif
+#if defined(W_WINDOW_NO_FULLSCREEN) && \
+    !defined(W_WINDOW_FORCE_FULLSCREEN) && W_WINDOW_RESOLUTION_Y > 0
+  hints.min_height = hints.max_height = W_WINDOW_RESOLUTION_Y;
+#else
+  hints.min_height = hints.max_height = screen_resolution_y;
+#endif
+  XSetWMNormalHints(display, window, &hints);
+}
+#endif
+@
+\fimcodigo
+
+
+Another relevant information to adjust is what kind of events is
+relevant to pass to the program when something happen to the
+window. For example, we do not consider relevant if the user interacts
+with another window making our window lose focus. But other events,
+like the information that the user pressed a key is relevant and our
+program should be informed.
 
 The list of events that we consider relevant is: the window is created
 or destroyed, the user presses or releases a mouse button, presses or

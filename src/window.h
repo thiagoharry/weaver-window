@@ -7,22 +7,13 @@
 extern"C"{
 #endif
 #include <stdbool.h>  
-/*7:*/
-#line 258 "weaver-window_en.tex"
-
-#if !defined(W_WINDOW_DEFAULT_RESOLUTION_X)
-#define W_WINDOW_DEFAULT_RESOLUTION_X 0
-#endif
-#if !defined(W_WINDOW_DEFAULT_RESOLUTION_Y)
-#define W_WINDOW_DEFAULT_RESOLUTION_Y 0
-#endif
-/*:7*//*10:*/
-#line 309 "weaver-window_en.tex"
+/*14:*/
+#line 414 "weaver-window_en.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
-/*:10*/
+/*:14*/
 #line 101 "weaver-window_en.tex"
 
 /*2:*/
