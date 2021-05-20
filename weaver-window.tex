@@ -577,6 +577,113 @@ static SDL_Surface *window;
 @
 \fimcodigo
 
+\subsecao{2.3. Criando uma Janela no Windows}
+
+Como sempre, para programar algo para o Windows precisamos inserir o
+cabeçalho abaixo:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+@
+\fimcodigo
+
+Agora para obtermos a resolução do monitor principal, usamos o código
+abaixo:
+
+\iniciocodigo
+@<Windows: Criar Janela@>+=
+#if defined(_WIN32)
+screen_resolution_x = GetSystemMetrics(SM_CXSCREEN);
+screen_resolution_y = GetSystemMetrics(SM_CYSCREEN);
+#endif
+@
+\fimcodigo
+
+Agora temos que criar uma classe para a janela que iremos criar. Ela
+deve apenas ter um nome único que não conflite com nomes padrão usados
+pelo sistema. Também temos que passar na criação da classe um
+identificador do programa que executamos (que obtemos
+com \monoespaco{GetModuleHandle} e a função que irá lidar com
+mensagens e sinais recebidos pela janela (no
+caso, o padrão \monoespaco{DefWindowProc}).
+
+\iniciocodigo
+@<Windows: Criar Janela@>+=
+#if defined(_WIN32)
+if(!already_created_a_class){
+  const wchar_t class_name[]  = L"Weaver Window";
+  WNDCLASS windows_class = {};
+  windows_class.lpfnWndProc = DefWindowProc;
+  windows_class.hInstance = GetModuleHandle(NULL);
+  windows_class.lpszClassName = class_name;
+  RegisterClass(&window_class);
+  already_created_a_class = true;
+}
+#endif
+@
+\fimcodigo
+
+O código acima presume que temos declarada a seguinte variável que
+armazena se nossa classe já foi criada:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if defined(_WIN32)
+static bool already_created_a_class = false;
+#endif
+@
+\fimcodigo
+
+Após termos a classe da janela, criamos a janela com o código
+abaixo:
+
+\iniciocodigo
+@<Windows: Criar Janela@>+=
+#if defined(_WIN32)
+{
+  int size_x, size_y;
+  DWORD fullscreen_flag = WS_POPUP;
+  CRect size;
+  size_x = screen_resolution_x;
+  size_y = screen_resolution_y;
+  SystemParametersInfoA(SPI_GETWORKAREA, NULL, &size, NULL);
+#if !defined(W_WINDOW_FORCE_FULLSCREEN) && \
+    defined(W_WINDOW_NO_FULLSCREEN)
+  size_x = size.left - size.right;
+  size_y = size.bottom - size.top;
+  fullscreen_flag = WS_OVERLAPPED;
+#if defined(W_WINDOW_RESOLUTION_X) && W_WINDOW_RESOLUTION_X > 0
+  size_x = W_WINDOW_RESOLUTION_X;
+#endif
+#if defined(W_WINDOW_RESOLUTION_Y) && W_WINDOW_RESOLUTION_Y > 0
+  size_y = W_WINDOW_RESOLUTION_Y;
+#endif
+#endif
+  window = CreateWindowEx(0, "Weaver Window",
+                          W_WINDOW_NAME,
+                          fullscreen_flag | WS_VISIBLE,
+                          size.left, size.top, size_x, size_y,
+                          NULL, NULL,
+                          GetModuleHandle(NULL),
+                          NULL);
+}
+#endif
+@
+\fimcodigo
+
+Iremos armazenar o identificador da janela criada na seguinte
+variável:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if defined(_WIN32)
+static HWND window;
+#endif
+@
+\fimcodigo
 
 \subsecao{2.X. Função de Criação de Janelas}
 
@@ -593,6 +700,7 @@ bool _Wcreate_window(void){
     return false;
   @<X11: Criar Janela@>
   @<Web Assembly: Criar Janela@>
+  @<Windows: Criar Janela@>
   already_have_window = true;
   return true;
 }
@@ -650,6 +758,25 @@ bool _Wdestroy_window(void){
     var el = document.getElementById("canvas");
     el.style.display = "none";
   );
+  already_have_window = false;
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.X+3. Fechando uma Janela no Windows}
+
+Fechar a janela no Windows significa chamar uma única função que irá
+encerrá-la:
+
+\iniciocodigo
+@<Funções@>+=
+#if defined(_WIN32)
+bool _Wdestroy_window(void){
+  if(already_have_window == false)
+    return false;
+  DestroyWindow(window);
   already_have_window = false;
   return true;
 }

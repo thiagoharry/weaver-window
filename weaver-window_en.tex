@@ -553,6 +553,110 @@ static SDL_Surface *window;
 @
 \fimcodigo
 
+\subsecao{2.3. Creating a Windows in (Microsoft) Windows}
+
+As always, to program in Windows we need the following header:
+
+\iniciocodigo
+@<Headers@>+=
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+@
+\fimcodigo
+
+Now we obtain the resolution of the main monitor using:
+
+\iniciocodigo
+@<Windows: Create Window@>+=
+#if defined(_WIN32)
+screen_resolution_x = GetSystemMetrics(SM_CXSCREEN);
+screen_resolution_y = GetSystemMetrics(SM_CYSCREEN);
+#endif
+@
+\fimcodigo
+
+Now we need to create a class for our window. The class should have an
+unique non-conflicting name. We also pass an identifier with the
+instance of our program (that we get
+with \monoespaco{GetModuleHandle}) and the function to deal with
+signals and messages for the window (in our case, the
+default \monoespaco{DefWindowProc}).
+
+\iniciocodigo
+@<Windows: Create Window@>+=
+#if defined(_WIN32)
+if(!already_created_a_class){
+  const wchar_t class_name[]  = L"Weaver Window";
+  WNDCLASS windows_class = {};
+  windows_class.lpfnWndProc = DefWindowProc;
+  windows_class.hInstance = GetModuleHandle(NULL);
+  windows_class.lpszClassName = class_name;
+  RegisterClass(&window_class);
+}
+#endif
+@
+\fimcodigo
+
+The code above assumes that we have declared a boolean variable that
+stores if we already created a class:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if defined(_WIN32)
+static bool already_created_a_class = false;
+#endif
+@
+\fimcodigo
+
+After defining the window class, we can create the window with the
+code below:
+
+\iniciocodigo
+@<Windows: Create Window@>+=
+#if defined(_WIN32)
+{
+  int size_x, size_y;
+  DWORD fullscreen_flag = WS_POPUP;
+  CRect size;
+  size_x = screen_resolution_x;
+  size_y = screen_resolution_y;
+  SystemParametersInfoA(SPI_GETWORKAREA, NULL, &size, NULL);
+#if !defined(W_WINDOW_FORCE_FULLSCREEN) && \
+    defined(W_WINDOW_NO_FULLSCREEN)
+  size_x = size.left - size.right;
+  size_y = size.bottom - size.top;
+  fullscreen_flag = WS_OVERLAPPED;
+#if defined(W_WINDOW_RESOLUTION_X) && W_WINDOW_RESOLUTION_X > 0
+  size_x = W_WINDOW_RESOLUTION_X;
+#endif
+#if defined(W_WINDOW_RESOLUTION_Y) && W_WINDOW_RESOLUTION_Y > 0
+  size_y = W_WINDOW_RESOLUTION_Y;
+#endif
+#endif
+  window = CreateWindowEx(0, "Weaver Window",
+                          W_WINDOW_NAME,
+                          fullscreen_flag | WS_VISIBLE,
+                          size.left, size.top, size_x, size_y,
+                          NULL, NULL,
+                          GetModuleHandle(NULL),
+                          NULL);
+}
+#endif
+@
+\fimcodigo
+
+We will store the handle to the created window in this variable:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if defined(_WIN32)
+static HWND window;
+#endif
+@
+\fimcodigo
+
+
 \subsecao{2.X. Window Creation Function}
 
 Our function that creates a new window will execute the adequate code,
@@ -568,6 +672,7 @@ bool _Wcreate_window(void){
     return false;
   @<X11: Create Window@>
   @<Web Assembly: Create Window@>
+  @<Windows: Create Window@>
   already_have_window = true;
   return true;
 }
@@ -622,6 +727,25 @@ bool _Wdestroy_window(void){
     var el = document.getElementById("canvas");
     el.style.display = "none";
   );
+  already_have_window = false;
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.X+3. Closing a Window on Windows}
+
+Closing a window in Windows means calling a simple function to destroy
+the window:
+
+\iniciocodigo
+@<Functions@>+=
+#if defined(_WIN32)
+bool _Wdestroy_window(void){
+  if(already_have_window == false)
+    return false;
+  DestroyWindow(window);
   already_have_window = false;
   return true;
 }
