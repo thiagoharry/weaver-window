@@ -44,6 +44,7 @@ void assert(char *descricao, bool valor){
 void test_create_destroy_window(void){
   bool ret;
   ret = _Wcreate_window();
+  sleep(1);
   assert("Creating window", ret);
   ret = _Wcreate_window();
   assert("Not creating window if it exists", ret == false);

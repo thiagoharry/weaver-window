@@ -18,6 +18,12 @@ test_en:
 	ctangle weaver-window_en.tex
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o test_window -lX11
 	./test_window
+test_web:
+	ctangle weaver-window.tex
+	emcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o docs/test_window.html
+test_web_en:
+	ctangle weaver-window_en.tex
+	emcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o docs/test_window.html
 clean:
 	rm -f *~ *.core *.scn *.dvi *.idx *.log tests/*~ test_window
 distclean: clean

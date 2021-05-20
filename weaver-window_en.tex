@@ -306,7 +306,9 @@ The above code requires the extension defined in the following header:
 
 \iniciocodigo
 @<Headers@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xatom.h>
+#endif
 @
 \fimcodigo
 
@@ -373,6 +375,15 @@ soon define:
 @
 \fimcodigo
 
+The above resource needs the following header:
+
+\iniciocodigo
+@<Headers@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <X11/Xutil.h>
+#endif
+@
+\fimcodigo
 
 Another relevant information to adjust is what kind of events is
 relevant to pass to the program when something happen to the
@@ -439,23 +450,139 @@ XMapWindow(display, window);
 @
 \fimcodigo
 
+\subsecao{2.2. Creating a ``Window'' in a Web Browser}
+
+One of the most different environments where our API can be executed
+are web browsers after the code is compiled to Web Assembly. In this
+case, there are no true window, the space where we can draw in the
+screen is a HTML canvas. We do not need to worry about the possibility
+of the user resize the window, for example. But we still need to pay
+attention to the size of the screen and should allow the resizing of
+our canvas.
+
+Here we can create and manipulare the drawing area combining two
+things: the SDL library, presented as an interface to graphical
+actions by Emscripten environment and Javascript code that we also can
+execute.
+
+First we include the Emscripten and SDL headers:
+
+\iniciocodigo
+@<Headers@>+=
+#if defined(__EMSCRIPTEN__)
+#include <SDL/SDL.h>
+#include <emscripten.h>
+#endif
+@
+\fimcodigo
+
+
+Our first challenge in this environment is discover screen
+resolution. We can do this using the following Javascript code:
+
+\iniciocodigo
+@<Web Assembly: Create Window@>=
+#if defined(__EMSCRIPTEN__)
+screen_resolution_x = EM_ASM_INT({
+  return window.screen.width * window.devicePixelRatio;
+});
+screen_resolution_y = EM_ASM_INT({
+  return window.screen.height * window.devicePixelRatio;
+});
+#endif
+@
+\fimcodigo
+
+Next we want to initialize the window SDL subsystem. This is done
+calling the function below:
+
+\iniciocodigo
+@<Web Assembly: Create Window@>+=
+#if defined(__EMSCRIPTEN__)
+SDL_Init(SDL_INIT_VIDEO);
+#endif
+@
+\fimcodigo
+
+Now we will create the window, which in practice means adjust the
+canvas size where we will draw and initialize it. The HTML canvas
+should be the screen size, except if the user defined
+macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} and defined positive
+values for \monoespaco{W\_WINDOW\_RESOLUTION\_X}
+and \monoespaco{W\_WINDOW\_RESOLUTION\_Y}. We also ensure that the
+canvas is visible using Javascript, as it could be hidden (we do it
+when we execute the function to close the window).
+
+\iniciocodigo
+@<Web Assembly: Create Window@>+=
+#if defined(__EMSCRIPTEN__)
+{
+  int size_x, size_y, fullscreen_flag = 0;
+  size_x = screen_resolution_x;
+  size_y = screen_resolution_y;
+#if defined(W_WINDOW_NO_FULLSCREEN) && \
+    !defined(W_WINDOW_FORCE_FULLSCREEN)
+  fullscreen_flag = SDL_WINDOW_FULLSCREEN;
+#if defined(W_WINDOW_RESOLUTION_X) && W_WINDOW_RESOLUtION_X > 0
+  size_x = W_WINDOW_RESOLUtION_X;
+#endif
+#if defined(W_WINDOW_RESOLUTION_Y) && W_WINDOW_RESOLUtION_Y > 0
+  size_y = W_WINDOW_RESOLUtION_Y;
+#endif
+#endif
+  EM_ASM(
+    var el = document.getElementById("canvas");
+    el.style.display = "initial";
+  );
+  window = SDL_SetVideoMode(size_x, size_y, 0,
+                            SDL_OPENGL | fullscreen_flag);
+  if(window == NULL)
+    return false;
+}
+#endif
+@
+\fimcodigo
+
+The window in this case is considered a SDL surface:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if defined(__EMSCRIPTEN__)
+static SDL_Surface *window;
+#endif
+@
+\fimcodigo
+
 \subsecao{2.X. Window Creation Function}
 
 Our function that creates a new window will execute the adequate code,
-depending on the graphical environment where it is being executed. But
-before this we will add code ro check if we already do not have an
-active connection with the X server.
+depending on the graphical environment where termosit is being
+executed. But before this we will add code to check if a window
+already was created. This information will be stored in a boolean
+variable:
 
 \iniciocodigo
 @<Functions@>=
 bool _Wcreate_window(void){
-  if(display != NULL)
+  if(already_have_window == true)
     return false;
   @<X11: Create Window@>
+  @<Web Assembly: Create Window@>
+  already_have_window = true;
   return true;
 }
 @
 \fimcodigo
+
+The variable that stores if the window already was created will be
+declared here:
+
+\iniciocodigo
+@<Local Variables@>+=
+static bool already_have_window = false;
+@
+\fimcodigo
+
 
 \subsecao{2.X+1. Closing a Window in X}
 
@@ -468,13 +595,37 @@ existing window before trying to close and destroy it.
 \iniciocodigo
 @<Functions@>=
 bool _Wdestroy_window(void){
-  if(display == NULL)
+  if(already_have_window == false)
     return false;
   XDestroyWindow(display, window);
   XCloseDisplay(display);
-  display = NULL;
+  already_have_window = false;
   return true;
 }
+@
+\fimcodigo
+
+\subsecao{2.X+2. Closing a Window in Web Assembly}
+
+Closing a window when running in a web browser means finalize the SDL
+structures and hide the canvas where we were drawing. We do this with
+the following function:
+
+\iniciocodigo
+@<Functions@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wdestroy_window(void){
+  if(already_have_window == false)
+    return false;
+  SDL_FreeSurface(window);
+  EM_ASM(
+    var el = document.getElementById("canvas");
+    el.style.display = "none";
+  );
+  already_have_window = false;
+  return true;
+}
+#endif
 @
 \fimcodigo
 
@@ -485,7 +636,7 @@ The file with all the necessary source code for the functions defined
 in this article will have the following organization:
 
 \iniciocodigo
-@(src/window.c)@>=
+@(src/window.c@>=
 #include "window.h"
 @<Headers@>
 @<Local Variables@>

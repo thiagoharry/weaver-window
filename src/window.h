@@ -8,7 +8,7 @@ extern"C"{
 #endif
 #include <stdbool.h>  
 /*15:*/
-#line 442 "weaver-window.tex"
+#line 446 "weaver-window.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""

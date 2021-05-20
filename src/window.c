@@ -1,5 +1,5 @@
-/*19:*/
-#line 521 "weaver-window.tex"
+/*26:*/
+#line 667 "weaver-window.tex"
 
 #include "window.h"
 /*4:*/
@@ -11,13 +11,24 @@
 /*:4*//*9:*/
 #line 328 "weaver-window.tex"
 
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xatom.h> 
+#endif
 /*:9*//*12:*/
-#line 398 "weaver-window.tex"
+#line 400 "weaver-window.tex"
 
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xutil.h> 
-/*:12*/
-#line 523 "weaver-window.tex"
+#endif
+/*:12*//*17:*/
+#line 495 "weaver-window.tex"
+
+#if defined(__EMSCRIPTEN__)
+#include <SDL/SDL.h> 
+#include <emscripten.h> 
+#endif
+/*:17*/
+#line 669 "weaver-window.tex"
 
 /*6:*/
 #line 262 "weaver-window.tex"
@@ -28,14 +39,24 @@ static Display*display= NULL;
 static int screen;
 static Window window;
 #endif
-/*:6*/
-#line 524 "weaver-window.tex"
+/*:6*//*21:*/
+#line 573 "weaver-window.tex"
 
-/*17:*/
-#line 480 "weaver-window.tex"
+#if defined(__EMSCRIPTEN__)
+static SDL_Surface*window;
+#endif
+/*:21*//*23:*/
+#line 606 "weaver-window.tex"
+
+static bool already_have_window= false;
+/*:23*/
+#line 670 "weaver-window.tex"
+
+/*22:*/
+#line 590 "weaver-window.tex"
 
 bool _Wcreate_window(void){
-if(display!=NULL)
+if(already_have_window==true)
 return false;
 /*5:*/
 #line 234 "weaver-window.tex"
@@ -88,7 +109,7 @@ XA_ATOM,32,PropModeReplace,(unsigned char*)atoms,1);
 #endif
 #endif
 /*:8*//*10:*/
-#line 345 "weaver-window.tex"
+#line 347 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_NO_FULLSCREEN) && !defined(W_WINDOW_FORCE_FULLSCREEN)
@@ -109,7 +130,7 @@ XResizeWindow(display,window,size_x,size_y);
 #endif
 #endif
 /*:10*//*11:*/
-#line 372 "weaver-window.tex"
+#line 374 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
@@ -131,7 +152,7 @@ XSetWMNormalHints(display,window,&hints);
 }
 #endif
 /*:11*//*13:*/
-#line 418 "weaver-window.tex"
+#line 422 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XSelectInput(display,window,StructureNotifyMask|KeyPressMask|
@@ -139,13 +160,13 @@ KeyReleaseMask|ButtonPressMask|
 ButtonReleaseMask|PointerMotionMask);
 #endif
 /*:13*//*14:*/
-#line 433 "weaver-window.tex"
+#line 437 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XStoreName(display,window,W_WINDOW_NAME);
 #endif
 /*:14*//*16:*/
-#line 458 "weaver-window.tex"
+#line 462 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XMapWindow(display,window);
@@ -157,24 +178,89 @@ XNextEvent(display,&e);
 }
 #endif
 /*:16*/
-#line 484 "weaver-window.tex"
+#line 594 "weaver-window.tex"
 
+/*18:*/
+#line 507 "weaver-window.tex"
+
+#if defined(__EMSCRIPTEN__)
+screen_resolution_x= EM_ASM_INT({
+return window.screen.width*window.devicePixelRatio;
+});
+screen_resolution_y= EM_ASM_INT({
+return window.screen.height*window.devicePixelRatio;
+});
+#endif
+/*:18*//*19:*/
+#line 524 "weaver-window.tex"
+
+#if defined(__EMSCRIPTEN__)
+SDL_Init(SDL_INIT_VIDEO);
+#endif
+/*:19*//*20:*/
+#line 541 "weaver-window.tex"
+
+#if defined(__EMSCRIPTEN__)
+{
+int size_x,size_y,fullscreen_flag= 0;
+size_x= screen_resolution_x;
+size_y= screen_resolution_y;
+#if defined(W_WINDOW_NO_FULLSCREEN) && \
+    !defined(W_WINDOW_FORCE_FULLSCREEN)
+fullscreen_flag= SDL_WINDOW_FULLSCREEN;
+#if defined(W_WINDOW_RESOLUTION_X) && W_WINDOW_RESOLUtION_X >  0
+size_x= W_WINDOW_RESOLUtION_X;
+#endif
+#if defined(W_WINDOW_RESOLUTION_Y) && W_WINDOW_RESOLUtION_Y >  0
+size_y= W_WINDOW_RESOLUtION_Y;
+#endif
+#endif
+EM_ASM(
+var el= document.getElementById("canvas");
+el.style.display= "initial";
+);
+window= SDL_SetVideoMode(size_x,size_y,0,
+SDL_OPENGL|fullscreen_flag);
+if(window==NULL)
+return false;
+}
+#endif
+/*:20*/
+#line 595 "weaver-window.tex"
+
+already_have_window= true;
 return true;
 }
-/*:17*//*18:*/
-#line 500 "weaver-window.tex"
+/*:22*//*24:*/
+#line 621 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
-if(display==NULL)
+if(already_have_window==false)
 return false;
 XDestroyWindow(display,window);
 XCloseDisplay(display);
-display= NULL;
+already_have_window= false;
 return true;
 }
 #endif
-/*:18*/
-#line 525 "weaver-window.tex"
+/*:24*//*25:*/
+#line 643 "weaver-window.tex"
 
-/*:19*/
+#if defined(__EMSCRIPTEN__)
+bool _Wdestroy_window(void){
+if(already_have_window==false)
+return false;
+SDL_FreeSurface(window);
+EM_ASM(
+var el= document.getElementById("canvas");
+el.style.display= "none";
+);
+already_have_window= false;
+return true;
+}
+#endif
+/*:25*/
+#line 671 "weaver-window.tex"
+
+/*:26*/
