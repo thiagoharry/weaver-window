@@ -385,6 +385,49 @@ The above resource needs the following header:
 @
 \fimcodigo
 
+Now we need to initializa OpenGL. First we need the appropriate
+headers:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#include <GL/gl.h>
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <GL/glx.h>
+#endif
+@
+\fimcodigo
+
+Now we need to configure OpenGL to draw in the screen, using double
+buffering, with real color mode (not using paletes) and with
+appropriate space to store red, blue, green, alpha and depth channels:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+GLXFBConfig *framebuffer_config;
+{
+  int number_of_returned_elements;
+  int doubleBufferAttributes[] = {
+    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT, // Draw to screen, not in 'pixmap'
+    GLX_RENDER_TYPE, GLX_RGBA_BIT, // Use RGBA, not color paletes
+    GLX_DOUBLEBUFFER, True, // Use double buffering: avoid 'flickering'
+    GLX_RED_SIZE, 1, // At least 1 bit to red
+    GLX_GREEN_SIZE, 1, // At least 1 bit to green
+    GLX_BLUE_SIZE, 1, // At least 1 bit to blue
+    GLX_ALPHA_SIZE, 1, // At least 1 bit to alpha channel
+    GLX_DEPTH_SIZE, 1, // At least 1 bit to depth
+    None
+  };
+  framebuffer_config = glXChooseFBConfig(display, screen,
+                                         doubleBufferAttributes,
+                                         &number_of_returned_elements);
+  if(framebuffer_config == NULL){
+    return false;
+  }
+}
+@
+\fimcodigo
+
+
 Another relevant information to adjust is what kind of events is
 relevant to pass to the program when something happen to the
 window. For example, we do not consider relevant if the user interacts

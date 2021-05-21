@@ -7,13 +7,13 @@
 extern"C"{
 #endif
 #include <stdbool.h>  
-/*15:*/
-#line 446 "weaver-window.tex"
+/*17:*/
+#line 491 "weaver-window.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
-/*:15*/
+/*:17*/
 #line 115 "weaver-window.tex"
 
 /*2:*/

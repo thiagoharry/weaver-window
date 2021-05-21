@@ -404,6 +404,51 @@ Mas o recurso acima precisa de código definido no cabeçalho abaixo:
 @
 \fimcodigo
 
+
+Agora vamos inicializar um contexto OpenGL. Para isso primeiro vamos
+inserir os cabeçahos apropriados:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#include <GL/gl.h>
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <GL/glx.h>
+#endif
+@
+\fimcodigo
+
+Agora vamos configurar o OpenGL para desenhar na tela usando duplos
+buffers, usando modo de cores reais (ao invés de paletas de cores) e
+com espaço apropriado para armazenar os canais vermelho, azul, verde,
+alfa e profundidade:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+GLXFBConfig *framebuffer_config;
+{
+  int number_of_returned_elements;
+  int doubleBufferAttributes[] = {
+    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT, //Desenhe na tela, não em 'pixmap'
+    GLX_RENDER_TYPE, GLX_RGBA_BIT, // Usar RGBA, não paletas de cores
+    GLX_DOUBLEBUFFER, True, // Usar buffer duplo, evita 'flickering'
+    GLX_RED_SIZE, 1, // Ao menos 1 bit de vermelho
+    GLX_GREEN_SIZE, 1, // Ao menos 1 bit de verde
+    GLX_BLUE_SIZE, 1, // Ao menos 1 bit de azul
+    GLX_ALPHA_SIZE, 1, // Ao menos 1 bit de canal alfa
+    GLX_DEPTH_SIZE, 1, // Ao menos 1 bit de profundidade
+    None
+  };
+  framebuffer_config = glXChooseFBConfig(display, screen,
+                                         doubleBufferAttributes,
+                                         &number_of_returned_elements);
+  if(framebuffer_config == NULL){
+    return false;
+  }
+}
+@
+\fimcodigo
+
+
 Outra coisa relevante a ajustar é em que tipo de eventos nosso
 programa quer prestar atenção quando estiver executando. Exemplo de
 evento que não consideraremos interessante: o usuário move a janela
