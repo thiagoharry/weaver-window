@@ -7,25 +7,35 @@
 extern"C"{
 #endif
 #include <stdbool.h>  
-/*17:*/
-#line 491 "weaver-window.tex"
+#include <stdio.h> 
+/*15:*/
+#line 447 "weaver-window.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
-/*:17*/
-#line 115 "weaver-window.tex"
+/*:15*//*22:*/
+#line 567 "weaver-window.tex"
+
+#if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 3
+#endif
+#if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
+#define W_WINDOW_OPENGL_MINOR_VERSION 0
+#endif
+/*:22*/
+#line 116 "weaver-window.tex"
 
 /*2:*/
-#line 149 "weaver-window.tex"
+#line 150 "weaver-window.tex"
 
 bool _Wcreate_window(void);
 /*:2*//*3:*/
-#line 167 "weaver-window.tex"
+#line 168 "weaver-window.tex"
 
 bool _Wdestroy_window(void);
 /*:3*/
-#line 116 "weaver-window.tex"
+#line 117 "weaver-window.tex"
 
 #ifdef __cplusplus
 }

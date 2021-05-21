@@ -112,6 +112,7 @@ como uma biblioteca compartilhada. O conteúdo de \monoespaco{window.h}
 extern "C" {
 #endif
 #include <stdbool.h> // Define tipo 'bool'
+#include <stdio.h>
 @<Define Macros@>
 @<Declarações de Janela@>
 #ifdef __cplusplus
@@ -404,51 +405,6 @@ Mas o recurso acima precisa de código definido no cabeçalho abaixo:
 @
 \fimcodigo
 
-
-Agora vamos inicializar um contexto OpenGL. Para isso primeiro vamos
-inserir os cabeçahos apropriados:
-
-\iniciocodigo
-@<Cabeçalhos@>+=
-#include <GL/gl.h>
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#include <GL/glx.h>
-#endif
-@
-\fimcodigo
-
-Agora vamos configurar o OpenGL para desenhar na tela usando duplos
-buffers, usando modo de cores reais (ao invés de paletas de cores) e
-com espaço apropriado para armazenar os canais vermelho, azul, verde,
-alfa e profundidade:
-
-\iniciocodigo
-@<X11: Criar Janela@>+=
-GLXFBConfig *framebuffer_config;
-{
-  int number_of_returned_elements;
-  int doubleBufferAttributes[] = {
-    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT, //Desenhe na tela, não em 'pixmap'
-    GLX_RENDER_TYPE, GLX_RGBA_BIT, // Usar RGBA, não paletas de cores
-    GLX_DOUBLEBUFFER, True, // Usar buffer duplo, evita 'flickering'
-    GLX_RED_SIZE, 1, // Ao menos 1 bit de vermelho
-    GLX_GREEN_SIZE, 1, // Ao menos 1 bit de verde
-    GLX_BLUE_SIZE, 1, // Ao menos 1 bit de azul
-    GLX_ALPHA_SIZE, 1, // Ao menos 1 bit de canal alfa
-    GLX_DEPTH_SIZE, 1, // Ao menos 1 bit de profundidade
-    None
-  };
-  framebuffer_config = glXChooseFBConfig(display, screen,
-                                         doubleBufferAttributes,
-                                         &number_of_returned_elements);
-  if(framebuffer_config == NULL){
-    return false;
-  }
-}
-@
-\fimcodigo
-
-
 Outra coisa relevante a ajustar é em que tipo de eventos nosso
 programa quer prestar atenção quando estiver executando. Exemplo de
 evento que não consideraremos interessante: o usuário move a janela
@@ -494,6 +450,131 @@ Se essta macro não estiver definida, deixamos apenas uma string vazia:
 #endif
 @
 \fimcodigo
+
+Agora vamos inicializar um contexto OpenGL ES. Para isso primeiro
+vamos inserir os cabeçahos apropriados:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <EGL/eglext.h>
+#endif
+@
+\fimcodigo
+
+Agora precisamos criar uma estrutura que armazena as informações sobre
+nossa interface gráfica para o OpenGL ES. Assim como com o servidor X,
+isso é armazenado em uma estrutura chamada \monoespaco{display}. E
+podemos obter ela à partir do \monoespaco{display} da biblioteca X:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
+                                    NULL);
+eglInitialize(egl_display, NULL, NULL);
+#endif
+@
+\fimcodigo
+
+Essa variável é declarada aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLDisplay *egl_display;
+#endif
+@
+\fimcodigo
+
+Agora obtemos uma configuração possível para o contexto OpenGL ES a
+ser criado. Primeiro especificamos uma série de exigências e em
+seguida obtemos da biblioteca uma configuração possível:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig configs[1];
+{
+  bool ret;
+  int number_of_configs_returned;
+  int requested_attributes[] = {
+    // Devemos suportar desenhar em janelas e em texturas:
+    EGL_SURFACE_TYPE,  EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    // Devemos suportar ao menos 1 bit para a cor vermelha:
+    EGL_RED_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para a cor verde:
+    EGL_GREEN_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para a cor azul:
+    EGL_BLUE_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para o canal alfa:
+    EGL_ALPHA_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para a profundidade:
+    EGL_DEPTH_SIZE, 1,
+    EGL_NONE
+  };
+  ret = eglChooseConfig(egl_display, requested_attributes,
+                        configs, 1, &number_of_configs_returned);
+  if(ret == EGL_FALSE){
+    return false;
+  }
+}
+#endif
+@
+\fimcodigo
+
+Uma vez que tenhamos uma configuração, podemos criar o contexto OpenGL
+ES. Deixaremos que o usuário escolha qual a versão do OpenGL por meio
+das macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} e
+\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. Usando tal informação, o código abaixo cria o contexto:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+{
+  int context_attribs[] = {
+    EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
+    EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
+    EGL_NONE
+  };
+  egl_context = eglCreateContext(egl_display, configs[0],
+                                 EGL_NO_CONTEXT, context_attribs);
+  if(egl_context == EGL_NO_CONTEXT){
+    return false;
+  }
+  //eglMakeCurrent(egl_display, XXX, XXX, egl_context);
+}
+#endif
+@
+\fimcodigo
+
+O contexto OpenGL é declarado aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLContext egl_context;
+#endif
+@
+\fimcodigo
+
+E se o usuário não definiu as macros que escolhem qual a versão do
+OpenGL que iremos usar, por padrão será o 3.0:
+
+\iniciocodigo
+@<Define Macros@>=
+#if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 3
+#endif
+#if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
+#define W_WINDOW_OPENGL_MINOR_VERSION 0
+#endif
+@
+\fimcodigo
+
+XXX
 
 Uma vez que tenhamos ajustado as configurações de nossa janela,
 podemos enfim começar a desenhar ela. Para isso enviamos uma

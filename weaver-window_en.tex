@@ -385,49 +385,6 @@ The above resource needs the following header:
 @
 \fimcodigo
 
-Now we need to initializa OpenGL. First we need the appropriate
-headers:
-
-\iniciocodigo
-@<Cabeçalhos@>+=
-#include <GL/gl.h>
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#include <GL/glx.h>
-#endif
-@
-\fimcodigo
-
-Now we need to configure OpenGL to draw in the screen, using double
-buffering, with real color mode (not using paletes) and with
-appropriate space to store red, blue, green, alpha and depth channels:
-
-\iniciocodigo
-@<X11: Criar Janela@>+=
-GLXFBConfig *framebuffer_config;
-{
-  int number_of_returned_elements;
-  int doubleBufferAttributes[] = {
-    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT, // Draw to screen, not in 'pixmap'
-    GLX_RENDER_TYPE, GLX_RGBA_BIT, // Use RGBA, not color paletes
-    GLX_DOUBLEBUFFER, True, // Use double buffering: avoid 'flickering'
-    GLX_RED_SIZE, 1, // At least 1 bit to red
-    GLX_GREEN_SIZE, 1, // At least 1 bit to green
-    GLX_BLUE_SIZE, 1, // At least 1 bit to blue
-    GLX_ALPHA_SIZE, 1, // At least 1 bit to alpha channel
-    GLX_DEPTH_SIZE, 1, // At least 1 bit to depth
-    None
-  };
-  framebuffer_config = glXChooseFBConfig(display, screen,
-                                         doubleBufferAttributes,
-                                         &number_of_returned_elements);
-  if(framebuffer_config == NULL){
-    return false;
-  }
-}
-@
-\fimcodigo
-
-
 Another relevant information to adjust is what kind of events is
 relevant to pass to the program when something happen to the
 window. For example, we do not consider relevant if the user interacts
@@ -442,7 +399,7 @@ we do not ask the server to send this information, our program would
 not be able to know if the user interacts with it pressing keys.
 
 \iniciocodigo
-@<X11: Criar Create Window@>+=
+@<X11: Create Window@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
                               KeyReleaseMask | ButtonPressMask |
@@ -471,6 +428,131 @@ If this macro is not defined, we use an empty string:
 #endif
 @
 \fimcodigo
+
+Now we need to initializa OpenGL. First we need the appropriate
+headers:
+
+\iniciocodigo
+@<Headers@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <EGL/eglext.h>
+#endif
+@
+\fimcodigo
+
+Now we need to create a structure needed by OpenGL ES to store
+information about the graphical interface: a OpenGL display. Such
+display can be obtained from the X display that we already created:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
+                                    NULL);
+eglInitialize(egl_display, NULL, NULL);
+#endif
+@
+\fimcodigo
+
+This variable is declared here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLDisplay *egl_display;
+#endif
+@
+\fimcodigo
+
+Now we need to obtain a configuration to the creation of a OpenGL
+context. We specify some requirements and get a configuration using
+the code below:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig configs[1];
+{
+  bool ret;
+  int number_of_configs_returned;
+  int requested_attributes[] = {
+    // We should support drawing in the screen and textures
+    EGL_SURFACE_TYPE,  EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    // And at least 1 bit to the red color:
+    EGL_RED_SIZE, 1,
+    // At least 1 bit to the green color:
+    EGL_GREEN_SIZE, 1,
+    // At least 1 bit to the blue color:
+    EGL_BLUE_SIZE, 1,
+    // At least 1 bit to the alpha channel:
+    EGL_ALPHA_SIZE, 1,
+    // At least 1 bit to the depth channel:
+    EGL_DEPTH_SIZE, 1,
+    EGL_NONE
+  };
+  ret = eglChooseConfig(egl_display, requested_attributes,
+                        configs, 1, &number_of_configs_returned);
+  if(ret == EGL_FALSE){
+    return false;
+  }
+}
+#endif
+@
+\fimcodigo
+
+Now that we have a configuration, we can create the OpenGL context. We
+let the user choose which will be the major and minor OpenGL version
+using macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} and
+\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. With this information, we create the context:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+{
+  int context_attribs[] = {
+    EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
+    EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
+    EGL_NONE
+  };
+  egl_context = eglCreateContext(egl_display, configs[0],
+                                 EGL_NO_CONTEXT, context_attribs);
+  if(egl_context == EGL_NO_CONTEXT){
+    return false;
+  }
+  //eglMakeCurrent(egl_display, XXX, XXX, egl_context);
+}
+#endif
+@
+\fimcodigo
+
+The variable that stores the handle to the OpenGL context is declared
+here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLContext egl_context;
+#endif
+@
+\fimcodigo
+
+And if the user did not define the macros that sets the OpenGL
+version, by default we choose version 3.0:
+
+\iniciocodigo
+@<Macro Definition@>=
+#if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 3
+#endif
+#if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
+#define W_WINDOW_OPENGL_MINOR_VERSION 0
+#endif
+@
+\fimcodigo
+
+XXX
 
 After adjusting all the configurations, we can draw the created
 window. For this, we send a request to the server X and wait in a loop
