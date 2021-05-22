@@ -127,6 +127,22 @@ exactly the names present in the red code above. If a piece of code
 have as title a name matching the red part in some code, then that
 code is positioned exactly in that red part when compiling the code.
 
+As a second example of code, we also will declare here that when we
+are in debug mode (when the macro \monoespaco{W\_DEBUG\_WINDOW} is
+declared) we will need the declaration of input/output functions, as
+our code will be more verbose:
+
+\iniciocodigo
+@<Headers@>=
+#if defined(W_DEBUG_WINDOW)
+#include <X11/Xlib.h>
+#endif
+@
+\fimcodigo
+
+Notice that we still did not define where this code section called
+``Headers'' will be positioned. We can do this later.
+
 \subsecao{1.2. API functions that will be defined}
 
 In this article we will define the following functions:
@@ -219,8 +235,12 @@ The above steps are implemented using the functions and macros below:
 XInitThreads();
 /* Step 1: */
 display = XOpenDisplay(NULL);
-if(display == NULL)
+if(display == NULL){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Failed to connect to X11 server.\n");
+#endif
   return false; // Couldn't connect
+}
 /* Step 2: */
 screen = DefaultScreen(display);
 /* Step 3: */
@@ -272,7 +292,8 @@ never leave the fullscreen window and this will not be a problem:
 {
   XSetWindowAttributes attributes;
   attributes.override_redirect = true;
-  XChangeWindowAttributes(display, window, CWOverrideRedirect, &attributes);
+  XChangeWindowAttributes(display, window, CWOverrideRedirect,
+                          &attributes);
 }
 #endif
 #endif
@@ -429,8 +450,42 @@ If this macro is not defined, we use an empty string:
 @
 \fimcodigo
 
-Now we need to initializa OpenGL. First we need the appropriate
-headers:
+Now we configure OpenGL ES. As this is sufficiently laborious, we
+write the necessary steps in the next session:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+@<X11: Configure OpenGL ES@>
+#endif
+@
+\fimcodigo
+
+After adjusting all the configurations, we can draw the created
+window. For this, we send a request to the server X and wait in a loop
+until we are notified that the window was created (we asked to be
+notified of this event when we passed
+flag \monoespaco{StructureNotifyMask} to
+function \monoespaco{XSelectInput} previously). The code for this is:
+
+\iniciocodigo
+@<X11: Create Window@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+XMapWindow(display, window);
+{
+  XEvent e;
+  do{
+    XNextEvent(display, &e);
+  } while(e.type != MapNotify);
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.2. Configuring OpenGL ES in X11}
+
+In X11, the interface used to program in OpenGL ES is called EGL and
+its functions and macros are declared in the following header:
 
 \iniciocodigo
 @<Headers@>+=
@@ -447,10 +502,16 @@ information about the graphical interface: a OpenGL display. Such
 display can be obtained from the X display that we already created:
 
 \iniciocodigo
-@<X11: Create Window@>+=
+@<X11: Configure OpenGL ES@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
                                     NULL);
+if(egl_display == EGL_NO_DISPLAY){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL display.\n");
+#endif
+  return false;
+}
 eglInitialize(egl_display, NULL, NULL);
 #endif
 @
@@ -471,9 +532,7 @@ context. We specify some requirements and get a configuration using
 the code below:
 
 \iniciocodigo
-@<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-EGLConfig configs[1];
+@<X11: Configure OpenGL ES@>+=
 {
   bool ret;
   int number_of_configs_returned;
@@ -493,37 +552,81 @@ EGLConfig configs[1];
     EGL_NONE
   };
   ret = eglChooseConfig(egl_display, requested_attributes,
-                        configs, 1, &number_of_configs_returned);
+                        &egl_config, 1, &number_of_configs_returned);
   if(ret == EGL_FALSE){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create valid EGL config.\n");
+#endif
     return false;
   }
 }
+@
+\fimcodigo
+
+The struct that stores which configuration we will use is declared
+here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig egl_config;
 #endif
 @
 \fimcodigo
 
-Now that we have a configuration, we can create the OpenGL context. We
-let the user choose which will be the major and minor OpenGL version
-using macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} and
+
+Like how EGL needs its own display struct, it also needs its own
+window struct to store information about the window where it will
+draw. We can initialize such structure from the window struct used by
+the X library:
+
+\iniciocodigo
+@<X11: Configure OpenGL ES@>+=
+egl_window = eglCreateWindowSurface(egl_display, egl_config,
+                                    window, NULL);
+if(egl_window == EGL_NO_SURFACE){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL window.\n");
+#endif
+  return false;
+}
+@
+\fimcodigo
+
+The EGL window is decared here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLSurface egl_window;
+#endif
+@
+\fimcodigo
+
+
+Now we can create the OpenGL context. We let the user choose which
+will be the major and minor OpenGL version using
+macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} and
 \monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. With this information, we create the context:
 
 \iniciocodigo
-@<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+@<X11: Configure OpenGL ES@>+=
 {
   int context_attribs[] = {
     EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
     EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
     EGL_NONE
   };
-  egl_context = eglCreateContext(egl_display, configs[0],
+  egl_context = eglCreateContext(egl_display, egl_config,
                                  EGL_NO_CONTEXT, context_attribs);
   if(egl_context == EGL_NO_CONTEXT){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create EGL context.\n");
+#endif
     return false;
   }
-  //eglMakeCurrent(egl_display, XXX, XXX, egl_context);
+  eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
 }
-#endif
 @
 \fimcodigo
 
@@ -552,30 +655,8 @@ version, by default we choose version 3.0:
 @
 \fimcodigo
 
-XXX
 
-After adjusting all the configurations, we can draw the created
-window. For this, we send a request to the server X and wait in a loop
-until we are notified that the window was created (we asked to be
-notified of this event when we passed
-flag \monoespaco{StructureNotifyMask} to
-function \monoespaco{XSelectInput} previously). The code for this is:
-
-\iniciocodigo
-@<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-XMapWindow(display, window);
-{
-  XEvent e;
-  do{
-    XNextEvent(display, &e);
-  } while(e.type != MapNotify);
-}
-#endif
-@
-\fimcodigo
-
-\subsecao{2.2. Creating a ``Window'' in a Web Browser}
+\subsecao{2.3. Creating a ``Window'' in a Web Browser}
 
 One of the most different environments where our API can be executed
 are web browsers after the code is compiled to Web Assembly. In this
@@ -827,6 +908,11 @@ existing window before trying to close and destroy it.
 bool _Wdestroy_window(void){
   if(already_have_window == false)
     return false;
+  eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
+                 EGL_NO_CONTEXT );
+  eglDestroySurface(egl_display, egl_window);
+  eglDestroyContext(egl_display, egl_context);
+  eglTerminate(egl_display);
   XDestroyWindow(display, window);
   XCloseDisplay(display);
   already_have_window = false;

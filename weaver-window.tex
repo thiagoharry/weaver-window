@@ -112,7 +112,6 @@ como uma biblioteca compartilhada. O conteúdo de \monoespaco{window.h}
 extern "C" {
 #endif
 #include <stdbool.h> // Define tipo 'bool'
-#include <stdio.h>
 @<Define Macros@>
 @<Declarações de Janela@>
 #ifdef __cplusplus
@@ -141,6 +140,23 @@ código futuros, haverá diversos títulos, inclusive um com exatamente o
 nome das partes em vermelho do código acima. Se o título de um trecho
 de código é igual um trecho em vermelho a ser inserido, é ali que tal
 trecho de código deve ser posicionado no processo de compilação.
+
+Como um segundo exemplo de código, também declararemos aqui que quando
+estamos em modo de depuração (ou seja, quando a
+macro \monoespaco{W\_DEBUG\_WINDOW} está definida) iremos precisar das
+declarações de funções de entrada e saída padrão, já que nosso código
+se tornará mais verboso:
+
+\iniciocodigo
+@<Cabeçalhos@>=
+#if defined(W_DEBUG_WINDOW)
+#include <X11/Xlib.h>
+#endif
+@
+\fimcodigo
+
+Note que ainda não informamos onde exatamente o código denominado
+``Cabeçalho'' será colocado. Faremos isso posteriormente.
 
 \subsecao{1.2. Funções de API a serem Definidas}
 
@@ -238,8 +254,12 @@ macros:
 XInitThreads();
 /* Passo 1: */
 display = XOpenDisplay(NULL);
-if(display == NULL)
+if(display == NULL){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Failed to connect to X11 server.\n");
+#endif
   return false; // Não conseguiu se conectar
+}
 /* Passo 2: */
 screen = DefaultScreen(display);
 /* Passo 3: */
@@ -291,7 +311,8 @@ programa nunca sairá de tela cheia e isso não será um problema:
 {
   XSetWindowAttributes attributes;
   attributes.override_redirect = true;
-  XChangeWindowAttributes(display, window, CWOverrideRedirect, &attributes);
+  XChangeWindowAttributes(display, window, CWOverrideRedirect,
+                          &attributes);
 }
 #endif
 #endif
@@ -451,8 +472,44 @@ Se essta macro não estiver definida, deixamos apenas uma string vazia:
 @
 \fimcodigo
 
-Agora vamos inicializar um contexto OpenGL ES. Para isso primeiro
-vamos inserir os cabeçahos apropriados:
+Agora vamos configurar o OpenGL ES. Como isso é suficientemente
+trabalhoso, colocamos os passos de como fazer isso na próxima sessão:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+@<X11: Configurar OpenGL ES@>
+#endif
+@
+\fimcodigo
+
+Uma vez que tenhamos ajustado as configurações de nossa janela,
+podemos enfim começar a desenhar ela. Para isso enviamos uma
+requisição para o servidor X e ficamos esperando em um laço até que
+recebamos o evento de que a janela foi criada (já que pedimos para
+sermos avisados deste evento passando a
+flag \monoespaco{StructureNotifyMask} para a
+função \monoespaco{XSelectInput} anteriormente). O código para isso é:
+
+\iniciocodigo
+@<X11: Criar Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+XMapWindow(display, window);
+{
+  XEvent e;
+  do{
+    XNextEvent(display, &e);
+  } while(e.type != MapNotify);
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.2. Configurando OpenGL ES no X11}
+
+No X11, a interface por meio da qual programamos usando OpenGL ES se
+chama EGL e suas funções e macros são declaradas no seguinte
+cabeçalho:
 
 \iniciocodigo
 @<Cabeçalhos@>+=
@@ -470,12 +527,16 @@ isso é armazenado em uma estrutura chamada \monoespaco{display}. E
 podemos obter ela à partir do \monoespaco{display} da biblioteca X:
 
 \iniciocodigo
-@<X11: Criar Janela@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+@<X11: Configurar OpenGL ES@>+=
 egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
                                     NULL);
-eglInitialize(egl_display, NULL, NULL);
+if(egl_display == EGL_NO_DISPLAY){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL display.\n");
 #endif
+  return false;
+}
+eglInitialize(egl_display, NULL, NULL);
 @
 \fimcodigo
 
@@ -494,9 +555,7 @@ ser criado. Primeiro especificamos uma série de exigências e em
 seguida obtemos da biblioteca uma configuração possível:
 
 \iniciocodigo
-@<X11: Criar Janela@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-EGLConfig configs[1];
+@<X11: Configurar OpenGL ES@>+=
 {
   bool ret;
   int number_of_configs_returned;
@@ -516,37 +575,80 @@ EGLConfig configs[1];
     EGL_NONE
   };
   ret = eglChooseConfig(egl_display, requested_attributes,
-                        configs, 1, &number_of_configs_returned);
+                        &egl_config, 1, &number_of_configs_returned);
   if(ret == EGL_FALSE){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create valid EGL config.\n");
+#endif
     return false;
   }
 }
+@
+\fimcodigo
+
+A estrutura que armazena a configuração que usaremos é declarada aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig egl_config;
 #endif
 @
 \fimcodigo
 
-Uma vez que tenhamos uma configuração, podemos criar o contexto OpenGL
-ES. Deixaremos que o usuário escolha qual a versão do OpenGL por meio
-das macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} e
+
+Assim como o EGL precisa de sua própria estrutura de display, ele
+também precisará de uma estrutura própria para armazenar informações
+sobre a janela na qual iremos desenhar. Podemos inicializar a
+estrutura EGL para a janela à partir da estrutura de janela do X:
+
+\iniciocodigo
+@<X11: Configurar OpenGL ES@>+=
+egl_window = eglCreateWindowSurface(egl_display, egl_config, window,
+                                    NULL);
+if(egl_window == EGL_NO_SURFACE){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL window.\n");
+#endif
+  return false;
+}
+@
+\fimcodigo
+
+A janela EGL é declarada aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLSurface egl_window;
+#endif
+@
+\fimcodigo
+
+
+Agora criaremos o contexto OpenGL ES. Deixaremos que o usuário escolha
+qual a versão do OpenGL por meio das
+macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} e
 \monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. Usando tal informação, o código abaixo cria o contexto:
 
 \iniciocodigo
-@<X11: Criar Janela@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+@<X11: Configurar OpenGL ES@>+=
 {
   int context_attribs[] = {
     EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
     EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
     EGL_NONE
   };
-  egl_context = eglCreateContext(egl_display, configs[0],
+  egl_context = eglCreateContext(egl_display, egl_config,
                                  EGL_NO_CONTEXT, context_attribs);
   if(egl_context == EGL_NO_CONTEXT){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create EGL context.\n");
+#endif
     return false;
   }
-  //eglMakeCurrent(egl_display, XXX, XXX, egl_context);
+  eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
 }
-#endif
 @
 \fimcodigo
 
@@ -574,31 +676,8 @@ OpenGL que iremos usar, por padrão será o 3.0:
 @
 \fimcodigo
 
-XXX
 
-Uma vez que tenhamos ajustado as configurações de nossa janela,
-podemos enfim começar a desenhar ela. Para isso enviamos uma
-requisição para o servidor X e ficamos esperando em um laço até que
-recebamos o evento de que a janela foi criada (já que pedimos para
-sermos avisados deste evento passando a
-flag \monoespaco{StructureNotifyMask} para a
-função \monoespaco{XSelectInput} anteriormente). O código para isso é:
-
-\iniciocodigo
-@<X11: Criar Janela@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-XMapWindow(display, window);
-{
-  XEvent e;
-  do{
-    XNextEvent(display, &e);
-  } while(e.type != MapNotify);
-}
-#endif
-@
-\fimcodigo
-
-\subsecao{2.2. Criando uma ``Janela'' em Navegador Web}
+\subsecao{2.3. Criando uma ``Janela'' em Navegador Web}
 
 Um dos ambientes mais diferentes nos quais nossa API pode executar
 será navegadores de Internet após ter o código compilado para Web
@@ -703,7 +782,7 @@ static SDL_Surface *window;
 @
 \fimcodigo
 
-\subsecao{2.3. Criando uma Janela no Windows}
+\subsecao{2.4. Criando uma Janela no Windows}
 
 Como sempre, para programar algo para o Windows precisamos inserir o
 cabeçalho abaixo:
@@ -857,6 +936,11 @@ realmente existe uma janela a serfechada e destruída.
 bool _Wdestroy_window(void){
   if(already_have_window == false)
     return false;
+  eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
+                 EGL_NO_CONTEXT );
+  eglDestroySurface(egl_display, egl_window);
+  eglDestroyContext(egl_display, egl_context);
+  eglTerminate(egl_display);
   XDestroyWindow(display, window);
   XCloseDisplay(display);
   already_have_window = false;

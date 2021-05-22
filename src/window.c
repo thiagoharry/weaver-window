@@ -1,51 +1,57 @@
-/*40:*/
-#line 920 "weaver-window.tex"
+/*45:*/
+#line 974 "weaver-window_en.tex"
 
 #include "window.h"
-/*4:*/
-#line 203 "weaver-window.tex"
+/*2:*/
+#line 136 "weaver-window_en.tex"
+
+#if defined(W_DEBUG_WINDOW)
+#include <X11/Xlib.h> 
+#endif
+/*:2*//*5:*/
+#line 200 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xlib.h> 
 #endif
-/*:4*//*9:*/
-#line 329 "weaver-window.tex"
+/*:5*//*10:*/
+#line 329 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xatom.h> 
 #endif
-/*:9*//*12:*/
-#line 401 "weaver-window.tex"
+/*:10*//*13:*/
+#line 402 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xutil.h> 
 #endif
-/*:12*//*16:*/
-#line 458 "weaver-window.tex"
+/*:13*//*19:*/
+#line 491 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <EGL/egl.h> 
 #include <GLES2/gl2.h> 
 #include <EGL/eglext.h> 
 #endif
-/*:16*//*24:*/
-#line 621 "weaver-window.tex"
+/*:19*//*29:*/
+#line 677 "weaver-window_en.tex"
 
 #if defined(__EMSCRIPTEN__)
 #include <SDL/SDL.h> 
 #include <emscripten.h> 
 #endif
-/*:24*//*29:*/
-#line 712 "weaver-window.tex"
+/*:29*//*34:*/
+#line 767 "weaver-window_en.tex"
 
 #if defined(_WIN32)
 #include <Windows.h> 
 #endif
-/*:29*/
-#line 922 "weaver-window.tex"
+/*:34*/
+#line 976 "weaver-window_en.tex"
 
-/*6:*/
-#line 263 "weaver-window.tex"
+/*7:*/
+#line 264 "weaver-window_en.tex"
 
 static int screen_resolution_x,screen_resolution_y;
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
@@ -53,59 +59,75 @@ static Display*display= NULL;
 static int screen;
 static Window window;
 #endif
-/*:6*//*18:*/
-#line 485 "weaver-window.tex"
+/*:7*//*21:*/
+#line 523 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLDisplay*egl_display;
 #endif
-/*:18*//*21:*/
-#line 556 "weaver-window.tex"
+/*:21*//*23:*/
+#line 570 "weaver-window_en.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig egl_config;
+#endif
+/*:23*//*25:*/
+#line 599 "weaver-window_en.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLSurface egl_window;
+#endif
+/*:25*//*27:*/
+#line 637 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLContext egl_context;
 #endif
-/*:21*//*28:*/
-#line 699 "weaver-window.tex"
+/*:27*//*33:*/
+#line 755 "weaver-window_en.tex"
 
 #if defined(__EMSCRIPTEN__)
 static SDL_Surface*window;
 #endif
-/*:28*//*32:*/
-#line 759 "weaver-window.tex"
+/*:33*//*37:*/
+#line 811 "weaver-window_en.tex"
 
 #if defined(_WIN32)
 static bool already_created_a_class= false;
 #endif
-/*:32*//*34:*/
-#line 807 "weaver-window.tex"
+/*:37*//*39:*/
+#line 858 "weaver-window_en.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
-/*:34*//*36:*/
-#line 840 "weaver-window.tex"
+/*:39*//*41:*/
+#line 892 "weaver-window_en.tex"
 
 static bool already_have_window= false;
-/*:36*/
-#line 923 "weaver-window.tex"
+/*:41*/
+#line 977 "weaver-window_en.tex"
 
-/*35:*/
-#line 823 "weaver-window.tex"
+/*40:*/
+#line 875 "weaver-window_en.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
 return false;
-/*5:*/
-#line 235 "weaver-window.tex"
+/*6:*/
+#line 232 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 
 XInitThreads();
 
 display= XOpenDisplay(NULL);
-if(display==NULL)
+if(display==NULL){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Failed to connect to X11 server.\n");
+#endif
 return false;
+}
 
 screen= DefaultScreen(display);
 
@@ -120,20 +142,21 @@ screen_resolution_y,
 0,0,
 0);
 #endif
-/*:5*//*7:*/
-#line 288 "weaver-window.tex"
+/*:6*//*8:*/
+#line 289 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_FORCE_FULLSCREEN)
 {
 XSetWindowAttributes attributes;
 attributes.override_redirect= true;
-XChangeWindowAttributes(display,window,CWOverrideRedirect,&attributes);
+XChangeWindowAttributes(display,window,CWOverrideRedirect,
+&attributes);
 }
 #endif
 #endif
-/*:7*//*8:*/
-#line 310 "weaver-window.tex"
+/*:8*//*9:*/
+#line 311 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if !defined(W_WINDOW_NO_FULLSCREEN)
@@ -146,8 +169,8 @@ XA_ATOM,32,PropModeReplace,(unsigned char*)atoms,1);
 }
 #endif
 #endif
-/*:8*//*10:*/
-#line 348 "weaver-window.tex"
+/*:9*//*11:*/
+#line 349 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_NO_FULLSCREEN) && !defined(W_WINDOW_FORCE_FULLSCREEN)
@@ -167,8 +190,8 @@ XResizeWindow(display,window,size_x,size_y);
 }
 #endif
 #endif
-/*:10*//*11:*/
-#line 375 "weaver-window.tex"
+/*:11*//*12:*/
+#line 376 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
@@ -189,33 +212,41 @@ hints.min_height= hints.max_height= screen_resolution_y;
 XSetWMNormalHints(display,window,&hints);
 }
 #endif
-/*:11*//*13:*/
-#line 423 "weaver-window.tex"
+/*:12*//*14:*/
+#line 423 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XSelectInput(display,window,StructureNotifyMask|KeyPressMask|
 KeyReleaseMask|ButtonPressMask|
 ButtonReleaseMask|PointerMotionMask);
 #endif
-/*:13*//*14:*/
-#line 438 "weaver-window.tex"
+/*:14*//*15:*/
+#line 437 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XStoreName(display,window,W_WINDOW_NAME);
 #endif
-/*:14*//*17:*/
-#line 473 "weaver-window.tex"
+/*:15*//*17:*/
+#line 457 "weaver-window_en.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+/*20:*/
+#line 505 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 egl_display= eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR,display,
 NULL);
+if(egl_display==EGL_NO_DISPLAY){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Could not create EGL display.\n");
+#endif
+return false;
+}
 eglInitialize(egl_display,NULL,NULL);
 #endif
-/*:17*//*19:*/
-#line 497 "weaver-window.tex"
+/*:20*//*22:*/
+#line 535 "weaver-window_en.tex"
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-EGLConfig configs[1];
 {
 bool ret;
 int number_of_configs_returned;
@@ -235,32 +266,50 @@ EGL_DEPTH_SIZE,1,
 EGL_NONE
 };
 ret= eglChooseConfig(egl_display,requested_attributes,
-configs,1,&number_of_configs_returned);
+&egl_config,1,&number_of_configs_returned);
 if(ret==EGL_FALSE){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Could not create valid EGL config.\n");
+#endif
 return false;
 }
 }
-#endif
-/*:19*//*20:*/
-#line 534 "weaver-window.tex"
+/*:22*//*24:*/
+#line 584 "weaver-window_en.tex"
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+egl_window= eglCreateWindowSurface(egl_display,egl_config,
+window,NULL);
+if(egl_window==EGL_NO_SURFACE){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Could not create EGL window.\n");
+#endif
+return false;
+}
+/*:24*//*26:*/
+#line 613 "weaver-window_en.tex"
+
 {
 int context_attribs[]= {
 EGL_CONTEXT_MAJOR_VERSION,W_WINDOW_OPENGL_MAJOR_VERSION,
 EGL_CONTEXT_MINOR_VERSION,W_WINDOW_OPENGL_MINOR_VERSION,
 EGL_NONE
 };
-egl_context= eglCreateContext(egl_display,configs[0],
+egl_context= eglCreateContext(egl_display,egl_config,
 EGL_NO_CONTEXT,context_attribs);
 if(egl_context==EGL_NO_CONTEXT){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Could not create EGL context.\n");
+#endif
 return false;
 }
-
+eglMakeCurrent(egl_display,egl_window,egl_window,egl_context);
 }
+/*:26*/
+#line 459 "weaver-window_en.tex"
+
 #endif
-/*:20*//*23:*/
-#line 588 "weaver-window.tex"
+/*:17*//*18:*/
+#line 472 "weaver-window_en.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XMapWindow(display,window);
@@ -271,11 +320,11 @@ XNextEvent(display,&e);
 }while(e.type!=MapNotify);
 }
 #endif
-/*:23*/
-#line 827 "weaver-window.tex"
+/*:18*/
+#line 879 "weaver-window_en.tex"
 
-/*25:*/
-#line 633 "weaver-window.tex"
+/*30:*/
+#line 690 "weaver-window_en.tex"
 
 #if defined(__EMSCRIPTEN__)
 screen_resolution_x= EM_ASM_INT({
@@ -285,14 +334,14 @@ screen_resolution_y= EM_ASM_INT({
 return window.screen.height*window.devicePixelRatio;
 });
 #endif
-/*:25*//*26:*/
-#line 650 "weaver-window.tex"
+/*:30*//*31:*/
+#line 706 "weaver-window_en.tex"
 
 #if defined(__EMSCRIPTEN__)
 SDL_Init(SDL_INIT_VIDEO);
 #endif
-/*:26*//*27:*/
-#line 667 "weaver-window.tex"
+/*:31*//*32:*/
+#line 723 "weaver-window_en.tex"
 
 #if defined(__EMSCRIPTEN__)
 {
@@ -319,18 +368,18 @@ if(window==NULL)
 return false;
 }
 #endif
-/*:27*/
-#line 828 "weaver-window.tex"
+/*:32*/
+#line 880 "weaver-window_en.tex"
 
-/*30:*/
-#line 723 "weaver-window.tex"
+/*35:*/
+#line 777 "weaver-window_en.tex"
 
 #if defined(_WIN32)
 screen_resolution_x= GetSystemMetrics(SM_CXSCREEN);
 screen_resolution_y= GetSystemMetrics(SM_CYSCREEN);
 #endif
-/*:30*//*31:*/
-#line 740 "weaver-window.tex"
+/*:35*//*36:*/
+#line 793 "weaver-window_en.tex"
 
 #if defined(_WIN32)
 if(!already_created_a_class){
@@ -340,11 +389,10 @@ windows_class.lpfnWndProc= DefWindowProc;
 windows_class.hInstance= GetModuleHandle(NULL);
 windows_class.lpszClassName= class_name;
 RegisterClass(&window_class);
-already_created_a_class= true;
 }
 #endif
-/*:31*//*33:*/
-#line 770 "weaver-window.tex"
+/*:36*//*38:*/
+#line 822 "weaver-window_en.tex"
 
 #if defined(_WIN32)
 {
@@ -375,27 +423,30 @@ GetModuleHandle(NULL),
 NULL);
 }
 #endif
-/*:33*/
-#line 829 "weaver-window.tex"
+/*:38*/
+#line 881 "weaver-window_en.tex"
 
 already_have_window= true;
 return true;
 }
-/*:35*//*37:*/
-#line 855 "weaver-window.tex"
+/*:40*//*42:*/
+#line 907 "weaver-window_en.tex"
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
 if(already_have_window==false)
 return false;
+eglMakeCurrent(egl_display,EGL_NO_SURFACE,EGL_NO_SURFACE,
+EGL_NO_CONTEXT);
+eglDestroySurface(egl_display,egl_window);
+eglDestroyContext(egl_display,egl_context);
+eglTerminate(egl_display);
 XDestroyWindow(display,window);
 XCloseDisplay(display);
 already_have_window= false;
 return true;
 }
-#endif
-/*:37*//*38:*/
-#line 877 "weaver-window.tex"
+/*:42*//*43:*/
+#line 931 "weaver-window_en.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -410,8 +461,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:38*//*39:*/
-#line 900 "weaver-window.tex"
+/*:43*//*44:*/
+#line 954 "weaver-window_en.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -422,7 +473,7 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:39*/
-#line 924 "weaver-window.tex"
+/*:44*/
+#line 978 "weaver-window_en.tex"
 
-/*:40*/
+/*:45*/
