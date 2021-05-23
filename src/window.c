@@ -1,5 +1,5 @@
-/*45:*/
-#line 1011 "weaver-window.tex"
+/*46:*/
+#line 1028 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -49,7 +49,7 @@
 #include <Windows.h> 
 #endif
 /*:34*/
-#line 1013 "weaver-window.tex"
+#line 1030 "weaver-window.tex"
 
 /*7:*/
 #line 283 "weaver-window.tex"
@@ -97,20 +97,20 @@ static SDL_Surface*window;
 static bool already_created_a_class= false;
 #endif
 /*:37*//*39:*/
-#line 893 "weaver-window.tex"
+#line 899 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
-/*:39*//*41:*/
-#line 926 "weaver-window.tex"
+/*:39*//*42:*/
+#line 943 "weaver-window.tex"
 
 static bool already_have_window= false;
-/*:41*/
-#line 1014 "weaver-window.tex"
+/*:42*/
+#line 1031 "weaver-window.tex"
 
-/*40:*/
-#line 909 "weaver-window.tex"
+/*41:*/
+#line 926 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -320,7 +320,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:18*/
-#line 913 "weaver-window.tex"
+#line 930 "weaver-window.tex"
 
 /*30:*/
 #line 713 "weaver-window.tex"
@@ -374,7 +374,7 @@ return false;
 }
 #endif
 /*:32*/
-#line 914 "weaver-window.tex"
+#line 931 "weaver-window.tex"
 
 /*35:*/
 #line 809 "weaver-window.tex"
@@ -388,12 +388,12 @@ screen_resolution_y= GetSystemMetrics(SM_CYSCREEN);
 
 #if defined(_WIN32)
 if(!already_created_a_class){
-const wchar_t class_name[]= L"Weaver Window";
-WNDCLASS windows_class= {};
+const LPCSTR class_name= (LPCSTR)L"Weaver Window";
+WNDCLASS windows_class;
 windows_class.lpfnWndProc= DefWindowProc;
 windows_class.hInstance= GetModuleHandle(NULL);
 windows_class.lpszClassName= class_name;
-RegisterClass(&window_class);
+RegisterClass(&windows_class);
 already_created_a_class= true;
 }
 #endif
@@ -404,10 +404,10 @@ already_created_a_class= true;
 {
 int size_x,size_y;
 DWORD fullscreen_flag= WS_POPUP;
-CRect size;
+RECT size;
 size_x= screen_resolution_x;
 size_y= screen_resolution_y;
-SystemParametersInfoA(SPI_GETWORKAREA,NULL,&size,NULL);
+SystemParametersInfoA(SPI_GETWORKAREA,0,&size,0);
 #if !defined(W_WINDOW_FORCE_FULLSCREEN) && \
     defined(W_WINDOW_NO_FULLSCREEN)
 size_x= size.left-size.right;
@@ -427,16 +427,28 @@ size.left,size.top,size_x,size_y,
 NULL,NULL,
 GetModuleHandle(NULL),
 NULL);
+if(window==NULL){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Failed creating window.\n");
+#endif
+return false;
+}
 }
 #endif
-/*:38*/
-#line 915 "weaver-window.tex"
+/*:38*//*40:*/
+#line 910 "weaver-window.tex"
+
+#if defined(_WIN32)
+ShowWindow(window,SW_MAXIMIZE);
+#endif
+/*:40*/
+#line 932 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
-/*:40*//*42:*/
-#line 941 "weaver-window.tex"
+/*:41*//*43:*/
+#line 958 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -453,8 +465,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:42*//*43:*/
-#line 968 "weaver-window.tex"
+/*:43*//*44:*/
+#line 985 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -469,8 +481,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:43*//*44:*/
-#line 991 "weaver-window.tex"
+/*:44*//*45:*/
+#line 1008 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -481,7 +493,7 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:44*/
-#line 1015 "weaver-window.tex"
-
 /*:45*/
+#line 1032 "weaver-window.tex"
+
+/*:46*/
