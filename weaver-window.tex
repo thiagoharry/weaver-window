@@ -826,12 +826,12 @@ caso, o padrão \monoespaco{DefWindowProc}).
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
 if(!already_created_a_class){
-  const wchar_t class_name[]  = L"Weaver Window";
-  WNDCLASS windows_class = {};
+  const LPCSTR class_name = (LPCSTR) L"Weaver Window";
+  WNDCLASS windows_class;
   windows_class.lpfnWndProc = DefWindowProc;
   windows_class.hInstance = GetModuleHandle(NULL);
   windows_class.lpszClassName = class_name;
-  RegisterClass(&window_class);
+  RegisterClass(&windows_class);
   already_created_a_class = true;
 }
 #endif
@@ -858,10 +858,10 @@ abaixo:
 {
   int size_x, size_y;
   DWORD fullscreen_flag = WS_POPUP;
-  CRect size;
+  RECT size;
   size_x = screen_resolution_x;
   size_y = screen_resolution_y;
-  SystemParametersInfoA(SPI_GETWORKAREA, NULL, &size, NULL);
+  SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
 #if !defined(W_WINDOW_FORCE_FULLSCREEN) && \
     defined(W_WINDOW_NO_FULLSCREEN)
   size_x = size.left - size.right;
@@ -881,6 +881,12 @@ abaixo:
                           NULL, NULL,
                           GetModuleHandle(NULL),
                           NULL);
+  if(window == NULL){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed creating window.\n");
+#endif
+    return false;
+  }
 }
 #endif
 @
@@ -893,6 +899,17 @@ variável:
 @<Variáveis Locais@>+=
 #if defined(_WIN32)
 static HWND window;
+#endif
+@
+\fimcodigo
+
+Uma vez que a janela foi criada com sucesso, precisamos pedir para que
+o sistema passe a exibir a janela:
+
+\iniciocodigo
+@<Windows: Criar Janela@>+=
+#if defined(_WIN32)
+ShowWindow(window, SW_MAXIMIZE);
 #endif
 @
 \fimcodigo

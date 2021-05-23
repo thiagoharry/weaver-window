@@ -1,11 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
+#if !defined(_WIN32)
 #include <unistd.h>
+#else
+#include <Windows.h>
+#endif
 #include <stdbool.h>
 
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #define SLEEP(x) emscripten_sleep(x * 1000)
+#elif defined(_WIN32)
+#define SLEEP(x) Sleep(x * 1000)
 #else
 #define SLEEP(x) sleep(x)
 #endif
