@@ -699,6 +699,7 @@ Primeiro vamos inserir o cabeçalho do Emscripten com os cabeçalhos SDL:
 \iniciocodigo
 @<Cabeçalhos@>+=
 #if defined(__EMSCRIPTEN__)
+#include <GLES2/gl2.h>
 #include <SDL/SDL.h>
 #include <emscripten.h>
 #endif
@@ -759,6 +760,12 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
   size_y = W_WINDOW_RESOLUtION_Y;
 #endif
 #endif
+  // Ajusta versão do OpenGL
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+                     W_WINDOW_OPENGL_MAJOR_VERSION);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+                     W_WINDOW_OPENGL_MINOR_VERSION);
+  // Garante que o canvas estará visível
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "initial";

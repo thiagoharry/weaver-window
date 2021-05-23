@@ -1,33 +1,33 @@
 /*45:*/
-#line 974 "weaver-window_en.tex"
+#line 1011 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
-#line 136 "weaver-window_en.tex"
+#line 151 "weaver-window.tex"
 
 #if defined(W_DEBUG_WINDOW)
 #include <X11/Xlib.h> 
 #endif
 /*:2*//*5:*/
-#line 200 "weaver-window_en.tex"
+#line 219 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xlib.h> 
 #endif
 /*:5*//*10:*/
-#line 329 "weaver-window_en.tex"
+#line 350 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xatom.h> 
 #endif
 /*:10*//*13:*/
-#line 402 "weaver-window_en.tex"
+#line 422 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xutil.h> 
 #endif
 /*:13*//*19:*/
-#line 491 "weaver-window_en.tex"
+#line 515 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <EGL/egl.h> 
@@ -35,23 +35,24 @@
 #include <EGL/eglext.h> 
 #endif
 /*:19*//*29:*/
-#line 677 "weaver-window_en.tex"
+#line 700 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
+#include <GLES2/gl2.h> 
 #include <SDL/SDL.h> 
 #include <emscripten.h> 
 #endif
 /*:29*//*34:*/
-#line 767 "weaver-window_en.tex"
+#line 798 "weaver-window.tex"
 
 #if defined(_WIN32)
 #include <Windows.h> 
 #endif
 /*:34*/
-#line 976 "weaver-window_en.tex"
+#line 1013 "weaver-window.tex"
 
 /*7:*/
-#line 264 "weaver-window_en.tex"
+#line 283 "weaver-window.tex"
 
 static int screen_resolution_x,screen_resolution_y;
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
@@ -60,62 +61,62 @@ static int screen;
 static Window window;
 #endif
 /*:7*//*21:*/
-#line 523 "weaver-window_en.tex"
+#line 546 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLDisplay*egl_display;
 #endif
 /*:21*//*23:*/
-#line 570 "weaver-window_en.tex"
+#line 592 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 EGLConfig egl_config;
 #endif
 /*:23*//*25:*/
-#line 599 "weaver-window_en.tex"
+#line 621 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLSurface egl_window;
 #endif
 /*:25*//*27:*/
-#line 637 "weaver-window_en.tex"
+#line 658 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLContext egl_context;
 #endif
 /*:27*//*33:*/
-#line 755 "weaver-window_en.tex"
+#line 785 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 static SDL_Surface*window;
 #endif
 /*:33*//*37:*/
-#line 811 "weaver-window_en.tex"
+#line 845 "weaver-window.tex"
 
 #if defined(_WIN32)
 static bool already_created_a_class= false;
 #endif
 /*:37*//*39:*/
-#line 858 "weaver-window_en.tex"
+#line 893 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
 /*:39*//*41:*/
-#line 892 "weaver-window_en.tex"
+#line 926 "weaver-window.tex"
 
 static bool already_have_window= false;
 /*:41*/
-#line 977 "weaver-window_en.tex"
+#line 1014 "weaver-window.tex"
 
 /*40:*/
-#line 875 "weaver-window_en.tex"
+#line 909 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
 return false;
 /*6:*/
-#line 232 "weaver-window_en.tex"
+#line 251 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 
@@ -143,7 +144,7 @@ screen_resolution_y,
 0);
 #endif
 /*:6*//*8:*/
-#line 289 "weaver-window_en.tex"
+#line 308 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_FORCE_FULLSCREEN)
@@ -156,7 +157,7 @@ XChangeWindowAttributes(display,window,CWOverrideRedirect,
 #endif
 #endif
 /*:8*//*9:*/
-#line 311 "weaver-window_en.tex"
+#line 331 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if !defined(W_WINDOW_NO_FULLSCREEN)
@@ -170,7 +171,7 @@ XA_ATOM,32,PropModeReplace,(unsigned char*)atoms,1);
 #endif
 #endif
 /*:9*//*11:*/
-#line 349 "weaver-window_en.tex"
+#line 369 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_NO_FULLSCREEN) && !defined(W_WINDOW_FORCE_FULLSCREEN)
@@ -191,7 +192,7 @@ XResizeWindow(display,window,size_x,size_y);
 #endif
 #endif
 /*:11*//*12:*/
-#line 376 "weaver-window_en.tex"
+#line 396 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
@@ -213,7 +214,7 @@ XSetWMNormalHints(display,window,&hints);
 }
 #endif
 /*:12*//*14:*/
-#line 423 "weaver-window_en.tex"
+#line 444 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XSelectInput(display,window,StructureNotifyMask|KeyPressMask|
@@ -221,19 +222,18 @@ KeyReleaseMask|ButtonPressMask|
 ButtonReleaseMask|PointerMotionMask);
 #endif
 /*:14*//*15:*/
-#line 437 "weaver-window_en.tex"
+#line 459 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XStoreName(display,window,W_WINDOW_NAME);
 #endif
 /*:15*//*17:*/
-#line 457 "weaver-window_en.tex"
+#line 479 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 /*20:*/
-#line 505 "weaver-window_en.tex"
+#line 530 "weaver-window.tex"
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 egl_display= eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR,display,
 NULL);
 if(egl_display==EGL_NO_DISPLAY){
@@ -243,9 +243,8 @@ fprintf(stderr,"ERROR: Could not create EGL display.\n");
 return false;
 }
 eglInitialize(egl_display,NULL,NULL);
-#endif
 /*:20*//*22:*/
-#line 535 "weaver-window_en.tex"
+#line 558 "weaver-window.tex"
 
 {
 bool ret;
@@ -275,10 +274,10 @@ return false;
 }
 }
 /*:22*//*24:*/
-#line 584 "weaver-window_en.tex"
+#line 606 "weaver-window.tex"
 
-egl_window= eglCreateWindowSurface(egl_display,egl_config,
-window,NULL);
+egl_window= eglCreateWindowSurface(egl_display,egl_config,window,
+NULL);
 if(egl_window==EGL_NO_SURFACE){
 #if defined(W_DEBUG_WINDOW)
 fprintf(stderr,"ERROR: Could not create EGL window.\n");
@@ -286,7 +285,7 @@ fprintf(stderr,"ERROR: Could not create EGL window.\n");
 return false;
 }
 /*:24*//*26:*/
-#line 613 "weaver-window_en.tex"
+#line 635 "weaver-window.tex"
 
 {
 int context_attribs[]= {
@@ -305,11 +304,11 @@ return false;
 eglMakeCurrent(egl_display,egl_window,egl_window,egl_context);
 }
 /*:26*/
-#line 459 "weaver-window_en.tex"
+#line 481 "weaver-window.tex"
 
 #endif
 /*:17*//*18:*/
-#line 472 "weaver-window_en.tex"
+#line 495 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XMapWindow(display,window);
@@ -321,10 +320,10 @@ XNextEvent(display,&e);
 }
 #endif
 /*:18*/
-#line 879 "weaver-window_en.tex"
+#line 913 "weaver-window.tex"
 
 /*30:*/
-#line 690 "weaver-window_en.tex"
+#line 713 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 screen_resolution_x= EM_ASM_INT({
@@ -335,13 +334,13 @@ return window.screen.height*window.devicePixelRatio;
 });
 #endif
 /*:30*//*31:*/
-#line 706 "weaver-window_en.tex"
+#line 730 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 SDL_Init(SDL_INIT_VIDEO);
 #endif
 /*:31*//*32:*/
-#line 723 "weaver-window_en.tex"
+#line 747 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 {
@@ -358,6 +357,12 @@ size_x= W_WINDOW_RESOLUtION_X;
 size_y= W_WINDOW_RESOLUtION_Y;
 #endif
 #endif
+
+SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+W_WINDOW_OPENGL_MAJOR_VERSION);
+SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+W_WINDOW_OPENGL_MINOR_VERSION);
+
 EM_ASM(
 var el= document.getElementById("canvas");
 el.style.display= "initial";
@@ -369,17 +374,17 @@ return false;
 }
 #endif
 /*:32*/
-#line 880 "weaver-window_en.tex"
+#line 914 "weaver-window.tex"
 
 /*35:*/
-#line 777 "weaver-window_en.tex"
+#line 809 "weaver-window.tex"
 
 #if defined(_WIN32)
 screen_resolution_x= GetSystemMetrics(SM_CXSCREEN);
 screen_resolution_y= GetSystemMetrics(SM_CYSCREEN);
 #endif
 /*:35*//*36:*/
-#line 793 "weaver-window_en.tex"
+#line 826 "weaver-window.tex"
 
 #if defined(_WIN32)
 if(!already_created_a_class){
@@ -389,10 +394,11 @@ windows_class.lpfnWndProc= DefWindowProc;
 windows_class.hInstance= GetModuleHandle(NULL);
 windows_class.lpszClassName= class_name;
 RegisterClass(&window_class);
+already_created_a_class= true;
 }
 #endif
 /*:36*//*38:*/
-#line 822 "weaver-window_en.tex"
+#line 856 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -424,14 +430,15 @@ NULL);
 }
 #endif
 /*:38*/
-#line 881 "weaver-window_en.tex"
+#line 915 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
 /*:40*//*42:*/
-#line 907 "weaver-window_en.tex"
+#line 941 "weaver-window.tex"
 
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
 if(already_have_window==false)
 return false;
@@ -445,8 +452,9 @@ XCloseDisplay(display);
 already_have_window= false;
 return true;
 }
+#endif
 /*:42*//*43:*/
-#line 931 "weaver-window_en.tex"
+#line 968 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -462,7 +470,7 @@ return true;
 }
 #endif
 /*:43*//*44:*/
-#line 954 "weaver-window_en.tex"
+#line 991 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -474,6 +482,6 @@ return true;
 }
 #endif
 /*:44*/
-#line 978 "weaver-window_en.tex"
+#line 1015 "weaver-window.tex"
 
 /*:45*/

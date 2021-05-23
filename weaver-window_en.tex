@@ -676,6 +676,7 @@ First we include the Emscripten and SDL headers:
 \iniciocodigo
 @<Headers@>+=
 #if defined(__EMSCRIPTEN__)
+#include <GLES2/gl2.h>
 #include <SDL/SDL.h>
 #include <emscripten.h>
 #endif
@@ -736,6 +737,12 @@ when we execute the function to close the window).
   size_y = W_WINDOW_RESOLUtION_Y;
 #endif
 #endif
+  // Set OpenGL version
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+                     W_WINDOW_OPENGL_MAJOR_VERSION);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+                     W_WINDOW_OPENGL_MINOR_VERSION);
+  // Ensure that the canvas is visible
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "initial";
@@ -759,7 +766,7 @@ static SDL_Surface *window;
 @
 \fimcodigo
 
-\subsecao{2.3. Creating a Windows in (Microsoft) Windows}
+\subsecao{2.4. Creating a Windows in (Microsoft) Windows}
 
 As always, to program in Windows we need the following header:
 
@@ -905,6 +912,7 @@ existing window before trying to close and destroy it.
 
 \iniciocodigo
 @<Functions@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
     return false;
@@ -918,6 +926,7 @@ bool _Wdestroy_window(void){
   already_have_window = false;
   return true;
 }
+#endif
 @
 \fimcodigo
 

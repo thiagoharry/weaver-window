@@ -3,6 +3,13 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#define SLEEP(x) emscripten_sleep(x * 1000)
+#else
+#define SLEEP(x) sleep(x)
+#endif
+
 #include "../src/window.h"
 
 int numero_de_testes = 0, acertos = 0, falhas = 0;
@@ -44,7 +51,7 @@ void assert(char *descricao, bool valor){
 void test_create_destroy_window(void){
   bool ret;
   ret = _Wcreate_window();
-  //sleep(1);
+  SLEEP(1);
   assert("Creating window", ret);
   ret = _Wcreate_window();
   assert("Not creating window if it exists", ret == false);
