@@ -850,11 +850,11 @@ default \monoespaco{DefWindowProc}).
 #if defined(_WIN32)
 if(!already_created_a_class){
   ATOM ret;
-  const LPCSTR class_name  = (LPCSTR) L"Weaver Window";
-  WNDCLASS windows_class;
-  windows_class.lpfnWndProc = WindowProc;
-  windows_class.hInstance = GetModuleHandle(NULL);
-  windows_class.lpszClassName = class_name;
+  WNDCLASS window_class;
+  memset(&window_class, 0, sizeof(WNDCLASS));
+  window_class.lpfnWndProc = WindowProc;
+  window_class.hInstance = GetModuleHandle(NULL);
+  window_class.lpszClassName = class_name;
   ret = RegisterClass(&windows_class);
   if(ret == 0){
 #if defined(W_DEBUG_WINDOW)
@@ -865,6 +865,19 @@ if(!already_created_a_class){
   }
   already_created_a_class = true;
 }
+#endif
+@
+\fimcodigo
+
+For convenince, we used the function \monoespaco{memset} to initialize
+the struct of our window class, as the majority of its elements can be
+set to zero to keep the default value. Because of this, we insert the
+following header:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(_WIN32)
+#include <string.h>
 #endif
 @
 \fimcodigo
@@ -905,7 +918,7 @@ code below:
   size_y = W_WINDOW_RESOLUTION_Y;
 #endif
 #endif
-  window = CreateWindowEx(0, "Weaver Window",
+  window = CreateWindowEx(0, class_name,
                           W_WINDOW_NAME,
                           fullscreen_flag | WS_VISIBLE,
                           size.left, size.top, size_x, size_y,
@@ -914,7 +927,8 @@ code below:
                           NULL);
   if(window == NULL){
 #if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Failed creating window.\n");
+    fprintf(stderr, "ERROR: Failed creating window. SysCode: %d\n",
+            GetLastError());
 #endif
     return false;
   }

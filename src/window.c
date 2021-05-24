@@ -1,5 +1,5 @@
-/*49:*/
-#line 1087 "weaver-window.tex"
+/*50:*/
+#line 1101 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -48,8 +48,14 @@
 #if defined(_WIN32)
 #include <Windows.h> 
 #endif
-/*:34*/
-#line 1089 "weaver-window.tex"
+/*:34*//*40:*/
+#line 906 "weaver-window.tex"
+
+#if defined(_WIN32)
+#include <string.h> 
+#endif
+/*:40*/
+#line 1103 "weaver-window.tex"
 
 /*7:*/
 #line 283 "weaver-window.tex"
@@ -96,24 +102,24 @@ static SDL_Surface*window;
 #if defined(_WIN32)
 static const char*class_name= "WeaverWindow";
 #endif
-/*:36*//*40:*/
-#line 904 "weaver-window.tex"
+/*:36*//*41:*/
+#line 917 "weaver-window.tex"
 
 #if defined(_WIN32)
 static bool already_created_a_class= false;
 #endif
-/*:40*//*42:*/
-#line 958 "weaver-window.tex"
+/*:41*//*43:*/
+#line 972 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
-/*:42*//*45:*/
-#line 1002 "weaver-window.tex"
+/*:43*//*46:*/
+#line 1016 "weaver-window.tex"
 
 static bool already_have_window= false;
-/*:45*/
-#line 1090 "weaver-window.tex"
+/*:46*/
+#line 1104 "weaver-window.tex"
 
 /*37:*/
 #line 839 "weaver-window.tex"
@@ -136,8 +142,8 @@ return DefWindowProc(window,msg,param1,param2);
 }
 }
 #endif
-/*:37*//*44:*/
-#line 985 "weaver-window.tex"
+/*:37*//*45:*/
+#line 999 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -347,7 +353,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:18*/
-#line 989 "weaver-window.tex"
+#line 1003 "weaver-window.tex"
 
 /*30:*/
 #line 713 "weaver-window.tex"
@@ -401,7 +407,7 @@ return false;
 }
 #endif
 /*:32*/
-#line 990 "weaver-window.tex"
+#line 1004 "weaver-window.tex"
 
 /*35:*/
 #line 809 "weaver-window.tex"
@@ -416,11 +422,11 @@ screen_resolution_y= GetSystemMetrics(SM_CYSCREEN);
 #if defined(_WIN32)
 if(!already_created_a_class){
 ATOM ret;
-const LPCSTR class_name= (LPCSTR)L"Weaver Window";
-WNDCLASS windows_class;
-windows_class.lpfnWndProc= WindowProc;
-windows_class.hInstance= GetModuleHandle(NULL);
-windows_class.lpszClassName= class_name;
+WNDCLASS window_class;
+memset(&window_class,0,sizeof(WNDCLASS));
+window_class.lpfnWndProc= WindowProc;
+window_class.hInstance= GetModuleHandle(NULL);
+window_class.lpszClassName= class_name;
 ret= RegisterClass(&windows_class);
 if(ret==0){
 #if defined(W_DEBUG_WINDOW)
@@ -432,8 +438,8 @@ return false;
 already_created_a_class= true;
 }
 #endif
-/*:39*//*41:*/
-#line 915 "weaver-window.tex"
+/*:39*//*42:*/
+#line 928 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -455,7 +461,7 @@ size_x= W_WINDOW_RESOLUTION_X;
 size_y= W_WINDOW_RESOLUTION_Y;
 #endif
 #endif
-window= CreateWindowEx(0,"Weaver Window",
+window= CreateWindowEx(0,class_name,
 W_WINDOW_NAME,
 fullscreen_flag|WS_VISIBLE,
 size.left,size.top,size_x,size_y,
@@ -464,26 +470,27 @@ GetModuleHandle(NULL),
 NULL);
 if(window==NULL){
 #if defined(W_DEBUG_WINDOW)
-fprintf(stderr,"ERROR: Failed creating window.\n");
+fprintf(stderr,"ERROR: Failed creating window. SysCode: %d\n",
+GetLastError());
 #endif
 return false;
 }
 }
 #endif
-/*:41*//*43:*/
-#line 969 "weaver-window.tex"
+/*:42*//*44:*/
+#line 983 "weaver-window.tex"
 
 #if defined(_WIN32)
 ShowWindow(window,SW_MAXIMIZE);
 #endif
-/*:43*/
-#line 991 "weaver-window.tex"
+/*:44*/
+#line 1005 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
-/*:44*//*46:*/
-#line 1017 "weaver-window.tex"
+/*:45*//*47:*/
+#line 1031 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -500,8 +507,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:46*//*47:*/
-#line 1044 "weaver-window.tex"
+/*:47*//*48:*/
+#line 1058 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -516,8 +523,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:47*//*48:*/
-#line 1067 "weaver-window.tex"
+/*:48*//*49:*/
+#line 1081 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -528,7 +535,7 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:48*/
-#line 1091 "weaver-window.tex"
-
 /*:49*/
+#line 1105 "weaver-window.tex"
+
+/*:50*/
