@@ -150,7 +150,7 @@ se tornará mais verboso:
 \iniciocodigo
 @<Cabeçalhos@>=
 #if defined(W_DEBUG_WINDOW)
-#include <X11/Xlib.h>
+#include <stdio.h>
 #endif
 @
 \fimcodigo
@@ -814,6 +814,57 @@ screen_resolution_y = GetSystemMetrics(SM_CYSCREEN);
 @
 \fimcodigo
 
+A próxima coisa a fazer é definir uma classe para a janela que iremos
+criar. Primeiro vamos precisar dar um nome arbitrário para ela no
+formato de uma string qualquer. Iremos chamá-la de ``WeaverWindow'':
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if defined(_WIN32)
+static const char *class_name = "WeaverWindow";
+#endif
+@
+\fimcodigo
+
+Agora precisamos para nossa classe uma função que irá tratar todos os
+sinais e mensagens enviada para nossa janela. Mensagens são enviadas e
+devem ser tratadas quando a janela é criada, destruída,
+redimencionada, exposta na tela, etc. Na dúvida sempre podemos
+repassar cada mensagem para a função
+padrão \monoespaco{DefWindowProc}, mas algumas coisas nós mesmos
+teremos que definir. O formato da função que tratará as mensagens
+recebidas pela janela é:
+
+\iniciocodigo
+@<Funções@>+=
+#if defined(_WIN32)
+LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2){
+  switch(msg){
+    @<Windows: Trata Mensagens para Janela@>
+    default:
+      return DefWindowProc(window, msg, param1, param2);
+  }
+}
+#endif
+@
+\fimcodigo
+
+Mas em quais casos iremos tratar as mensagens ao invés de apenas
+passá-las adiante para o \monoespaco{DefWindowProc}? Um dos casos é
+quando a janela receber uma mensagem para ser fechada:
+
+\iniciocodigo
+@<Windows: Trata Mensagens para Janela@>=
+case WM_DESTROY:
+  PostQuitMessage(0);
+  return 0;
+  break;
+@
+\fimcodigo
+
+XXX
+
+
 Agora temos que criar uma classe para a janela que iremos criar. Ela
 deve apenas ter um nome único que não conflite com nomes padrão usados
 pelo sistema. Também temos que passar na criação da classe um
@@ -826,12 +877,20 @@ caso, o padrão \monoespaco{DefWindowProc}).
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
 if(!already_created_a_class){
+  ATOM ret;
   const LPCSTR class_name = (LPCSTR) L"Weaver Window";
   WNDCLASS windows_class;
-  windows_class.lpfnWndProc = DefWindowProc;
+  windows_class.lpfnWndProc = WindowProc;
   windows_class.hInstance = GetModuleHandle(NULL);
   windows_class.lpszClassName = class_name;
-  RegisterClass(&windows_class);
+  ret = RegisterClass(&windows_class);
+  if(ret == 0){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to register Window Class. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
   already_created_a_class = true;
 }
 #endif

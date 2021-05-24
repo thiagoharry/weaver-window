@@ -135,7 +135,7 @@ our code will be more verbose:
 \iniciocodigo
 @<Headers@>=
 #if defined(W_DEBUG_WINDOW)
-#include <X11/Xlib.h>
+#include <stdio.h>
 #endif
 @
 \fimcodigo
@@ -789,6 +789,55 @@ screen_resolution_y = GetSystemMetrics(SM_CYSCREEN);
 @
 \fimcodigo
 
+Next we need to define a class for our window. First we need to give
+it an arbitrary name in a string format. We will call it
+``WeaverWindow'':
+
+\iniciocodigo
+@<Local Variables@>+=
+#if defined(_WIN32)
+static const char *class_name = "WeaverWindow";
+#endif
+@
+\fimcodigo
+
+Now our class need a function to handle signals and messages sent to
+the window. Such messages are sent when the window is created,
+destroyed, resized, exposed, for example. We always can redirect the
+messages to function \monoespaco{DefWindowProc} to deal with them
+using default actions, but for some messages it is best to define
+ourselves the correct action to be taken. The function format is:
+
+\iniciocodigo
+@<Functions@>+=
+#if defined(_WIN32)
+LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2){
+  switch(msg){
+    @<Windows: Deal with Window Messages@>
+    default:
+      return DefWindowProc(window, msg, param1, param2);
+  }
+}
+#endif
+@
+\fimcodigo
+
+But when will we deal with the received message instead of just
+passing it to \monoespaco{DefWindowProc}? One of the cases is when the
+window get a message warning that it is being closed:
+
+\iniciocodigo
+@<Windows: Deal with Window Messages@>=
+case WM_DESTROY:
+  PostQuitMessage(0);
+  return 0;
+  break;
+@
+\fimcodigo
+
+
+XXX
+
 Now we need to create a class for our window. The class should have an
 unique non-conflicting name. We also pass an identifier with the
 instance of our program (that we get
@@ -800,12 +849,21 @@ default \monoespaco{DefWindowProc}).
 @<Windows: Create Window@>+=
 #if defined(_WIN32)
 if(!already_created_a_class){
+  ATOM ret;
   const LPCSTR class_name  = (LPCSTR) L"Weaver Window";
   WNDCLASS windows_class;
-  windows_class.lpfnWndProc = DefWindowProc;
+  windows_class.lpfnWndProc = WindowProc;
   windows_class.hInstance = GetModuleHandle(NULL);
   windows_class.lpszClassName = class_name;
-  RegisterClass(&windows_class);
+  ret = RegisterClass(&windows_class);
+  if(ret == 0){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to register Window Class. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+  already_created_a_class = true;
 }
 #endif
 @
