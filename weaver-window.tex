@@ -883,7 +883,8 @@ if(!already_created_a_class){
   window_class.lpfnWndProc = WindowProc;
   window_class.hInstance = GetModuleHandle(NULL);
   window_class.lpszClassName = class_name;
-  ret = RegisterClass(&windows_class);
+  window_class.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // Janela preta
+  ret = RegisterClass(&window_class);
   if(ret == 0){
 #if defined(W_DEBUG_WINDOW)
     fprintf(stderr, "ERROR: Failed to register Window Class. SysError: %d\n",
@@ -977,12 +978,19 @@ static HWND window;
 \fimcodigo
 
 Uma vez que a janela foi criada com sucesso, precisamos pedir para que
-o sistema passe a exibir a janela:
+o sistema passe a exibir a janela e esperamos em um laço até o sistema
+avisar por meio de uma mensagem que a janela foi criada:
 
 \iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
-ShowWindow(window, SW_MAXIMIZE);
+{
+  MSG msg;
+  ShowWindow(window, SW_MAXIMIZE);
+  do{
+    GetMessage(&msg, NULL, 0, 0);
+  } while(msg.message == WM_CREATE);
+}
 #endif
 @
 \fimcodigo

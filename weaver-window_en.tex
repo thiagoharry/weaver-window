@@ -855,7 +855,8 @@ if(!already_created_a_class){
   window_class.lpfnWndProc = WindowProc;
   window_class.hInstance = GetModuleHandle(NULL);
   window_class.lpszClassName = class_name;
-  ret = RegisterClass(&windows_class);
+  window_class.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // Black window
+  ret = RegisterClass(&window_class);
   if(ret == 0){
 #if defined(W_DEBUG_WINDOW)
     fprintf(stderr, "ERROR: Failed to register Window Class. SysError: %d\n",
@@ -947,16 +948,23 @@ static HWND window;
 @
 \fimcodigo
 
-Now that the window was created, we ask the system to show it to the user:
+Now that the window was created, we ask the system to show it to the
+user and then we wait in a loop until we get a message saying that the
+window was created:
 
 \iniciocodigo
-@<Windows: Criar Janela@>+=
+@<Windows: Create Window@>+=
 #if defined(_WIN32)
-ShowWindow(window, SW_MAXIMIZE);
+{
+  MSG msg;
+  ShowWindow(window, SW_MAXIMIZE);
+  do{
+    GetMessage(&msg, NULL, 0, 0);
+  } while(msg.message == WM_CREATE);
+}
 #endif
 @
 \fimcodigo
-
 
 \subsecao{2.X. Window Creation Function}
 

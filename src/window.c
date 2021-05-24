@@ -1,5 +1,5 @@
 /*50:*/
-#line 1101 "weaver-window.tex"
+#line 1109 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -49,13 +49,13 @@
 #include <Windows.h> 
 #endif
 /*:34*//*40:*/
-#line 906 "weaver-window.tex"
+#line 907 "weaver-window.tex"
 
 #if defined(_WIN32)
 #include <string.h> 
 #endif
 /*:40*/
-#line 1103 "weaver-window.tex"
+#line 1111 "weaver-window.tex"
 
 /*7:*/
 #line 283 "weaver-window.tex"
@@ -103,23 +103,23 @@ static SDL_Surface*window;
 static const char*class_name= "WeaverWindow";
 #endif
 /*:36*//*41:*/
-#line 917 "weaver-window.tex"
+#line 918 "weaver-window.tex"
 
 #if defined(_WIN32)
 static bool already_created_a_class= false;
 #endif
 /*:41*//*43:*/
-#line 972 "weaver-window.tex"
+#line 973 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
 /*:43*//*46:*/
-#line 1016 "weaver-window.tex"
+#line 1024 "weaver-window.tex"
 
 static bool already_have_window= false;
 /*:46*/
-#line 1104 "weaver-window.tex"
+#line 1112 "weaver-window.tex"
 
 /*37:*/
 #line 839 "weaver-window.tex"
@@ -143,7 +143,7 @@ return DefWindowProc(window,msg,param1,param2);
 }
 #endif
 /*:37*//*45:*/
-#line 999 "weaver-window.tex"
+#line 1007 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -353,7 +353,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:18*/
-#line 1003 "weaver-window.tex"
+#line 1011 "weaver-window.tex"
 
 /*30:*/
 #line 713 "weaver-window.tex"
@@ -407,7 +407,7 @@ return false;
 }
 #endif
 /*:32*/
-#line 1004 "weaver-window.tex"
+#line 1012 "weaver-window.tex"
 
 /*35:*/
 #line 809 "weaver-window.tex"
@@ -427,7 +427,8 @@ memset(&window_class,0,sizeof(WNDCLASS));
 window_class.lpfnWndProc= WindowProc;
 window_class.hInstance= GetModuleHandle(NULL);
 window_class.lpszClassName= class_name;
-ret= RegisterClass(&windows_class);
+window_class.hbrBackground= CreateSolidBrush(RGB(0,0,0));
+ret= RegisterClass(&window_class);
 if(ret==0){
 #if defined(W_DEBUG_WINDOW)
 fprintf(stderr,"ERROR: Failed to register Window Class. SysError: %d\n",
@@ -439,7 +440,7 @@ already_created_a_class= true;
 }
 #endif
 /*:39*//*42:*/
-#line 928 "weaver-window.tex"
+#line 929 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -478,19 +479,25 @@ return false;
 }
 #endif
 /*:42*//*44:*/
-#line 983 "weaver-window.tex"
+#line 985 "weaver-window.tex"
 
 #if defined(_WIN32)
+{
+MSG msg;
 ShowWindow(window,SW_MAXIMIZE);
+do{
+GetMessage(&msg,NULL,0,0);
+}while(msg.message==WM_CREATE);
+}
 #endif
 /*:44*/
-#line 1005 "weaver-window.tex"
+#line 1013 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
 /*:45*//*47:*/
-#line 1031 "weaver-window.tex"
+#line 1039 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -508,7 +515,7 @@ return true;
 }
 #endif
 /*:47*//*48:*/
-#line 1058 "weaver-window.tex"
+#line 1066 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -524,7 +531,7 @@ return true;
 }
 #endif
 /*:48*//*49:*/
-#line 1081 "weaver-window.tex"
+#line 1089 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -536,6 +543,6 @@ return true;
 }
 #endif
 /*:49*/
-#line 1105 "weaver-window.tex"
+#line 1113 "weaver-window.tex"
 
 /*:50*/
