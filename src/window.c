@@ -1,5 +1,5 @@
-/*50:*/
-#line 1109 "weaver-window.tex"
+/*56:*/
+#line 1232 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -49,13 +49,19 @@
 #include <Windows.h> 
 #endif
 /*:34*//*40:*/
-#line 907 "weaver-window.tex"
+#line 904 "weaver-window.tex"
 
 #if defined(_WIN32)
 #include <string.h> 
 #endif
-/*:40*/
-#line 1111 "weaver-window.tex"
+/*:40*//*46:*/
+#line 1012 "weaver-window.tex"
+
+#if defined(_WIN32)
+#include <GL/gl.h> 
+#endif
+/*:46*/
+#line 1234 "weaver-window.tex"
 
 /*7:*/
 #line 283 "weaver-window.tex"
@@ -103,23 +109,29 @@ static SDL_Surface*window;
 static const char*class_name= "WeaverWindow";
 #endif
 /*:36*//*41:*/
-#line 918 "weaver-window.tex"
+#line 915 "weaver-window.tex"
 
 #if defined(_WIN32)
 static bool already_created_a_class= false;
 #endif
 /*:41*//*43:*/
-#line 973 "weaver-window.tex"
+#line 970 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
-/*:43*//*46:*/
-#line 1024 "weaver-window.tex"
+/*:43*//*50:*/
+#line 1111 "weaver-window.tex"
+
+#if defined(_WIN32)
+static HGLRC wgl_context;
+#endif
+/*:50*//*52:*/
+#line 1145 "weaver-window.tex"
 
 static bool already_have_window= false;
-/*:46*/
-#line 1112 "weaver-window.tex"
+/*:52*/
+#line 1235 "weaver-window.tex"
 
 /*37:*/
 #line 839 "weaver-window.tex"
@@ -142,8 +154,8 @@ return DefWindowProc(window,msg,param1,param2);
 }
 }
 #endif
-/*:37*//*45:*/
-#line 1007 "weaver-window.tex"
+/*:37*//*51:*/
+#line 1128 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -353,7 +365,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:18*/
-#line 1011 "weaver-window.tex"
+#line 1132 "weaver-window.tex"
 
 /*30:*/
 #line 713 "weaver-window.tex"
@@ -407,7 +419,7 @@ return false;
 }
 #endif
 /*:32*/
-#line 1012 "weaver-window.tex"
+#line 1133 "weaver-window.tex"
 
 /*35:*/
 #line 809 "weaver-window.tex"
@@ -417,7 +429,7 @@ screen_resolution_x= GetSystemMetrics(SM_CXSCREEN);
 screen_resolution_y= GetSystemMetrics(SM_CYSCREEN);
 #endif
 /*:35*//*39:*/
-#line 877 "weaver-window.tex"
+#line 874 "weaver-window.tex"
 
 #if defined(_WIN32)
 if(!already_created_a_class){
@@ -440,7 +452,7 @@ already_created_a_class= true;
 }
 #endif
 /*:39*//*42:*/
-#line 929 "weaver-window.tex"
+#line 926 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -479,25 +491,93 @@ return false;
 }
 #endif
 /*:42*//*44:*/
-#line 985 "weaver-window.tex"
+#line 981 "weaver-window.tex"
+
+#if defined(_WIN32)
+/*47:*/
+#line 1025 "weaver-window.tex"
+
+PIXELFORMATDESCRIPTOR pixel_format;
+memset(&pixel_format,0,sizeof(WNDCLASS));
+pixel_format.nSize= sizeof(PIXELFORMATDESCRIPTOR);
+pixel_format.nVersion= 1;
+pixel_format.dwFlags= PFD_DRAW_TO_WINDOW|PFD_SUPPORT_OPENGL|
+PFD_DOUBLEBUFFER|PFD_DRAW_TO_BITMAP;
+pixel_format.iPixelType= PFD_TYPE_RGBA;
+pixel_format.cColorBits= 24;
+pixel_format.cColorBits.cDepthBits= 32;
+pixel_format.iLayerType= PFD_MAIN_PLANE;
+/*:47*//*48:*/
+#line 1055 "weaver-window.tex"
+
+HDC device_context= GetDC(window);
+{
+int real_pixel_format;
+if(device_context==NULL){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Failed to get device context. SysError: %d\n",
+GetLastError());
+#endif
+return false;
+}
+real_pixel_format= ChoosePixelFormat(device_context,&pixel_format);
+if(real_pixel_format==0){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Failed to choose a pixel format. SysError: %d\n",
+GetLastError());
+#endif
+return false;
+}
+if(!SetPixelFormat(device_context,real_pixel_format,&pixel_format)){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Failed to set the pixel format. SysError: %d\n",
+GetLastError());
+#endif
+return false;
+}
+}
+/*:48*//*49:*/
+#line 1089 "weaver-window.tex"
+
+wgl_context= wglCreateContext(device_context);
+if(wgl_context==NULL){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Failed to set the pixel format. SysError: %d\n",
+GetLastError());
+#endif
+return false;
+}
+if(!wglMakeCurrent(device_context,wgl_context)){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Failed to set the pixel format. SysError: %d\n",
+GetLastError());
+#endif
+return false;
+}
+/*:49*/
+#line 983 "weaver-window.tex"
+
+#endif
+/*:44*//*45:*/
+#line 993 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
 MSG msg;
-ShowWindow(window,SW_MAXIMIZE);
+ShowWindow(window,SW_NORMAL);
 do{
 GetMessage(&msg,NULL,0,0);
 }while(msg.message==WM_CREATE);
 }
 #endif
-/*:44*/
-#line 1013 "weaver-window.tex"
+/*:45*/
+#line 1134 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
-/*:45*//*47:*/
-#line 1039 "weaver-window.tex"
+/*:51*//*53:*/
+#line 1160 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -514,8 +594,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:47*//*48:*/
-#line 1066 "weaver-window.tex"
+/*:53*//*54:*/
+#line 1187 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -530,19 +610,21 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:48*//*49:*/
-#line 1089 "weaver-window.tex"
+/*:54*//*55:*/
+#line 1210 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
 if(already_have_window==false)
 return false;
+wglMakeCurrent(NULL,NULL);
+wglDeleteContext(wgl_context);
 DestroyWindow(window);
 already_have_window= false;
 return true;
 }
 #endif
-/*:49*/
-#line 1113 "weaver-window.tex"
+/*:55*/
+#line 1236 "weaver-window.tex"
 
-/*:50*/
+/*:56*/

@@ -862,9 +862,6 @@ case WM_DESTROY:
 @
 \fimcodigo
 
-XXX
-
-
 Agora temos que criar uma classe para a janela que iremos criar. Ela
 deve apenas ter um nome único que não conflite com nomes padrão usados
 pelo sistema. Também temos que passar na criação da classe um
@@ -977,16 +974,27 @@ static HWND window;
 @
 \fimcodigo
 
-Uma vez que a janela foi criada com sucesso, precisamos pedir para que
-o sistema passe a exibir a janela e esperamos em um laço até o sistema
-avisar por meio de uma mensagem que a janela foi criada:
+Antes de exibir a janela na tela, vamos configurar o OpenGL para
+funcionar nela:
+
+\iniciocodigo
+@<Windows: Criar Janela@>+=
+#if defined(_WIN32)
+@<Windows: Configurar OpenGL@>
+#endif
+@
+\fimcodigo
+
+Agora pedimos para que o sistema passe a exibir a janela e esperamos
+em um laço até o sistema avisar por meio de uma mensagem que a janela
+foi criada:
 
 \iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
 {
   MSG msg;
-  ShowWindow(window, SW_MAXIMIZE);
+  ShowWindow(window, SW_NORMAL);
   do{
     GetMessage(&msg, NULL, 0, 0);
   } while(msg.message == WM_CREATE);
@@ -995,7 +1003,120 @@ avisar por meio de uma mensagem que a janela foi criada:
 @
 \fimcodigo
 
-\subsecao{2.X. Função de Criação de Janelas}
+\subsecao{2.5. Configurando OpenGL no Windows}
+
+Para usar o OpenGL no Windows, primeiro precisamos inserir o
+cabaçalho:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(_WIN32)
+#include <GL/gl.h>
+#endif
+@
+\fimcodigo
+
+Agora precisamos obter o formato de qual a melhor forma de representar
+pixels no dispositivo em que estamos rodando. Usando a configuração
+recomendada na documentação, podemos definir um formato de píxel com a
+seguinte estrutura:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>=
+PIXELFORMATDESCRIPTOR pixel_format;
+memset(&pixel_format, 0, sizeof(WNDCLASS));
+pixel_format.nSize = sizeof(PIXELFORMATDESCRIPTOR); // Tamanho da estrutura
+pixel_format.nVersion = 1; // Número de versão
+pixel_format.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
+                       PFD_DOUBLEBUFFER | PFD_DRAW_TO_BITMAP;
+pixel_format.iPixelType = PFD_TYPE_RGBA;
+pixel_format.cColorBits = 24; // 24 bits para profundidade de cor
+pixel_format.cColorBits.cDepthBits = 32; // 32 bits para buffer de profundidade
+pixel_format.iLayerType = PFD_MAIN_PLANE;
+@
+\fimcodigo
+
+Quando configuramos o EGL, pudemos pedir só 1 bit para cada canal de
+cor, sabendo que esse é apenas o valor mínimo, mas que o sistema
+escolhe uma configuração acima do mínimo. Aqui as coisas são um pouco
+diferentes. O que especificamos acima não é a configuração mínima, mas
+uma configuração recomendada. É possível que após ajustarmos este como
+o nosso formato de pixel, na prática cada bit de cor e para o buffer
+de profundidade sejam menores do que o que está listado acima.
+
+Para aplicar essa configuração de formato de pixel, nós precisamos
+obter um contexto para um dispositivo onde iremos renderizar. No caso,
+a janela que criamos. Obtemos um dispositivo com \monoespaco{GetDC} e
+o configuramos com \monoespaco{ChoosePixelFormat} (que busca obter a
+melhor configuração possível dada nossa especificação)
+e \monoespaco{SetPixelFormat} (que aplica a configuração obtida).
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+HDC device_context = GetDC(window);
+{
+  int real_pixel_format;
+  if(device_context == NULL){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to get device context. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+  real_pixel_format = ChoosePixelFormat(device_context, &pixel_format);
+  if(real_pixel_format == 0){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to choose a pixel format. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+  if(!SetPixelFormat(device_context, real_pixel_format, &pixel_format)){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+}
+@
+\fimcodigo
+
+Terminada a configuração, criaremos o contexto OpenGL e tornaremos ele
+atual:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+wgl_context = wglCreateContext(device_context);
+if(wgl_context == NULL){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
+          GetLastError());
+#endif
+  return false;
+}
+if(!wglMakeCurrent(device_context, wgl_context)){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
+          GetLastError());
+#endif
+  return false;
+}
+@
+\fimcodigo
+
+Mas para isso precisamos ter declarada a variável de contexto WGL:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if defined(_WIN32)
+static HGLRC wgl_context;
+#endif
+@
+\fimcodigo
+
+
+\subsecao{2.6. Função de Criação de Janelas}
 
 Nossa função de geração de nova janela então executará o código
 adequado, dependendo do ambiente gráfico em que estamos. Mas antes de
@@ -1026,7 +1147,7 @@ static bool already_have_window = false;
 @
 \fimcodigo
 
-\subsecao{2.X+1. Fechando uma Janela no X}
+\subsecao{2.7. Fechando uma Janela no X}
 
 Fechar uma janela no X11 significa invocar a função do X que pede ao
 servidor para que a janela seja fechada. E além disso, fechar a
@@ -1055,7 +1176,7 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.X+2. Fechando uma Janela em Web Assembly}
+\subsecao{2.8. Fechando uma Janela em Web Assembly}
 
 Fechar uma janela quando executando dentro de um navegador de Internet
 graças ao Web Assembly significa finalizar todas as estruturas SDL e
@@ -1080,7 +1201,7 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.X+3. Fechando uma Janela no Windows}
+\subsecao{2.9. Fechando uma Janela no Windows}
 
 Fechar a janela no Windows significa chamar uma única função que irá
 encerrá-la:
@@ -1091,6 +1212,8 @@ encerrá-la:
 bool _Wdestroy_window(void){
   if(already_have_window == false)
     return false;
+  wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(wgl_context);
   DestroyWindow(window);
   already_have_window = false;
   return true;

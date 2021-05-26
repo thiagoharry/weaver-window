@@ -948,16 +948,25 @@ static HWND window;
 @
 \fimcodigo
 
-Now that the window was created, we ask the system to show it to the
-user and then we wait in a loop until we get a message saying that the
-window was created:
+Before showing the window on the screen we configure OpenGL on it:
+
+\iniciocodigo
+@<Windows: Criar Janela@>+=
+#if defined(_WIN32)
+@<Windows: Configurar OpenGL@>
+#endif
+@
+\fimcodigo
+
+Now we ask the system to show the window to the user and then wait in
+a loop until we get a message saying that the window was created:
 
 \iniciocodigo
 @<Windows: Create Window@>+=
 #if defined(_WIN32)
 {
   MSG msg;
-  ShowWindow(window, SW_MAXIMIZE);
+  ShowWindow(window, SW_NORMAL);
   do{
     GetMessage(&msg, NULL, 0, 0);
   } while(msg.message == WM_CREATE);
@@ -966,7 +975,116 @@ window was created:
 @
 \fimcodigo
 
-\subsecao{2.X. Window Creation Function}
+\subsecao{2.5. Configuring OpenGL on Windows}
+
+To use OpenGL on Windows, first we need to include the header:
+
+\iniciocodigo
+@<Headers@>+=
+#if defined(_WIN32)
+#include <GL/gl.h>
+#endif
+@
+\fimcodigo
+
+Now we need to specify the format in which pixels will be represented
+on the screen. Using the recommended configuration from the
+documentation, we can set the pixel format with the following struct:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>=
+PIXELFORMATDESCRIPTOR pixel_format;
+memset(&pixel_format, 0, sizeof(WNDCLASS));
+pixel_format.nSize = sizeof(PIXELFORMATDESCRIPTOR); // Size of the struct
+pixel_format.nVersion = 1; // Version number
+pixel_format.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
+                       PFD_DOUBLEBUFFER | PFD_DRAW_TO_BITMAP;
+pixel_format.iPixelType = PFD_TYPE_RGBA;
+pixel_format.cColorBits = 24; // 24 bits to RGB colorss
+pixel_format.cColorBits.cDepthBits = 32; // 32 bits to depth buffer
+pixel_format.iLayerType = PFD_MAIN_PLANE;
+@
+\fimcodigo
+
+When we configured EGL, we asked a single bit for each color and for
+the depth channel because EGL considers this as the minimal
+requirement, and in practice will return a configuration with more
+bits than asked. But with WGL is different, these are not the minimal,
+but the recommended requirements. In practice we could end with a
+pixel format with fewer pixels than asked in the depth buffer or for
+each color.
+
+To apply this pixel configuration, first we need a device context to
+the device where we will draw. In our case, a window. We get a device
+context with \monoespaco{GetDC}. Next we try to get the best possible
+pixel format that matches our requirements
+with \monoespaco{ChoosePixelFormat} and set the configuration with
+\monoespaco{SetPixelFormat}.
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+{
+  HDC device_context = GetDC(window);
+  int real_pixel_format;
+  if(device_context == NULL){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to get device context. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+  real_pixel_format = ChoosePixelFormat(device_context, &pixel_format);
+  if(real_pixel_format == 0){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to choose a pixel format. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+  if(!SetPixelFormat(device_context, real_pixel_format, &pixel_format)){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+}
+@
+\fimcodigo
+
+Finished the configuration, we create the OpenGL context and make it
+current:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+wgl_context = wglCreateContext(device_context);
+if(wgl_context == NULL){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
+          GetLastError());
+#endif
+  return false;
+}
+if(!wglMakeCurrent(device_context, wgl_context)){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
+          GetLastError());
+#endif
+  return false;
+}
+@
+\fimcodigo
+
+But for this we need to have declared the WGL context variable:
+
+@<Local Variables@>+=
+#if defined(_WIN32)
+static HGLRC wgl_context;
+#endif
+@
+\fimcodigo
+
+\subsecao{2.6. Window Creation Function}
 
 Our function that creates a new window will execute the adequate code,
 depending on the graphical environment where termosit is being
@@ -998,7 +1116,7 @@ static bool already_have_window = false;
 \fimcodigo
 
 
-\subsecao{2.X+1. Closing a Window in X}
+\subsecao{2.7. Closing a Window in X}
 
 Closing a window in X11 means calling the function that asks the
 server to close the window and also closing the connection with the
@@ -1026,7 +1144,7 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.X+2. Closing a Window in Web Assembly}
+\subsecao{2.8. Closing a Window in Web Assembly}
 
 Closing a window when running in a web browser means finalize the SDL
 structures and hide the canvas where we were drawing. We do this with
@@ -1050,7 +1168,7 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.X+3. Closing a Window on Windows}
+\subsecao{2.9. Closing a Window on Windows}
 
 Closing a window in Windows means calling a simple function to destroy
 the window:
@@ -1061,6 +1179,8 @@ the window:
 bool _Wdestroy_window(void){
   if(already_have_window == false)
     return false;
+  wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(wgl_context);
   DestroyWindow(window);
   already_have_window = false;
   return true;
