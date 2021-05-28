@@ -15,7 +15,7 @@
 #else
 #define SLEEP(x) sleep(x)
 #endif
-#if !defined(__EMSCRIPTEN__) && !defined(_WIN32)
+#if !defined(_WIN32)
 #include <GLES3/gl3.h>
 #endif
 
@@ -80,7 +80,7 @@ void test_opengl(void){
   assert("OpenGL is running", str != NULL);
   char message[128];
   memcpy(message, "Getting OpenGL Version: ", 25);
-  memcpy(&(message[24]), str, strlen(str) + 1);
+  memcpy(&(message[24]), str, strlen((const char *) str) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   _Wdestroy_window();
 }
