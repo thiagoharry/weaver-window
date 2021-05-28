@@ -6,7 +6,7 @@
 #include <Windows.h>
 #endif
 #include <stdbool.h>
-
+#include <string.h>
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 #define SLEEP(x) emscripten_sleep(x * 1000)
@@ -14,6 +14,9 @@
 #define SLEEP(x) Sleep(x * 1000)
 #else
 #define SLEEP(x) sleep(x)
+#endif
+#if !defined(__EMSCRIPTEN__) && !defined(_WIN32)
+#include <GLES3/gl3.h>
 #endif
 
 #include "../src/window.h"
@@ -71,9 +74,20 @@ void test_create_destroy_window(void){
   assert("Can create successive windows", ret);
 }
 
+void test_opengl(void){
+  _Wcreate_window();
+  const GLubyte *str = glGetString(GL_VERSION);
+  assert("OpenGL is running", str != NULL);
+  char message[128];
+  memcpy(message, "Getting OpenGL Version: ", 25);
+  memcpy(&(message[24]), str, strlen(str) + 1);
+  assert(message, glGetError() == GL_NO_ERROR);
+  _Wdestroy_window();
+}
 
 int main(int argc, char **argv){
   test_create_destroy_window();
+  test_opengl();
   imprime_resultado();
   return 0;
 }

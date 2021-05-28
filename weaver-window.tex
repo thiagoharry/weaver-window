@@ -1031,7 +1031,7 @@ pixel_format.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
                        PFD_DOUBLEBUFFER | PFD_DRAW_TO_BITMAP;
 pixel_format.iPixelType = PFD_TYPE_RGBA;
 pixel_format.cColorBits = 24; // 24 bits para profundidade de cor
-pixel_format.cColorBits.cDepthBits = 32; // 32 bits para buffer de profundidade
+pixel_format.cDepthBits = 32; // 32 bits para buffer de profundidade
 pixel_format.iLayerType = PFD_MAIN_PLANE;
 @
 \fimcodigo

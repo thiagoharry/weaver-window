@@ -505,7 +505,7 @@ pixel_format.dwFlags= PFD_DRAW_TO_WINDOW|PFD_SUPPORT_OPENGL|
 PFD_DOUBLEBUFFER|PFD_DRAW_TO_BITMAP;
 pixel_format.iPixelType= PFD_TYPE_RGBA;
 pixel_format.cColorBits= 24;
-pixel_format.cColorBits.cDepthBits= 32;
+pixel_format.cDepthBits= 32;
 pixel_format.iLayerType= PFD_MAIN_PLANE;
 /*:47*//*48:*/
 #line 1055 "weaver-window.tex"

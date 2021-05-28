@@ -12,11 +12,11 @@ src/window.c: weaver-window.tex
 	rm weaver-window.c
 test:
 	ctangle weaver-window.tex
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o test_window -lX11 -lEGL
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o test_window -lX11 -lEGL -lGLESv2
 	./test_window
 test_en:
 	ctangle weaver-window_en.tex
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o test_window -lX11 -lEGL
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o test_window -lX11 -lEGL -lGLESv2
 	./test_window
 test_web:
 	ctangle weaver-window.tex
