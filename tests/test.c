@@ -17,6 +17,8 @@
 #endif
 #if !defined(_WIN32)
 #include <GLES3/gl3.h>
+#else
+#include <GL/gl.h>
 #endif
 
 #include "../src/window.h"
