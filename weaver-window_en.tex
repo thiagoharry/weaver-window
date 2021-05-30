@@ -175,6 +175,17 @@ the window creation by the previous function. This function must be
 invoked only after a window was created. In case of error, it returns
 false.
 
+\iniciocodigo
+@<Window Declarations@>+=
+bool _Wrender_window(void);
+@
+\fimcodigo
+
+This function will render in the screen all pending ommands since last
+rendering. It will return false in case of error. This function
+probably will be called in the end of each iteration in a main loop.
+
+
 \secao{2. Creating and Managing the Window}
 
 \subsecao{2.1. Creating a Window in X}
@@ -1189,6 +1200,25 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
+\subsecao{2.10. Rendering window in X} 
+
+In X, when we asked EGL to create a window, by default it creates a
+double buffered window. Rendering in the screen means in this case to
+swap the window buffers. The back buffer where we were drawing became
+the front buffer, what is shown in the screen, and vice-versa. This is
+achieved with the following code:
+
+\iniciocodigo
+@<Functions@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wrender_window(void){
+  return eglSwapBuffers(egl_display, egl_window);
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.10. Rendering window in Emscripten} 
 
 \subsecao{X. Final File Sctructure}
 

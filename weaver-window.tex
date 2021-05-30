@@ -191,6 +191,17 @@ tenha sido alocado pela função anterior ao criar janela. A função deve
 ser invocada sempre após a janela já ter sido criada. Em caso de erro,
 retorna falso.
 
+\iniciocodigo
+@<Declarações de Janela@>=
+bool _Wrender_window(void);
+@
+\fimcodigo
+
+Esta função irá efetivamente renderizar na tela todos os comandos
+OpenGL pendentes desde a última renderização. Retornará falso em caso
+de erro. Esta função provavelmente será chamada no fim de cada
+iteração de um laço principal.
+
 
 \secao{2. Criando e Gerenciando a Janela}
 
@@ -1222,6 +1233,25 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
+\subsecao{2.10. Renderizando a Janela no X} 
+
+No X, como pedimos para o EGL criar uma janela e por padrão ele cria
+uma janela com buffer duplo, para renderizarmos os comandos OpenGL
+após eles terem sido feitos, devemos fazer com que o buffer traseiro,
+onde estávamos desenhando, se torne o buffer dianteiro que é exibido
+na tela e vice-versa:
+
+\iniciocodigo
+@<Funções@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wrender_window(void){
+  return eglSwapBuffers(egl_display, egl_window);
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.11. Renderizando a Janela no Emscripten} 
 
 \secao{X. Estrutura Final do Arquivo}
 

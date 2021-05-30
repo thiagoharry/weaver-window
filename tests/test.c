@@ -17,6 +17,7 @@
 #endif
 #if !defined(_WIN32)
 #include <GLES3/gl3.h>
+#include <time.h>
 #else
 #include <GL/gl.h>
 #endif
@@ -62,7 +63,7 @@ void assert(char *descricao, bool valor){
 void test_create_destroy_window(void){
   bool ret;
   ret = _Wcreate_window();
-  SLEEP(1);
+  //SLEEP(1);
   assert("Creating window", ret);
   ret = _Wcreate_window();
   assert("Not creating window if it exists", ret == false);
@@ -77,13 +78,80 @@ void test_create_destroy_window(void){
 }
 
 void test_opengl(void){
-  _Wcreate_window();
-  const GLubyte *str = glGetString(GL_VERSION);
-  assert("OpenGL is running", str != NULL);
   char message[128];
+  GLint shader_program, pos;
+  _Wcreate_window();
+  const GLubyte *version = glGetString(GL_VERSION);
+  const GLubyte *renderer = glGetString(GL_RENDERER);
+  assert("OpenGL is running", version != NULL && renderer != NULL);
   memcpy(message, "Getting OpenGL Version: ", 25);
-  memcpy(&(message[24]), str, strlen((const char *) str) + 1);
+  memcpy(&(message[24]), version, strlen((const char *) version) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
+  memcpy(message, "Getting Renderer: ", 19);
+  memcpy(&(message[18]), renderer, strlen((const char *) renderer) + 1);
+  assert(message, glGetError() == GL_NO_ERROR);
+  {
+    GLint vertex_shader, fragment_shader;
+    GLint ret;
+    const GLchar *vertex_shader_source =
+      "#version 100\n"
+      "attribute vec3 position;\n"
+      "void main() {\n"
+      "  gl_Position = vec4(position, 1.0);\n"
+      "}\n";
+    const GLchar *fragment_shader_source =
+      "#version 100\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+      "}\n";
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
+    glCompileShader(vertex_shader);
+    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &ret);
+    assert("Compiling simple vertex shader", ret);
+    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
+    glCompileShader(fragment_shader);
+    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &ret);
+    assert("Compiling simple fragment shader", ret);
+    shader_program = glCreateProgram();
+    glAttachShader(shader_program, vertex_shader);
+    glAttachShader(shader_program, fragment_shader);
+    glLinkProgram(shader_program);
+    glGetProgramiv(shader_program, GL_LINK_STATUS, &ret);
+    assert("Linking simple shader program", ret);
+    glDeleteShader(vertex_shader);
+    glDeleteShader(fragment_shader);
+  }
+  {
+    GLuint vbo;
+    time_t initial_time, current_time;
+    const GLfloat vertices[] = {
+      0.0f, 0.5f, 0.0f,
+      0.5f, -0.5f, 0.0f,
+      -0.5f, -0.5f, 0.0f
+    };
+    pos = glGetAttribLocation(shader_program, "position");
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glViewport(0, 0, 1366, 768);
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *) 0);
+    glEnableVertexAttribArray(pos);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    current_time = initial_time = time(NULL);
+    while(current_time < initial_time + 1){
+      glClear(GL_COLOR_BUFFER_BIT);
+      glUseProgram(shader_program);
+      glDrawArrays(GL_TRIANGLES, 0, 3);
+      current_time = time(NULL);
+      _Wrender_window();
+    }
+    glDeleteBuffers(1, &vbo);
+    glDeleteProgram(shader_program);
+  }
+  assert("Rendering simple program", glGetError() == GL_NO_ERROR);
   _Wdestroy_window();
 }
 
