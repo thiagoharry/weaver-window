@@ -7,14 +7,14 @@
 extern"C"{
 #endif
 #include <stdbool.h>  
-/*17:*/
-#line 479 "weaver-window.tex"
+/*15:*/
+#line 437 "weaver-window.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
-/*:17*//*29:*/
-#line 680 "weaver-window.tex"
+/*:15*//*27:*/
+#line 638 "weaver-window.tex"
 
 #if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 3
@@ -22,7 +22,7 @@ extern"C"{
 #if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
-/*:29*/
+/*:27*/
 #line 115 "weaver-window.tex"
 
 /*3:*/

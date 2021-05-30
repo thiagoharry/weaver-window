@@ -141,12 +141,15 @@ void test_opengl(void){
     glEnableVertexAttribArray(pos);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     current_time = initial_time = time(NULL);
-    while(current_time < initial_time + 1){
+    while(current_time < initial_time + 2){
       glClear(GL_COLOR_BUFFER_BIT);
       glUseProgram(shader_program);
       glDrawArrays(GL_TRIANGLES, 0, 3);
       current_time = time(NULL);
       _Wrender_window();
+#if defined(__EMSCRIPTEN__)
+      emscripten_sleep(10);
+#endif
     }
     glDeleteBuffers(1, &vbo);
     glDeleteProgram(shader_program);
