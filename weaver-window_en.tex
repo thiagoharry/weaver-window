@@ -1178,7 +1178,41 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.10. Rendering window in Emscripten} 
+\subsecao{2.10. Rendering window in Emscripten}
+
+It is not necessary to perform any additional operation to render the
+previous Open GL commands if we are using Web Assembly compiled by
+Emscripten. So we only use \monoespaco{glFlush} to wait for any
+pending command to execute before resuming our code.
+
+\iniciocodigo
+@<Functions@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wrender_window(void){
+  glFlush();
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.10. Rendering window in (Microsoft) Windows}
+
+In Windows, the WGL function responsible for swapping buffers in the
+window making our drawings visible is
+called \monoespaco{wglSwapLayerBuffers}:
+
+\iniciocodigo
+@<Functions@>+=
+#if defined(_WIN32)
+bool _Wrender_window(void){
+  return wglSwapLayerBuffers(device_context, WGL_SWAP_MAIN_PLANE);
+}
+#endif
+@
+\fimcodigo
+
+
 
 \subsecao{X. Final File Sctructure}
 

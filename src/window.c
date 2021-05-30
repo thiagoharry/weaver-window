@@ -1,5 +1,5 @@
-/*57:*/
-#line 1232 "weaver-window.tex"
+/*58:*/
+#line 1250 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -49,7 +49,7 @@
 #include <GL/gl.h> 
 #endif
 /*:45*/
-#line 1234 "weaver-window.tex"
+#line 1252 "weaver-window.tex"
 
 /*8:*/
 #line 294 "weaver-window.tex"
@@ -119,7 +119,7 @@ static HGLRC wgl_context;
 
 static bool already_have_window= false;
 /*:51*/
-#line 1235 "weaver-window.tex"
+#line 1253 "weaver-window.tex"
 
 /*36:*/
 #line 807 "weaver-window.tex"
@@ -603,7 +603,7 @@ return eglSwapBuffers(egl_display,egl_window);
 }
 #endif
 /*:55*//*56:*/
-#line 1216 "weaver-window.tex"
+#line 1218 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -611,7 +611,15 @@ glFlush();
 return true;
 }
 #endif
-/*:56*/
-#line 1236 "weaver-window.tex"
+/*:56*//*57:*/
+#line 1235 "weaver-window.tex"
 
+#if defined(_WIN32)
+bool _Wrender_window(void){
+return wglSwapLayerBuffers(device_context,WGL_SWAP_MAIN_PLANE);
+}
+#endif
 /*:57*/
+#line 1254 "weaver-window.tex"
+
+/*:58*/

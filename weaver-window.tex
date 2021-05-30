@@ -1209,8 +1209,10 @@ bool _Wrender_window(void){
 
 \subsecao{2.11. Renderizando a Janela no Emscripten} 
 
-O Emscripten não precisa de nenhum comando adicional, o que for pedido
-para ele renderizar, ele o faz.
+O Emscripten requer nenhum comando adicional para renderizar na
+tela. Por isso, na nossa função de renderizar na tela apenas
+chamamos \monoespaco{glFlush} para realizar quaisquer operações que
+estejam pendentes no Open GL.
 
 \iniciocodigo
 @<Funções@>+=
@@ -1218,6 +1220,22 @@ para ele renderizar, ele o faz.
 bool _Wrender_window(void){
   glFlush();
   return true;
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.11. Renderizando a Janela no Windows}
+
+No Windows, a função WGL responsável por trocar os buffers da janela e
+assim tornar visíveis os desenhos feitos é
+chamada \monoespaco{wglSwapLayerBuffers}:
+
+\iniciocodigo
+@<Funções@>+=
+#if defined(_WIN32)
+bool _Wrender_window(void){
+  return wglSwapLayerBuffers(device_context, WGL_SWAP_MAIN_PLANE);
 }
 #endif
 @
