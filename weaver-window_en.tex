@@ -288,19 +288,15 @@ created window is drawn in the screen. Before drawing the window in
 the screen we can adjust some of its properties.
 
 The first thing that we need to adjust is that by default the window
-should be created in fullscreen mode. There are two ways to do it. The
-first is ask the X server to ignore the window manager and create the
-window directly. We ask the window to occupy all the screen. This
-always will work, but as we are ignoring the window manager, the
-window decorators like borders and buttons will not appear. Because of
-this we only do this if the user defines the
-macro \monoespaco{W\_WINDOW\_FORCE\_FULLSCREEN}. In this case we will
-never leave the fullscreen window and this will not be a problem:
+should be created in fullscreen mode. We do this asking to the window
+manager do not interefere with the window creating decorations or
+limiting its size. But we do this only if the user did not disable
+fullscreen setting a macro:
 
 \iniciocodigo
 @<X11: Create Window@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#if defined(W_WINDOW_FORCE_FULLSCREEN)
+#if !defined(W_WINDOW_NO_FULLSCREEN)
 {
   XSetWindowAttributes attributes;
   attributes.override_redirect = true;
@@ -308,39 +304,6 @@ never leave the fullscreen window and this will not be a problem:
                           &attributes);
 }
 #endif
-#endif
-@
-\fimcodigo
-
-But if the user did not define this macro, we will obtain the full
-screen effect askinf for the window manager. Some older or
-simplerwindow managers will not understand this request or can ignore
-it. But this should work in the most used window managers. But we only
-enter in fullscreen mode if the user did not set the
-macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN}, which means that by default we should not create a fullscreen window:
-
-\iniciocodigo
-@<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#if !defined(W_WINDOW_NO_FULLSCREEN)
-{
-  Atom atoms[2] = { XInternAtom(display, "_NET_WM_STATE_FULLSCREEN",
-                                False), None };
-  XChangeProperty(display, window, XInternAtom(display, "_NET_WM_STATE",
-                                               False),
-                  XA_ATOM, 32, PropModeReplace, (unsigned char *) atoms, 1);
-}
-#endif
-#endif
-@
-\fimcodigo
-
-The above code requires the extension defined in the following header:
-
-\iniciocodigo
-@<Headers@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#include <X11/Xatom.h>
 #endif
 @
 \fimcodigo
@@ -360,7 +323,7 @@ outside fullscreen mode:
 \iniciocodigo
 @<X11: Create Window@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#if defined(W_WINDOW_NO_FULLSCREEN) && !defined(W_WINDOW_FORCE_FULLSCREEN)
+#if defined(W_WINDOW_NO_FULLSCREEN)
 {
   int size_x, size_y;
 #if W_WINDOW_RESOLUTION_X > 0
@@ -390,14 +353,12 @@ soon define:
 {
   XSizeHints hints;
   hints.flags = PMinSize | PMaxSize;
-#if defined(W_WINDOW_NO_FULLSCREEN) && \
-    !defined(W_WINDOW_FORCE_FULLSCREEN) && W_WINDOW_RESOLUTION_X > 0
+#if defined(W_WINDOW_NO_FULLSCREEN) && W_WINDOW_RESOLUTION_X > 0
   hints.min_width = hints.max_width = W_WINDOW_RESOLUTION_X;
 #else
   hints.min_width = hints.max_width = screen_resolution_x;
 #endif
-#if defined(W_WINDOW_NO_FULLSCREEN) && \
-    !defined(W_WINDOW_FORCE_FULLSCREEN) && W_WINDOW_RESOLUTION_Y > 0
+#if defined(W_WINDOW_NO_FULLSCREEN) && W_WINDOW_RESOLUTION_Y > 0
   hints.min_height = hints.max_height = W_WINDOW_RESOLUTION_Y;
 #else
   hints.min_height = hints.max_height = screen_resolution_y;
@@ -736,12 +697,11 @@ when we execute the function to close the window).
 @<Web Assembly: Create Window@>+=
 #if defined(__EMSCRIPTEN__)
 {
-  int size_x, size_y, fullscreen_flag = 0;
+  int size_x, size_y, fullscreen_flag = SDL_WINDOW_FULLSCREEN;
   size_x = screen_resolution_x;
   size_y = screen_resolution_y;
-#if defined(W_WINDOW_NO_FULLSCREEN) && \
-    !defined(W_WINDOW_FORCE_FULLSCREEN)
-  fullscreen_flag = SDL_WINDOW_FULLSCREEN;
+#if defined(W_WINDOW_NO_FULLSCREEN)
+  fullscreen_flag = 0;
 #if defined(W_WINDOW_RESOLUTION_X) && W_WINDOW_RESOLUtION_X > 0
   size_x = W_WINDOW_RESOLUtION_X;
 #endif
@@ -749,12 +709,12 @@ when we execute the function to close the window).
   size_y = W_WINDOW_RESOLUtION_Y;
 #endif
 #endif
-  // Set OpenGL version
+  // Ajusta versão do OpenGL
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
                      W_WINDOW_OPENGL_MAJOR_VERSION);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
                      W_WINDOW_OPENGL_MINOR_VERSION);
-  // Ensure that the canvas is visible
+  // Garante que o canvas estará visível
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "initial";
@@ -1264,7 +1224,41 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.10. Rendering window in Emscripten} 
+\subsecao{2.10. Rendering window in Emscripten}
+
+It is not necessary to perform any additional operation to render the
+previous Open GL commands if we are using Web Assembly compiled by
+Emscripten. So we only use \monoespaco{glFlush} to wait for any
+pending command to execute before resuming our code.
+
+\iniciocodigo
+@<Functions@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wrender_window(void){
+  glFlush();
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+\subsecao{2.10. Rendering window in (Microsoft) Windows}
+
+In Windows, the WGL function responsible for swapping buffers in the
+window making our drawings visible is
+called \monoespaco{wglSwapLayerBuffers}:
+
+\iniciocodigo
+@<Functions@>+=
+#if defined(_WIN32)
+bool _Wrender_window(void){
+  return wglSwapLayerBuffers(device_context, WGL_SWAP_MAIN_PLANE);
+}
+#endif
+@
+\fimcodigo
+
+
 
 \subsecao{X. Final File Sctructure}
 

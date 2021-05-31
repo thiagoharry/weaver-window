@@ -7,6 +7,7 @@
 extern"C"{
 #endif
 #include <stdbool.h>  
+<<<<<<< HEAD
 /*20:*/
 #line 503 "weaver-window_en.tex"
 
@@ -34,12 +35,21 @@ extern"C"{
 
 /*17:*/
 #line 458 "weaver-window_en.tex"
+=======
+/*15:*/
+#line 437 "weaver-window.tex"
+>>>>>>> fd63c612abdd72c177220c6f5782385a931bd768
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
+<<<<<<< HEAD
 /*:17*//*29:*/
 #line 660 "weaver-window_en.tex"
+=======
+/*:15*//*27:*/
+#line 638 "weaver-window.tex"
+>>>>>>> fd63c612abdd72c177220c6f5782385a931bd768
 
 #if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 3
@@ -47,8 +57,13 @@ extern"C"{
 #if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
+<<<<<<< HEAD
 /*:29*/
 #line 102 "weaver-window_en.tex"
+=======
+/*:27*/
+#line 115 "weaver-window.tex"
+>>>>>>> fd63c612abdd72c177220c6f5782385a931bd768
 
 /*3:*/
 #line 152 "weaver-window_en.tex"
