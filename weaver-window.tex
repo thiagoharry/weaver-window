@@ -979,6 +979,7 @@ cabaçalho:
 \iniciocodigo
 @<Cabeçalho OpenGL@>+=
 #if defined(_WIN32)
+#include <windows.h>
 #include <GL/gl.h>
 #endif
 @
@@ -1021,7 +1022,7 @@ e \monoespaco{SetPixelFormat} (que aplica a configuração obtida).
 
 \iniciocodigo
 @<Windows: Configurar OpenGL@>+=
-HDC device_context = GetDC(window);
+device_context = GetDC(window);
 {
   int real_pixel_format;
   if(device_context == NULL){
@@ -1073,12 +1074,14 @@ if(!wglMakeCurrent(device_context, wgl_context)){
 @
 \fimcodigo
 
-Mas para isso precisamos ter declarada a variável de contexto WGL:
+Mas para isso precisamos ter declarada a variável de contexto WGL e
+também a variável de contexto do dispositivo:
 
 \iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(_WIN32)
 static HGLRC wgl_context;
+static HDC device_context;
 #endif
 @
 \fimcodigo

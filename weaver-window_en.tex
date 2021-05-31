@@ -951,6 +951,7 @@ To use OpenGL on Windows, first we need to include the header:
 \iniciocodigo
 @<OpenGL Header@>+=
 #if defined(_WIN32)
+#include <windows.h>
 #include <GL/gl.h>
 #endif
 @
@@ -993,7 +994,7 @@ with \monoespaco{ChoosePixelFormat} and set the configuration with
 \iniciocodigo
 @<Windows: Configure OpenGL@>+=
 {
-  HDC device_context = GetDC(window);
+  device_context = GetDC(window);
   int real_pixel_format;
   if(device_context == NULL){
 #if defined(W_DEBUG_WINDOW)
@@ -1044,11 +1045,13 @@ if(!wglMakeCurrent(device_context, wgl_context)){
 @
 \fimcodigo
 
-But for this we need to have declared the WGL context variable:
+But for this we need to have declared the WGL context variable and the
+device context variable:
 
 @<Local Variables@>+=
 #if defined(_WIN32)
 static HGLRC wgl_context;
+static HDC device_context;
 #endif
 @
 \fimcodigo

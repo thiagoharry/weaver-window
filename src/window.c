@@ -1,5 +1,5 @@
 /*61:*/
-#line 1301 "weaver-window.tex"
+#line 1304 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -27,16 +27,16 @@
 #include <string.h> 
 #endif
 /*:39*/
-#line 1303 "weaver-window.tex"
+#line 1306 "weaver-window.tex"
 
 /*51:*/
-#line 1116 "weaver-window.tex"
+#line 1119 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLuint(*glCreateShader)(GLenum shaderType);
 #endif
 /*:51*/
-#line 1304 "weaver-window.tex"
+#line 1307 "weaver-window.tex"
 
 /*8:*/
 #line 295 "weaver-window.tex"
@@ -96,17 +96,18 @@ static bool already_created_a_class= false;
 static HWND window;
 #endif
 /*:42*//*49:*/
-#line 1079 "weaver-window.tex"
+#line 1081 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HGLRC wgl_context;
+static HDC device_context;
 #endif
 /*:49*//*54:*/
-#line 1163 "weaver-window.tex"
+#line 1166 "weaver-window.tex"
 
 static bool already_have_window= false;
 /*:54*/
-#line 1305 "weaver-window.tex"
+#line 1308 "weaver-window.tex"
 
 /*36:*/
 #line 808 "weaver-window.tex"
@@ -130,7 +131,7 @@ return DefWindowProc(window,msg,param1,param2);
 }
 #endif
 /*:36*//*53:*/
-#line 1146 "weaver-window.tex"
+#line 1149 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -324,7 +325,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:17*/
-#line 1150 "weaver-window.tex"
+#line 1153 "weaver-window.tex"
 
 /*29:*/
 #line 683 "weaver-window.tex"
@@ -377,7 +378,7 @@ return false;
 }
 #endif
 /*:31*/
-#line 1151 "weaver-window.tex"
+#line 1154 "weaver-window.tex"
 
 /*34:*/
 #line 778 "weaver-window.tex"
@@ -452,7 +453,7 @@ return false;
 
 #if defined(_WIN32)
 /*46:*/
-#line 993 "weaver-window.tex"
+#line 994 "weaver-window.tex"
 
 PIXELFORMATDESCRIPTOR pixel_format;
 memset(&pixel_format,0,sizeof(WNDCLASS));
@@ -465,9 +466,9 @@ pixel_format.cColorBits= 24;
 pixel_format.cDepthBits= 32;
 pixel_format.iLayerType= PFD_MAIN_PLANE;
 /*:46*//*47:*/
-#line 1023 "weaver-window.tex"
+#line 1024 "weaver-window.tex"
 
-HDC device_context= GetDC(window);
+device_context= GetDC(window);
 {
 int real_pixel_format;
 if(device_context==NULL){
@@ -494,7 +495,7 @@ return false;
 }
 }
 /*:47*//*48:*/
-#line 1057 "weaver-window.tex"
+#line 1058 "weaver-window.tex"
 
 wgl_context= wglCreateContext(device_context);
 if(wgl_context==NULL){
@@ -512,7 +513,7 @@ GetLastError());
 return false;
 }
 /*:48*//*52:*/
-#line 1126 "weaver-window.tex"
+#line 1129 "weaver-window.tex"
 
 glCreateShader= (GLuint(*)(GLenum))wglGetProcAddress("glCreateShader");
 if(glCreateShader==NULL){
@@ -538,13 +539,13 @@ GetMessage(&msg,NULL,0,0);
 }
 #endif
 /*:44*/
-#line 1152 "weaver-window.tex"
+#line 1155 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
 /*:53*//*55:*/
-#line 1178 "weaver-window.tex"
+#line 1181 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -562,7 +563,7 @@ return true;
 }
 #endif
 /*:55*//*56:*/
-#line 1205 "weaver-window.tex"
+#line 1208 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -578,7 +579,7 @@ return true;
 }
 #endif
 /*:56*//*57:*/
-#line 1228 "weaver-window.tex"
+#line 1231 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -592,7 +593,7 @@ return true;
 }
 #endif
 /*:57*//*58:*/
-#line 1252 "weaver-window.tex"
+#line 1255 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -600,7 +601,7 @@ return eglSwapBuffers(egl_display,egl_window);
 }
 #endif
 /*:58*//*59:*/
-#line 1269 "weaver-window.tex"
+#line 1272 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -609,7 +610,7 @@ return true;
 }
 #endif
 /*:59*//*60:*/
-#line 1286 "weaver-window.tex"
+#line 1289 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wrender_window(void){
@@ -617,6 +618,6 @@ return wglSwapLayerBuffers(device_context,WGL_SWAP_MAIN_PLANE);
 }
 #endif
 /*:60*/
-#line 1306 "weaver-window.tex"
+#line 1309 "weaver-window.tex"
 
 /*:61*/

@@ -27,6 +27,7 @@ extern"C"{
 #line 980 "weaver-window.tex"
 
 #if defined(_WIN32)
+#include <windows.h> 
 #include <GL/gl.h> 
 #endif
 /*:45*/
@@ -63,7 +64,7 @@ bool _Wdestroy_window(void);
 
 bool _Wrender_window(void);
 /*:5*//*50:*/
-#line 1106 "weaver-window.tex"
+#line 1109 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLuint(*glCreateShader)(GLenum shaderType);
