@@ -1,5 +1,5 @@
 /*1:*/
-#line 94 "weaver-window_en.tex"
+#line 108 "weaver-window.tex"
 
 #ifndef WEAVER_WINDOW
 #define WEAVER_WINDOW
@@ -7,49 +7,39 @@
 extern"C"{
 #endif
 #include <stdbool.h>  
-<<<<<<< HEAD
-/*20:*/
-#line 503 "weaver-window_en.tex"
+/*18:*/
+#line 485 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <EGL/egl.h> 
 #include <GLES2/gl2.h> 
 #include <EGL/eglext.h> 
 #endif
-/*:20*//*30:*/
-#line 689 "weaver-window_en.tex"
+/*:18*//*28:*/
+#line 670 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #include <GLES2/gl2.h> 
 #include <SDL/SDL.h> 
 #include <emscripten.h> 
 #endif
-/*:30*//*47:*/
-#line 992 "weaver-window_en.tex"
+/*:28*//*45:*/
+#line 980 "weaver-window.tex"
 
 #if defined(_WIN32)
 #include <GL/gl.h> 
 #endif
-/*:47*/
-#line 101 "weaver-window_en.tex"
+/*:45*/
+#line 115 "weaver-window.tex"
 
-/*17:*/
-#line 458 "weaver-window_en.tex"
-=======
 /*15:*/
-#line 437 "weaver-window.tex"
->>>>>>> fd63c612abdd72c177220c6f5782385a931bd768
+#line 438 "weaver-window.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
-<<<<<<< HEAD
-/*:17*//*29:*/
-#line 660 "weaver-window_en.tex"
-=======
 /*:15*//*27:*/
-#line 638 "weaver-window.tex"
->>>>>>> fd63c612abdd72c177220c6f5782385a931bd768
+#line 639 "weaver-window.tex"
 
 #if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 3
@@ -57,34 +47,29 @@ extern"C"{
 #if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
-<<<<<<< HEAD
-/*:29*/
-#line 102 "weaver-window_en.tex"
-=======
 /*:27*/
-#line 115 "weaver-window.tex"
->>>>>>> fd63c612abdd72c177220c6f5782385a931bd768
+#line 116 "weaver-window.tex"
 
 /*3:*/
-#line 152 "weaver-window_en.tex"
+#line 167 "weaver-window.tex"
 
 bool _Wcreate_window(void);
 /*:3*//*4:*/
-#line 169 "weaver-window_en.tex"
+#line 185 "weaver-window.tex"
 
 bool _Wdestroy_window(void);
 /*:4*//*5:*/
-#line 180 "weaver-window_en.tex"
+#line 196 "weaver-window.tex"
 
 bool _Wrender_window(void);
-/*:5*//*52:*/
-#line 1113 "weaver-window_en.tex"
+/*:5*//*50:*/
+#line 1106 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLuint(*glCreateShader)(GLenum shaderType);
 #endif
-/*:52*/
-#line 103 "weaver-window_en.tex"
+/*:50*/
+#line 117 "weaver-window.tex"
 
 #ifdef __cplusplus
 }

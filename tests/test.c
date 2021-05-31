@@ -141,11 +141,7 @@ void test_opengl(void){
     glEnableVertexAttribArray(pos);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     current_time = initial_time = time(NULL);
-<<<<<<< HEAD
-    while(current_time < initial_time + 3){
-=======
     while(current_time < initial_time + 2){
->>>>>>> fd63c612abdd72c177220c6f5782385a931bd768
       glClear(GL_COLOR_BUFFER_BIT);
       glUseProgram(shader_program);
       glDrawArrays(GL_TRIANGLES, 0, 3);
