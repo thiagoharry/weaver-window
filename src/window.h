@@ -1,5 +1,5 @@
 /*1:*/
-#line 108 "weaver-window.tex"
+#line 94 "weaver-window_en.tex"
 
 #ifndef WEAVER_WINDOW
 #define WEAVER_WINDOW
@@ -7,14 +7,39 @@
 extern"C"{
 #endif
 #include <stdbool.h>  
+/*20:*/
+#line 503 "weaver-window_en.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <EGL/egl.h> 
+#include <GLES2/gl2.h> 
+#include <EGL/eglext.h> 
+#endif
+/*:20*//*30:*/
+#line 689 "weaver-window_en.tex"
+
+#if defined(__EMSCRIPTEN__)
+#include <GLES2/gl2.h> 
+#include <SDL/SDL.h> 
+#include <emscripten.h> 
+#endif
+/*:30*//*47:*/
+#line 992 "weaver-window_en.tex"
+
+#if defined(_WIN32)
+#include <GL/gl.h> 
+#endif
+/*:47*/
+#line 101 "weaver-window_en.tex"
+
 /*17:*/
-#line 479 "weaver-window.tex"
+#line 458 "weaver-window_en.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
 /*:17*//*29:*/
-#line 680 "weaver-window.tex"
+#line 660 "weaver-window_en.tex"
 
 #if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 3
@@ -23,22 +48,28 @@ extern"C"{
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
 /*:29*/
-#line 115 "weaver-window.tex"
+#line 102 "weaver-window_en.tex"
 
 /*3:*/
-#line 166 "weaver-window.tex"
+#line 152 "weaver-window_en.tex"
 
 bool _Wcreate_window(void);
 /*:3*//*4:*/
-#line 184 "weaver-window.tex"
+#line 169 "weaver-window_en.tex"
 
 bool _Wdestroy_window(void);
 /*:4*//*5:*/
-#line 195 "weaver-window.tex"
+#line 180 "weaver-window_en.tex"
 
 bool _Wrender_window(void);
-/*:5*/
-#line 116 "weaver-window.tex"
+/*:5*//*52:*/
+#line 1113 "weaver-window_en.tex"
+
+#if defined(_WIN32)
+extern GLuint(*glCreateShader)(GLenum shaderType);
+#endif
+/*:52*/
+#line 103 "weaver-window_en.tex"
 
 #ifdef __cplusplus
 }

@@ -112,6 +112,7 @@ como uma biblioteca compartilhada. O conteúdo de \monoespaco{window.h}
 extern "C" {
 #endif
 #include <stdbool.h> // Define tipo 'bool'
+@<Cabeçalho OpenGL@>
 @<Define Macros@>
 @<Declarações de Janela@>
 #ifdef __cplusplus
@@ -523,7 +524,7 @@ chama EGL e suas funções e macros são declaradas no seguinte
 cabeçalho:
 
 \iniciocodigo
-@<Cabeçalhos@>+=
+@<Cabeçalho OpenGL@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
@@ -708,7 +709,7 @@ poderemos executar para ajudar.
 Primeiro vamos inserir o cabeçalho do Emscripten com os cabeçalhos SDL:
 
 \iniciocodigo
-@<Cabeçalhos@>+=
+@<Cabeçalho OpenGL@>+=
 #if defined(__EMSCRIPTEN__)
 #include <GLES2/gl2.h>
 #include <SDL/SDL.h>
@@ -1020,7 +1021,7 @@ Para usar o OpenGL no Windows, primeiro precisamos inserir o
 cabaçalho:
 
 \iniciocodigo
-@<Cabeçalhos@>+=
+@<Cabeçalho OpenGL@>+=
 #if defined(_WIN32)
 #include <GL/gl.h>
 #endif
@@ -1126,6 +1127,56 @@ static HGLRC wgl_context;
 @
 \fimcodigo
 
+Todo esse trabalho criou e tornou atual um contexto
+OpenGL. Entretanto, o que foi criado foi um contexto simples demais
+sem suporte a muitos recursos. Nós vamos precisar carregar extensões
+para termos suporte a mais coisas. Por exemplo, shaders. E só então
+criaremos o contexto OpenGL final. O que foi criado foi apenas um
+contexto provisório para sermos capazes de fazer isso.
+
+Uma das coisas que precisamos é carregar as funções necessárias que
+não estiverem definidas por padrão, mas que sejam necessárias para
+manter a compatibilidade com o código OpenGL compilado em outras
+plataformas. Basicamente todas as funções que fizerem parte do OpenGL
+ES 2.0 e que não estiverem definidas por padrão na API padrão
+precisarão ser carregadas à parte.
+
+As funções podem ser carregadas por meio da
+função \monoespaco{wglGetProcAddress}. Por exemplo, para usar a
+função \monoespaco{glCreateShader}, primeiro precisamos declarar um
+ponteiro para ela:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern GLuint (*glCreateShader)(GLenum shaderType);
+#endif
+@
+\fimcodigo
+
+Efetivamente definimos o ponteiro aqui:
+
+\iniciocodigo
+@<Variáveis Globais@>=
+#if defined(_WIN32)
+GLuint (*glCreateShader)(GLenum shaderType);
+#endif
+@
+\fimcodigo
+
+Em seguida carregamos a função com o código:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glCreateShader = (GLuint (*)(GLenum)) wglGetProcAddress("glCreateShader");
+if(glCreateShader == NULL){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Function 'glCreateShader' not supported.\n");
+#endif
+  return false;
+}
+@
+\fimcodigo
 
 \subsecao{2.6. Função de Criação de Janelas}
 
@@ -1262,6 +1313,7 @@ artigo terá a seguinte forma:
 @(src/window.c@>=
 #include "window.h"
 @<Cabeçalhos@>
+@<Variáveis Globais@>
 @<Variáveis Locais@>
 @<Funções@>
 @

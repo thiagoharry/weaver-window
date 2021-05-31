@@ -93,13 +93,13 @@ void test_opengl(void){
   {
     GLint vertex_shader, fragment_shader;
     GLint ret;
-    const GLchar *vertex_shader_source =
+    const char *vertex_shader_source =
       "#version 100\n"
       "attribute vec3 position;\n"
       "void main() {\n"
       "  gl_Position = vec4(position, 1.0);\n"
       "}\n";
-    const GLchar *fragment_shader_source =
+    const char *fragment_shader_source =
       "#version 100\n"
       "void main() {\n"
       "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
@@ -141,7 +141,7 @@ void test_opengl(void){
     glEnableVertexAttribArray(pos);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     current_time = initial_time = time(NULL);
-    while(current_time < initial_time + 1){
+    while(current_time < initial_time + 3){
       glClear(GL_COLOR_BUFFER_BIT);
       glUseProgram(shader_program);
       glDrawArrays(GL_TRIANGLES, 0, 3);

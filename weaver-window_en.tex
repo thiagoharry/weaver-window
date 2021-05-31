@@ -98,6 +98,7 @@ library. The content of \monoespaco{window.h} is:
 extern "C" {
 #endif
 #include <stdbool.h> // Define type 'bool'
+@<OpenGL Header@>
 @<Macro Definition@>
 @<Window Declarations@>
 #ifdef __cplusplus
@@ -499,7 +500,7 @@ In X11, the interface used to program in OpenGL ES is called EGL and
 its functions and macros are declared in the following header:
 
 \iniciocodigo
-@<Headers@>+=
+@<OpenGL Header@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
@@ -685,7 +686,7 @@ execute.
 First we include the Emscripten and SDL headers:
 
 \iniciocodigo
-@<Headers@>+=
+@<OpenGL Header@>+=
 #if defined(__EMSCRIPTEN__)
 #include <GLES2/gl2.h>
 #include <SDL/SDL.h>
@@ -846,9 +847,6 @@ case WM_DESTROY:
 @
 \fimcodigo
 
-
-XXX
-
 Now we need to create a class for our window. The class should have an
 unique non-conflicting name. We also pass an identifier with the
 instance of our program (that we get
@@ -991,7 +989,7 @@ a loop until we get a message saying that the window was created:
 To use OpenGL on Windows, first we need to include the header:
 
 \iniciocodigo
-@<Headers@>+=
+@<OpenGL Header@>+=
 #if defined(_WIN32)
 #include <GL/gl.h>
 #endif
@@ -1092,6 +1090,54 @@ But for this we need to have declared the WGL context variable:
 #if defined(_WIN32)
 static HGLRC wgl_context;
 #endif
+@
+\fimcodigo
+
+All this work created an OpenGL context and made it current. However,
+the created context is too simple and do not support all that we
+need. We need to load extensions to have access to more
+capacities. For example, shaders. Only after loading extensions we
+will create our final OpenGL context. But the created context above is
+a requeriment to load extensions to create the final context.
+
+One of the things that we need to load are the functions neessary to
+keep compatibility between OpenGL code compiled across different
+platforms. Basically all OpenGL ES 2.0 functions not defined in the
+default API on Windows should be externally loaded.
+
+The functions can be loaded using the
+function \monoespaco{wglGetProcAddress}. For example, to use the
+function \monoespaco{glCreateShader}, first we declare it here:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern GLuint (*glCreateShader)(GLenum shaderType);
+#endif
+@
+\fimcodigo
+
+Next we define the pointer here:
+
+\iniciocodigo
+@<Global Variables@>=
+#if defined(_WIN32)
+GLuint (*glCreateShader)(GLenum shaderType);
+#endif
+@
+\fimcodigo
+
+And then we load the function using:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glCreateShader = (GLuint (*)(GLenum)) wglGetProcAddress("glCreateShader");
+if(glCreateShader == NULL){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Function 'glCreateShader' not supported.\n");
+#endif
+  return false;
+}
 @
 \fimcodigo
 
@@ -1229,6 +1275,7 @@ in this article will have the following organization:
 @(src/window.c@>=
 #include "window.h"
 @<Headers@>
+@<Global Variables@>
 @<Local Variables@>
 @<Functions@>
 @
