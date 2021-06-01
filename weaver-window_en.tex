@@ -781,7 +781,7 @@ using default actions, but for some messages it is best to define
 ourselves the correct action to be taken. The function format is:
 
 \iniciocodigo
-@<Functions@>+=
+@<API Functions@>+=
 #if defined(_WIN32)
 LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2){
   switch(msg){
@@ -1068,9 +1068,37 @@ keep compatibility between OpenGL code compiled across different
 platforms. Basically all OpenGL ES 2.0 functions not defined in the
 default API on Windows should be externally loaded.
 
-The functions can be loaded using the
-function \monoespaco{wglGetProcAddress}. For example, to use the
-function \monoespaco{glCreateShader}, first we declare it here:
+Loading one of these existing functions that are not normally
+accessible because they are considered extensions, can be done using
+the function \monoespaco{wglGetProcAddress} as in the loading function
+below that returns a pointer to the desired function:
+
+\iniciocodigo
+@<Local Functions@>+=
+#if defined(_WIN32)
+static void *load_function(const char *name){
+  void *ret = wglGetProcAddress("glCreateShader");
+  if(ret == NULL || ret == (void *) -1 || ret == (void *) 0x1 ||
+     ret == (void *) 0x2 || ret == (void *) 0x3){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Function '%s' not supported.\n", name);
+#endif
+    return NULL;
+  }
+  return ret;
+}
+#endif
+@
+\fimcodigo
+
+Notice that as revealed by the code above, the
+function \monoespaco{wglGetProcAddress} can return up to 5 different
+values in case of error. Despite the fact that according with the
+documentation, only \monoespaco{NULL} is the correct way to signal an
+error.
+
+For example, to use the function \monoespaco{glCreateShader}, first we
+declare it here:
 
 \iniciocodigo
 @<Window Declarations@>+=
@@ -1090,19 +1118,54 @@ GLuint (*glCreateShader)(GLenum shaderType);
 @
 \fimcodigo
 
-And then we load the function using:
+And then we load the function using our recently defined function:
 
 \iniciocodigo
 @<Windows: Configure OpenGL@>+=
-glCreateShader = (GLuint (*)(GLenum)) wglGetProcAddress("glCreateShader");
-if(glCreateShader == NULL){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Function 'glCreateShader' not supported.\n");
-#endif
+glCreateShader = (GLuint (*)(GLenum)) load_function("glCreateShader");
+if(glCreateShader == NULL)
   return false;
-}
 @
 \fimcodigo
+
+Besides the shader creation function, we need the function that links
+a source code to the created shader and another one to compile the
+shader. This is done by the functions whose pointer are declared below:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
+extern void (*glCompileShader)(GLuint);
+#endif
+@
+\fimcodigo
+
+The declared pointers are positioned here:
+
+\iniciocodigo
+@<Global Variables@>=
+#if defined(_WIN32)
+void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
+void (*glCompileShader)(GLuint);
+#endif
+@
+\fimcodigo
+
+And we load the correct function to our pointers:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glShaderSource = (void (*)GLuint, GLsizei, const GLchar **, const GLint *)
+                    load_function("glCreateShader");
+if(glShaderSource == NULL)
+  return false;
+glCompileShader = (void (*)(GLuint)) load_function("glCompileShader");
+if(glCompileShader == NULL)
+  return false;
+@
+\fimcodigo
+
 
 \subsecao{2.6. Window Creation Function}
 
@@ -1113,7 +1176,7 @@ already was created. This information will be stored in a boolean
 variable:
 
 \iniciocodigo
-@<Functions@>=
+@<API Functions@>=
 bool _Wcreate_window(void){
   if(already_have_window == true)
     return false;
@@ -1145,7 +1208,7 @@ and \monoespaco{XCloseDisplay}. We also check if we really have an
 existing window before trying to close and destroy it.
 
 \iniciocodigo
-@<Functions@>=
+@<API Functions@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
@@ -1171,7 +1234,7 @@ structures and hide the canvas where we were drawing. We do this with
 the following function:
 
 \iniciocodigo
-@<Functions@>+=
+@<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
@@ -1194,7 +1257,7 @@ Closing a window in Windows means calling a simple function to destroy
 the window:
 
 \iniciocodigo
-@<Functions@>+=
+@<API Functions@>+=
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
@@ -1218,7 +1281,7 @@ the front buffer, what is shown in the screen, and vice-versa. This is
 achieved with the following code:
 
 \iniciocodigo
-@<Functions@>+=
+@<API Functions@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
   return eglSwapBuffers(egl_display, egl_window);
@@ -1235,7 +1298,7 @@ Emscripten. So we only use \monoespaco{glFlush} to wait for any
 pending command to execute before resuming our code.
 
 \iniciocodigo
-@<Functions@>+=
+@<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
   glFlush();
@@ -1252,7 +1315,7 @@ window making our drawings visible is
 called \monoespaco{wglSwapLayerBuffers}:
 
 \iniciocodigo
-@<Functions@>+=
+@<API Functions@>+=
 #if defined(_WIN32)
 bool _Wrender_window(void){
   return wglSwapLayerBuffers(device_context, WGL_SWAP_MAIN_PLANE);
@@ -1272,9 +1335,10 @@ in this article will have the following organization:
 @(src/window.c@>=
 #include "window.h"
 @<Headers@>
+@<Local Functions@>
 @<Global Variables@>
 @<Local Variables@>
-@<Functions@>
+@<API Functions@>
 @
 \fimcodigo
 

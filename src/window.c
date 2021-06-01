@@ -1,5 +1,5 @@
-/*61:*/
-#line 1304 "weaver-window.tex"
+/*66:*/
+#line 1383 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -27,16 +27,42 @@
 #include <string.h> 
 #endif
 /*:39*/
-#line 1306 "weaver-window.tex"
+#line 1385 "weaver-window.tex"
 
-/*51:*/
-#line 1119 "weaver-window.tex"
+/*50:*/
+#line 1109 "weaver-window.tex"
+
+#if defined(_WIN32)
+static void*load_function(const char*name){
+void*ret= wglGetProcAddress("glCreateShader");
+if(ret==NULL||ret==(void*)-1||ret==(void*)0x1||
+ret==(void*)0x2||ret==(void*)0x3){
+#if defined(W_DEBUG_WINDOW)
+fprintf(stderr,"ERROR: Function '%s' not supported.\n",name);
+#endif
+return NULL;
+}
+return ret;
+}
+#endif
+/*:50*/
+#line 1386 "weaver-window.tex"
+
+/*52:*/
+#line 1146 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLuint(*glCreateShader)(GLenum shaderType);
 #endif
-/*:51*/
-#line 1307 "weaver-window.tex"
+/*:52*//*56:*/
+#line 1195 "weaver-window.tex"
+
+#if defined(_WIN32)
+void(*glShaderSource)(GLuint,GLsizei,const GLchar**,const GLint*);
+void(*glCompileShader)(GLuint);
+#endif
+/*:56*/
+#line 1387 "weaver-window.tex"
 
 /*8:*/
 #line 295 "weaver-window.tex"
@@ -102,12 +128,12 @@ static HWND window;
 static HGLRC wgl_context;
 static HDC device_context;
 #endif
-/*:49*//*54:*/
-#line 1166 "weaver-window.tex"
+/*:49*//*59:*/
+#line 1245 "weaver-window.tex"
 
 static bool already_have_window= false;
-/*:54*/
-#line 1308 "weaver-window.tex"
+/*:59*/
+#line 1388 "weaver-window.tex"
 
 /*36:*/
 #line 808 "weaver-window.tex"
@@ -130,8 +156,8 @@ return DefWindowProc(window,msg,param1,param2);
 }
 }
 #endif
-/*:36*//*53:*/
-#line 1149 "weaver-window.tex"
+/*:36*//*58:*/
+#line 1228 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -325,7 +351,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:17*/
-#line 1153 "weaver-window.tex"
+#line 1232 "weaver-window.tex"
 
 /*29:*/
 #line 683 "weaver-window.tex"
@@ -378,7 +404,7 @@ return false;
 }
 #endif
 /*:31*/
-#line 1154 "weaver-window.tex"
+#line 1233 "weaver-window.tex"
 
 /*34:*/
 #line 778 "weaver-window.tex"
@@ -512,17 +538,23 @@ GetLastError());
 #endif
 return false;
 }
-/*:48*//*52:*/
-#line 1129 "weaver-window.tex"
+/*:48*//*53:*/
+#line 1157 "weaver-window.tex"
 
-glCreateShader= (GLuint(*)(GLenum))wglGetProcAddress("glCreateShader");
-if(glCreateShader==NULL){
-#if defined(W_DEBUG_WINDOW)
-fprintf(stderr,"ERROR: Function 'glCreateShader' not supported.\n");
-#endif
+glCreateShader= (GLuint(*)(GLenum))load_function("glCreateShader");
+if(glCreateShader==NULL)
 return false;
-}
-/*:52*/
+/*:53*//*57:*/
+#line 1206 "weaver-window.tex"
+
+glShaderSource= (void(*)GLuint,GLsizei,const GLchar**,const GLint*)
+load_function("glCreateShader");
+if(glShaderSource==NULL)
+return false;
+glCompileShader= (void(*)(GLuint))load_function("glCompileShader");
+if(glCompileShader==NULL)
+return false;
+/*:57*/
 #line 951 "weaver-window.tex"
 
 #endif
@@ -539,13 +571,13 @@ GetMessage(&msg,NULL,0,0);
 }
 #endif
 /*:44*/
-#line 1155 "weaver-window.tex"
+#line 1234 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
-/*:53*//*55:*/
-#line 1181 "weaver-window.tex"
+/*:58*//*60:*/
+#line 1260 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -562,8 +594,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:55*//*56:*/
-#line 1208 "weaver-window.tex"
+/*:60*//*61:*/
+#line 1287 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -578,8 +610,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:56*//*57:*/
-#line 1231 "weaver-window.tex"
+/*:61*//*62:*/
+#line 1310 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -592,16 +624,16 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:57*//*58:*/
-#line 1255 "weaver-window.tex"
+/*:62*//*63:*/
+#line 1334 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
 return eglSwapBuffers(egl_display,egl_window);
 }
 #endif
-/*:58*//*59:*/
-#line 1272 "weaver-window.tex"
+/*:63*//*64:*/
+#line 1351 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -609,15 +641,15 @@ glFlush();
 return true;
 }
 #endif
-/*:59*//*60:*/
-#line 1289 "weaver-window.tex"
+/*:64*//*65:*/
+#line 1368 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wrender_window(void){
 return wglSwapLayerBuffers(device_context,WGL_SWAP_MAIN_PLANE);
 }
 #endif
-/*:60*/
-#line 1309 "weaver-window.tex"
+/*:65*/
+#line 1389 "weaver-window.tex"
 
-/*:61*/
+/*:66*/

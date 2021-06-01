@@ -82,13 +82,22 @@ void test_opengl(void){
   GLint shader_program, pos;
   _Wcreate_window();
   const GLubyte *version = glGetString(GL_VERSION);
+  const GLubyte *vendor = glGetString(GL_VENDOR);
   const GLubyte *renderer = glGetString(GL_RENDERER);
-  assert("OpenGL is running", version != NULL && renderer != NULL);
+  const GLubyte *shading = glGetString(GL_SHADING_LANGUAGE_VERSION);
+  assert("OpenGL is running", version != NULL && renderer != NULL &&
+	 vendor != NULL && shading != NULL);
   memcpy(message, "Getting OpenGL Version: ", 25);
   memcpy(&(message[24]), version, strlen((const char *) version) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   memcpy(message, "Getting Renderer: ", 19);
   memcpy(&(message[18]), renderer, strlen((const char *) renderer) + 1);
+  assert(message, glGetError() == GL_NO_ERROR);
+  memcpy(message, "Getting Shading Language Version: ", 35);
+  memcpy(&(message[34]), renderer, strlen((const char *) shading) + 1);
+  assert(message, glGetError() == GL_NO_ERROR);
+  memcpy(message, "Getting OpenGL Vendor: ", 24);
+  memcpy(&(message[23]), renderer, strlen((const char *) vendor) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   {
     GLint vertex_shader, fragment_shader;

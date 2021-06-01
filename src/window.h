@@ -48,7 +48,18 @@ extern"C"{
 #if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
-/*:27*/
+/*:27*//*54:*/
+#line 1167 "weaver-window.tex"
+
+#if defined(_WIN32)
+#define GL_COMPUTE_SHADER         0x91B9
+#define GL_VERTEX_SHADER          0x8B31
+#define GL_TESS_CONTROL_SHADER    0x8E88
+#define GL_TESS_EVALUATION_SHADER 0x8E87
+#define GL_GEOMETRY_SHADER        0x8DD9
+#define GL_FRAGMENT_SHADER        0x8B30
+#endif
+/*:54*/
 #line 116 "weaver-window.tex"
 
 /*3:*/
@@ -63,13 +74,20 @@ bool _Wdestroy_window(void);
 #line 196 "weaver-window.tex"
 
 bool _Wrender_window(void);
-/*:5*//*50:*/
-#line 1109 "weaver-window.tex"
+/*:5*//*51:*/
+#line 1136 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLuint(*glCreateShader)(GLenum shaderType);
 #endif
-/*:50*/
+/*:51*//*55:*/
+#line 1184 "weaver-window.tex"
+
+#if defined(_WIN32)
+extern void(*glShaderSource)(GLuint,GLsizei,const GLchar**,const GLint*);
+extern void(*glCompileShader)(GLuint);
+#endif
+/*:55*/
 #line 117 "weaver-window.tex"
 
 #ifdef __cplusplus

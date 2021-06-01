@@ -805,7 +805,7 @@ teremos que definir. O formato da função que tratará as mensagens
 recebidas pela janela é:
 
 \iniciocodigo
-@<Funções@>+=
+@<Funções da API@>+=
 #if defined(_WIN32)
 LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2){
   switch(msg){
@@ -1100,10 +1100,37 @@ plataformas. Basicamente todas as funções que fizerem parte do OpenGL
 ES 2.0 e que não estiverem definidas por padrão na API padrão
 precisarão ser carregadas à parte.
 
-As funções podem ser carregadas por meio da
-função \monoespaco{wglGetProcAddress}. Por exemplo, para usar a
-função \monoespaco{glCreateShader}, primeiro precisamos declarar um
-ponteiro para ela:
+Carregar uma função existente, mas que não está declarada e acessível
+por ser considerada uma extensão é feito pela função definida abaixo
+que usa
+\monoespaco{wglGetProcAddress} para obter um ponteiro para a função desejada:
+
+\iniciocodigo
+@<Funções Locais@>+=
+#if defined(_WIN32)
+static void *load_function(const char *name){
+  void *ret = wglGetProcAddress("glCreateShader");
+  if(ret == NULL || ret == (void *) -1 || ret == (void *) 0x1 ||
+     ret == (void *) 0x2 || ret == (void *) 0x3){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Function '%s' not supported.\n", name);
+#endif
+    return NULL;
+  }
+  return ret;
+}
+#endif
+@
+\fimcodigo
+
+Note que como indicado pelo código acima, a
+função \monoespaco{wglGetProcAddress} na prática pode indicar erro ou
+falha de carregamento retornando 5 valores diferentes. Embora somente
+o retorno de \monoespaco{NULL} seja realmente documentado como
+correto.
+
+Por exemplo, para usar a função \monoespaco{glCreateShader}, primeiro
+precisamos declarar um ponteiro para ela:
 
 \iniciocodigo
 @<Declarações de Janela@>+=
@@ -1123,19 +1150,71 @@ GLuint (*glCreateShader)(GLenum shaderType);
 @
 \fimcodigo
 
-Em seguida carregamos a função com o código:
+Em seguida carregamos a função com o código da função que recém
+definimos acima:
 
 \iniciocodigo
 @<Windows: Configurar OpenGL@>+=
-glCreateShader = (GLuint (*)(GLenum)) wglGetProcAddress("glCreateShader");
-if(glCreateShader == NULL){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Function 'glCreateShader' not supported.\n");
-#endif
+glCreateShader = (GLuint (*)(GLenum)) load_function("glCreateShader");
+if(glCreateShader == NULL)
   return false;
-}
 @
 \fimcodigo
+
+O tipo de shader a ser criado é escolhido passando uma das macros abaixo:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_COMPUTE_SHADER         0x91B9
+#define GL_VERTEX_SHADER          0x8B31
+#define GL_TESS_CONTROL_SHADER    0x8E88
+#define GL_TESS_EVALUATION_SHADER 0x8E87
+#define GL_GEOMETRY_SHADER        0x8DD9
+#define GL_FRAGMENT_SHADER        0x8B30
+#endif
+@
+\fimcodigo
+
+Além da função para criar um shader, precisamos da função que liga um
+código-fonte de um shader ao shader em si e outra que o compila. Isso
+é feito pela funções cujo ponteiros são declarados abaixo:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
+extern void (*glCompileShader)(GLuint);
+#endif
+@
+\fimcodigo
+
+Os ponteiros declarados são posicionados aqui:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
+void (*glCompileShader)(GLuint);
+#endif
+@
+\fimcodigo
+
+E carregamos a função correta para os ponteiros:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glShaderSource = (void (*)GLuint, GLsizei, const GLchar **, const GLint *)
+                    load_function("glCreateShader");
+if(glShaderSource == NULL)
+  return false;
+glCompileShader = (void (*)(GLuint)) load_function("glCompileShader");
+if(glCompileShader == NULL)
+  return false;
+@
+\fimcodigo
+
+
 
 \subsecao{2.6. Função de Criação de Janelas}
 
@@ -1146,7 +1225,7 @@ criada. Armazenaremos em uma variável se temos ou não uma janela já
 criada.
 
 \iniciocodigo
-@<Funções@>=
+@<Funções da API@>=
 bool _Wcreate_window(void){
   if(already_have_window == true)
     return false;
@@ -1178,7 +1257,7 @@ e \monoespaco{XCloseDisplay}. Também fazemos uma checagem para ver se
 realmente existe uma janela a serfechada e destruída.
 
 \iniciocodigo
-@<Funções@>+=
+@<Funções da API@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
@@ -1205,7 +1284,7 @@ esconder o canvas onde estávamos desenhando. Fazemos isso com a
 seguinte função:
 
 \iniciocodigo
-@<Funções@>+=
+@<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
@@ -1228,7 +1307,7 @@ Fechar a janela no Windows significa chamar uma única função que irá
 encerrá-la:
 
 \iniciocodigo
-@<Funções@>+=
+@<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
@@ -1252,7 +1331,7 @@ onde estávamos desenhando, se torne o buffer dianteiro que é exibido
 na tela e vice-versa:
 
 \iniciocodigo
-@<Funções@>+=
+@<Funções da API@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
   return eglSwapBuffers(egl_display, egl_window);
@@ -1269,7 +1348,7 @@ chamamos \monoespaco{glFlush} para realizar quaisquer operações que
 estejam pendentes no Open GL.
 
 \iniciocodigo
-@<Funções@>+=
+@<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
   glFlush();
@@ -1286,7 +1365,7 @@ assim tornar visíveis os desenhos feitos é
 chamada \monoespaco{wglSwapLayerBuffers}:
 
 \iniciocodigo
-@<Funções@>+=
+@<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wrender_window(void){
   return wglSwapLayerBuffers(device_context, WGL_SWAP_MAIN_PLANE);
@@ -1304,9 +1383,10 @@ artigo terá a seguinte forma:
 @(src/window.c@>=
 #include "window.h"
 @<Cabeçalhos@>
+@<Funções Locais@>
 @<Variáveis Globais@>
 @<Variáveis Locais@>
-@<Funções@>
+@<Funções da API@>
 @
 \fimcodigo
 
