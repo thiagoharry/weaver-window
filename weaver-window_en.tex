@@ -1171,7 +1171,7 @@ The type \monoespaco{GLchar} also must be defined on Windows:
 \iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
-typedef GLchar char;
+typedef char GLchar;
 #endif
 @
 \fimcodigo
@@ -1448,7 +1448,7 @@ functions that will be associated with the following pointers:
 extern void (*glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
                                  GLenum *, GLchar *);
 extern GLint (*glGetAttribLocation)(GLuint, const GLchar *);
-extern void (*glBindAttribLocation)(GLuint, GLuint, cont GLchar *);
+extern void (*glBindAttribLocation)(GLuint, GLuint, const GLchar *);
 #endif
 @
 \fimcodigo
@@ -1667,8 +1667,6 @@ extern void (*glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean,
                                      GLsizei, const void *);
 extern void (*glEnableVertexAttribArray)(GLuint);
 extern void (*glDisableVertexAttribArray)(GLuint);
-extern void (*glDrawArrays)(GLenum, GLint, GLsizei);
-extern void (*glDrawElements)(GLenum, GLsizei, GLenum, const void *);
 #endif
 @
 \fimcodigo
@@ -1690,8 +1688,6 @@ void (*glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean,
                               GLsizei, const void *);
 void (*glEnableVertexAttribArray)(GLuint);
 void (*glDisableVertexAttribArray)(GLuint);
-void (*glDrawArrays)(GLenum, GLint, GLsizei);
-void (*glDrawElements)(GLenum, GLsizei, GLenum, const void *);
 #endif
 @
 \fimcodigo
@@ -1733,11 +1729,6 @@ if(glEnableVertexAttribArray == NULL) return false;
 glDisableVertexAttribArray = (void (*)(GLuint))
                                load_function("glDisableVertexAttribArray");
 if(glDisableVertexAttribArray == NULL) return false;
-glDrawArrays = (void (*)(GLenum, GLint, GLsizei)) load_function("glDrawArrays");
-if(glDrawArrays == NULL) return false;
-glDrawElements = (void (*)(GLenum, GLsizei, GLenum, const void *))
-                    load_function("glDrawElements");
-if(glDrawElements == NULL) return false;
 @
 \fimcodigo
 

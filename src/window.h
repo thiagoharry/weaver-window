@@ -59,7 +59,7 @@ extern"C"{
 #line 1203 "weaver-window.tex"
 
 #if defined(_WIN32)
-typedef GLchar char;
+typedef char GLchar;
 #endif
 /*:55*//*59:*/
 #line 1299 "weaver-window.tex"
@@ -142,7 +142,7 @@ typedef GLchar char;
 #define GL_SAMPER_CUBE 0x8B60
 #endif
 /*:77*//*81:*/
-#line 1782 "weaver-window.tex"
+#line 1773 "weaver-window.tex"
 
 #if defined(_WIN32)
 
@@ -217,9 +217,9 @@ extern void(*glValidadeProgram)(GLuint);
 
 #if defined(_WIN32)
 extern void(*glGetActiveAttrib)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
-GLenum*,GLchar*;)
+GLenum*,GLchar*);
 extern GLint(*glGetAttribLocation)(GLuint,const GLchar*);
-extern void(*glBindAttribLocation)(GLuint,GLuint,cont GLchar*);
+extern void(*glBindAttribLocation)(GLuint,GLuint,const GLchar*);
 #endif
 /*:70*//*74:*/
 #line 1538 "weaver-window.tex"
@@ -264,8 +264,6 @@ extern void(*glVertexAttribPointer)(GLuint,GLint,GLenum,GLboolean,
 GLsizei,const void*);
 extern void(*glEnableVertexAttribArray)(GLuint);
 extern void(*glDisableVertexAttribArray)(GLuint);
-extern void(*glDrawArrays)(GLenum,GLint,GLsizei);
-extern void(*glDrawElements)(GLenum,GLsizei,GLenum,const void*);
 #endif
 /*:78*/
 #line 117 "weaver-window.tex"
