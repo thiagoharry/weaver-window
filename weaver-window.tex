@@ -1129,91 +1129,666 @@ falha de carregamento retornando 5 valores diferentes. Embora somente
 o retorno de \monoespaco{NULL} seja realmente documentado como
 correto.
 
-Por exemplo, para usar a função \monoespaco{glCreateShader}, primeiro
-precisamos declarar um ponteiro para ela:
+Por exemplo, para usar as funções referentes a objetos de shader, primeiro
+precisamos declarar um ponteiro para cada uma delas:
 
 \iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern GLuint (*glCreateShader)(GLenum shaderType);
+extern void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
+extern void (*glCompileShader)(GLuint);
+extern void (*glReleaseShaderCompiler)(void);
+extern void (*glDeleteShader)(GLuint);
 #endif
 @
 \fimcodigo
 
-Efetivamente definimos o ponteiro aqui:
+Em seguida posicionamos os ponteiros como variáveis globais em nosso
+arquivo \monoespaco{window.c}:
 
 \iniciocodigo
 @<Variáveis Globais@>=
 #if defined(_WIN32)
 GLuint (*glCreateShader)(GLenum shaderType);
+void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
+void (*glCompileShader)(GLuint);
+void (*glReleaseShaderCompiler)(void);
+void (*glDeleteShader)(GLuint);
 #endif
 @
 \fimcodigo
 
-Em seguida carregamos a função com o código da função que recém
-definimos acima:
+Em seguida carregamos para cada um dos ponteiros a função
+correspondente usando a função definida um pouco acima de nossa
+declaração de ponteiros:
 
 \iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glCreateShader = (GLuint (*)(GLenum)) load_function("glCreateShader");
 if(glCreateShader == NULL)
   return false;
-@
-\fimcodigo
-
-O tipo de shader a ser criado é escolhido passando uma das macros abaixo:
-
-\iniciocodigo
-@<Define Macros@>+=
-#if defined(_WIN32)
-#define GL_COMPUTE_SHADER         0x91B9
-#define GL_VERTEX_SHADER          0x8B31
-#define GL_TESS_CONTROL_SHADER    0x8E88
-#define GL_TESS_EVALUATION_SHADER 0x8E87
-#define GL_GEOMETRY_SHADER        0x8DD9
-#define GL_FRAGMENT_SHADER        0x8B30
-#endif
-@
-\fimcodigo
-
-Além da função para criar um shader, precisamos da função que liga um
-código-fonte de um shader ao shader em si e outra que o compila. Isso
-é feito pela funções cujo ponteiros são declarados abaixo:
-
-\iniciocodigo
-@<Declarações de Janela@>+=
-#if defined(_WIN32)
-extern void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
-extern void (*glCompileShader)(GLuint);
-#endif
-@
-\fimcodigo
-
-Os ponteiros declarados são posicionados aqui:
-
-\iniciocodigo
-@<Variáveis Globais@>+=
-#if defined(_WIN32)
-void (*glShaderSource)(GLuint, GLsizei, const GLchar **, const GLint *);
-void (*glCompileShader)(GLuint);
-#endif
-@
-\fimcodigo
-
-E carregamos a função correta para os ponteiros:
-
-\iniciocodigo
-@<Windows: Configurar OpenGL@>+=
-glShaderSource = (void (*)GLuint, GLsizei, const GLchar **, const GLint *)
+glShaderSource = (void (*)(GLuint, GLsizei, const GLchar **, const GLint *))
                     load_function("glCreateShader");
 if(glShaderSource == NULL)
   return false;
 glCompileShader = (void (*)(GLuint)) load_function("glCompileShader");
 if(glCompileShader == NULL)
   return false;
+glReleaseShaderCompiler = (void (*)(void))
+                             load_function("glReleaseShaderCompiler");
+if(glReleaseShaderCompiler == NULL)
+  return false;
+glDeleteShader = (void (*)(GLuint)) load_function("glDeleteShader");
+if(glDeleteShader == NULL)
+  return false;
 @
 \fimcodigo
 
+Quando usamos \monoespaco{glCreateShader}, precisamos passar uma
+destas macros como argumento para escolher o tipo de shader criado:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_VERTEX_SHADER          0x8B31
+#define GL_FRAGMENT_SHADER        0x8B30
+#endif
+@
+\fimcodigo
+
+O tipo \monoespaco{GLchar} também precisa ser criado no Windows:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+typedef GLchar char;
+#endif
+@
+\fimcodigo
+
+Após compilar um shader, a ação típica desempenhada é checar se a
+compilação fo bem-sucedida. Isso é feito usando funções que fazem
+consultas com relação à shaders. Em particular, a
+função \monoespaco{glGetShaderiv}. Declaramos abaixo o ponteiro das
+funções relacionadas à consultas a shaders:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern boolean (*glIsShader)(GLuint);
+extern void (*glGetShaderiv)(GLuint, GLenum, GLint *);
+extern void (*glGetAttachedShaders)(GLuint, GLsizei, GLsizei *, GLuint *);
+extern void (*glGetShaderInfoLog)(GLuint, GLsizei, GLsizei *, GLchar *);
+extern void (*glGetShaderSource)(GLuint, GLsizei, GLsizei *, GLchar *);
+extern void (*glGetShaderPrecisionFormat)(GLenum, GLenum, GLint *, GLint *);
+extern void (*glGetVertexAttribfv)(GLuint, GLenum, GLfloat *);
+extern void (*glGetVertexAttribiv)(GLuint, GLenum, GLint *);
+extern void (*glGetVertexAttribPointerv)(GLuint, GLenum, void **);
+extern void (*glGetUniformfv)(GLuint, GLint, GLfloat *);
+extern void (*glGetUniformiv)(GLuint, GLint, GLint *);
+#endif
+@
+\fimcodigo
+
+E posicionamos os ponteiros aqui::
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+boolean (*glIsShader)(GLuint);
+void (*glGetShaderiv)(GLuint, GLenum, GLint *);
+void (*glGetAttachedShaders)(GLuint, GLsizei, GLsizei *, GLuint *);
+void (*glGetShaderInfoLog)(GLuint, GLsizei, GLsizei *, GLchar *);
+void (*glGetShaderSource)(GLuint, GLsizei, GLsizei *, GLchar *);
+void (*glGetShaderPrecisionFormat)(GLenum, GLenum, GLint *, GLint *);
+void (*glGetVertexAttribfv)(GLuint, GLenum, GLfloat *);
+void (*glGetVertexAttribiv)(GLuint, GLenum, GLint *);
+void (*glGetVertexAttribPointerv)(GLuint, GLenum, void **);
+void (*glGetUniformfv)(GLuint, GLint, GLfloat *);
+void (*glGetUniformiv)(GLuint, GLint, GLint *);
+#endif
+@
+\fimcodigo
+
+Carregamos cada uma das funções a seus respectivos ponteiros com o
+código:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glIsShader = (boolean (*)(GLuint)) load_function("glIsShader");
+if(glIsShader == NULL) return false;
+glGetShaderiv = (void (*)(GLuint, GLenum, GLint *))
+                   load_function("glGetShaderiv");
+if(glGetShaderiv == NULL) return false;
+glGetAttachedShaders = (void (*)(GLuint, GLsizei, GLsizei *, GLuint *))
+                         load_function("glGetAttachedShaders");
+if(glGetAttachedShaders == NULL) return false;
+glGetShaderInfoLog = (void (*)(GLuint, GLsizei, GLsizei *, GLchar *))
+                         load_function("glGetShaderInfoLog");
+if(glGetShaderInfoLog == NULL)  return false;
+glGetShaderSource = (void (*)(GLuint, GLsizei, GLsizei *, GLchar *))
+                       load_function("glGetShaderSource");
+if(glGetShaderSource == NULL) return false;
+glGetShaderPrecisionFormat = (void (*)(GLenum, GLenum, GLint *, GLint *))
+                                load_function("glGetShaderPrecisionFormat");
+if(glGetShaderPrecisionFormat == NULL) return false;
+glGetVertexAttribfv = (void (*)(GLuint, GLenum, GLfloat *))
+                         load_function("glGetVertexAttribfv");
+if(glGetVertexAttribfv == NULL) return false;
+glGetVertexAttribiv = (void (*)(GLuint, GLenum, GLint *))
+                        load_function("glGetVertexAttribiv");
+if(glGetVertexAttribiv == NULL) return false;
+glGetVertexAttribPointerv = (void (*)(GLuint, GLenum, void **))
+                               load_function("glGetVertexAttribPointerv");
+if(glGetVertexAttribPointerv == NULL) return false;
+glGetUniformfv = (void (*)(GLuint, GLint, GLfloat *))
+                     load_function("glGetUniformfv");
+if(glGetUniformfv == NULL) return false;
+glGetUniformiv = (void (*)(GLuint, GLint, GLint *))
+                     load_function("glGetUniformiv");
+if(glGetUniformiv == NULL) return false;
+@
+\fimcodigo
+
+Quando a função \monoespaco{glGetShaderiv} é usada, podemos selecionar
+qual informação sobre o shader estamos consultando passando uma das
+macros abaixo:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_SHADER_TYPE          0x8B4F
+#define GL_DELETE_STATUS        0x8B80
+#define GL_COMPILE_STATUS       0x8B81
+#define GL_INFO_LOG_LENGTH      0x8B84
+#define GL_SHADER_SOURCE_LENGTH 0x8B88
+#endif
+@
+\fimcodigo
+
+Quando a função \monoespaco{glGetShaderPrecisionFormat} é usada para
+consultar a precisão de algum tipo, o tipo a ser consultado é definido
+passando uma das seguintes macros:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_LOW_FLOAT    0x8DF0
+#define GL_MEDIUM_FLOAT 0x8DF1
+#define GL_HIGH_FLOAT   0x8DF2
+#define GL_LOW_INT      0x8DF3
+#define GL_MEDIUM_INT   0x8DF4
+#define GL_HIGH_INT     0x8DF5
+#endif
+@
+\fimcodigo
+
+Quando a função \monoespaco{glGetVertexAttribfv}
+ou \monoespaco{glGetVertexAttribiv} é usada para obter informações
+sobre vértices, o tipo de informação desejada é informada passando
+como argumento uma destas macros abaixo:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
+#define GL_VERTEX_ATTRIB_ARRAY_ENABLED        0x8622
+#define GL_VERTEX_ATTRIB_ARRAY_SIZE           0x8623
+#define GL_VERTEX_ATTRIB_ARRAY_STRIDE         0x8624
+#define GL_VERTEX_ATTRIB_ARRAY_TYPE           0x8625
+#define GL_VERTEX_ATTRIB_ARRAY_NORMALIZED     0x886A
+#define GL_CURRENT_VERTEX_ATTRIB              0x8626
+#endif
+@
+\fimcodigo
+
+Já quando usamos a função \monoespaco{glGetVertexzAttribPointerv},
+precisamos passar como um de seus argumentos a macro abaixo:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_VERTEX_ATTRIB_ARRAY_POINTER 0x8645
+#endif
+@
+\fimcodigo
+
+Uma vez que criamos e compilamos shaders, geralmente é desejado criar
+um programa, ligar os shaders a ele e passar a usá-lo. Para permitir
+isso, vamos declarar o ponteiro para cada uma das funções responsáveis
+por lidar com programas:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern GLuint (*glCreateProgram)(void);
+extern void (*glAttachShader)(GLuint, GLuint);
+extern void (*glDetachShader)(GLuint, GLuint);
+extern void (*glLinkProgram)(GLuint);
+extern void (*glUseProgram)(GLuint);
+extern void (*glDeleteProgram)(GLuint);
+#endif
+@
+\fimcodigo
+
+Após declarar, os ponteiros são efetivamente posicionados aqui:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+GLuint (*glCreateProgram)(void);
+void (*glAttachShader)(GLuint, GLuint);
+void (*glDetachShader)(GLuint, GLuint);
+void (*glLinkProgram)(GLuint);
+void (*glUseProgram)(GLuint);
+void (*glDeleteProgram)(GLuint);
+#endif
+@
+\fimcodigo
+
+E inicializamos os ponteiros com as funções adequadas:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glCreateProgram = (GLuint (*)(void)) load_function("glCreateProgram");
+if(glCreateProgram == NULL) return false;
+glAttachShader = (void (*)(GLuint, GLuint)) load_function("glAttachShader");
+if(glAttachShader == NULL) return false;
+glDetachShader = (void (*)(GLuint, GLuint)) load_function("glDetachShader");
+if(glDetachShader == NULL) return false;
+glLinkProgram = (void (*)(GLuint)) load_function("glLinkProgram");
+if(glLinkProgram == NULL) return false;
+glUseProgram = (void (*)(GLuint)) load_function("glUseProgram");
+if(glUseProgram == NULL) return false;
+glDeleteProgram = (void (*)(GLuint)) load_function("glDeleteProgram");
+if(glDeleteProgram == NULL) return false;
+@
+\fimcodigo
+
+Terminada a geração de um programa GLSL, geralmente o usuário irá
+checar se deu tudo certo na criação do programa. E para isso é
+importante prepararmos as funções que fazem consultas a programas:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern GLboolean (*glIsProgram)(GLuint);
+extern void glGetProgramiv(GLuint, GLenum, GLint *);
+extern void glGetProgramInfoLog(GLuint, GLsizei, GLsizei *, GLchar *);
+extern void (*glValidadeProgram)(GLuint);
+#endif
+@
+\fimcodigo
+
+Posicionamos os ponteiros reais aqui:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+GLboolean (*glIsProgram)(GLuint);
+void glGetProgramiv(GLuint, GLenum, GLint *);
+void glGetProgramInfoLog(GLuint, GLsizei, GLsizei *, GLchar *);
+void (*glValidadeProgram)(GLuint);
+#endif
+@
+\fimcodigo
+
+E os inicializamos com as funções reais:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glIsProgram = (GLboolean (*)(GLuint)) load_function("glIsProgram");
+if(glIsProgram == NULL) return false;
+glGetProgramiv = (void (*)(GLuint, GLenum, GLint *))
+                    load_function("glGetProgramiv");
+if(glGetProgramiv == NULL) return false;
+glGetProgramInfoLog = (void (*)(GLuint, GLsizei, GLsizei *, GLchar *))
+                          load_function("glGetProgramInfoLog");
+if(glGetProgramInfoLog == NULL) return false;
+glValidadeProgram = (void (*)(GLuint)) load_function("glValidateProgram");
+if(glValidadeProgram == NULL) return false;
+@
+\fimcodigo
+
+Quando usamos \monoespaco{glGetProgramiv} para obter informação sobre
+um programa, passamos como argumento uma destas macros a seguir para
+selecionar qual informação queremos saber:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_DELETE_STATUS               0x8B80
+#define GL_LINK_STATUS                 0x8B82
+#define GL_VALIDATE_STATUS             0x8B83
+#define GL_INFO_LOG_LENGTH             0x8B84
+#define GL_ATTACHED_SHADERS            0x8B85
+#define GL_ACTIVE_ATTRIBUTES           0x8B89
+#define GL_ACTIVE_ATTRIBUTE_MAX_LENGTH 0x8B8A
+#define GL_ACTIVE_UNIFORMS             0x8B86
+#define GL_ACTIVE_UNIFORM_MAX_LENGTH   0x8B87
+#endif
+@
+\fimcodigo
+
+Já para obter e escolher aributos de vértices dentro de um shader,
+usaremos funções que serão ligadas aos seguintes ponteiros:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern void (*glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
+                                 GLenum *, GLchar *;)
+extern GLint (*glGetAttribLocation)(GLuint, const GLchar *);
+extern void (*glBindAttribLocation)(GLuint, GLuint, cont GLchar *);
+#endif
+@
+\fimcodigo
+
+Que serão posicionados aqui:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+void (*glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
+                                 GLenum *, GLchar *);
+GLint (*glGetAttribLocation)(GLuint, const GLchar *);
+void (*glBindAttribLocation)(GLuint, GLuint, cont GLchar *);
+#endif
+@
+\fimcodigo
+
+E eles são inicializados aqui:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glGetActiveAttrib = (void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
+                     GLenum *, GLchar *)) load_function("glGetActiveAttrib");
+if(glGetActiveAttrib == NULL) return false;
+glGetAttribLocation = (GLint (*)(GLuint, const GLchar *))
+                           load_function("glGetAttribLocation");
+if(glGetAttribLocation == NULL) return false;
+glBindAttribLocationvoid = (void (*)(GLuint, GLuint, cont GLchar *))
+                              load_function("glBindAttribLocation");
+if(glBindAttribLocation == NULL) return false;
+@
+\fimcodigo
+
+O tipo de um atributo de vértice, que é retornado
+por \monoespaco{glGetActiveAttrib} pode ser:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_FLOAT      0x1406
+#define GL_FLOAT_VEC2 0x8B50
+#define GL_FLOAT_VEC3 0x8B51
+#define GL_FLOAT_VEC4 0x8B52
+#define GL_FLOAT_MAT2 0x8B5A
+#define GL_FLOAT_MAT3 0x8B5B
+#define GL_FLOAT_MAT4 0x8B5C
+#endif
+@
+\fimcodigo
+
+E finalmente, as últimas funções relacionadas aos shaders são as
+responsáveis por lidar com variáveis uniformes:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern GLint (*glGetUniformLocation)(GLuint, const GLchar *);
+extern void (*glGetActiveUniform)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
+                                  GLenum *, GLchar *);
+extern void (*glUniform1f)(GLint, GLfloat);
+extern void (*glUniform2f)(GLint, GLfloat, GLfloat);
+extern void (*glUniform3f)(GLint, GLfloat, GLfloat, GLfloat);
+extern void (*glUniform4f)(GLint, GLfloat, GLfloat, GLfloat, GLfloat);
+extern void (*glUniform1i)(GLint, GLint);
+extern void (*glUniform2i)(GLint, GLint, GLint);
+extern void (*glUniform3i)(GLint, GLint, GLint, GLint);
+extern void (*glUniform4i)(GLint, GLint, GLint, GLint, GLint);
+extern void (*glUniform1fv)(GLint, GLsizei, const GLfloat *);
+extern void (*glUniform2fv)(GLint, GLsizei, const GLfloat *);
+extern void (*glUniform3fv)(GLint, GLsizei, const GLfloat *);
+extern void (*glUniform4fv)(GLint, GLsizei, const GLfloat *);
+extern void (*glUniform1iv)(GLint, GLsizei, const GLint *);
+extern void (*glUniform2iv)(GLint, GLsizei, const GLint *);
+extern void (*glUniform3iv)(GLint, GLsizei, const GLint *);
+extern void (*glUniform4iv)(GLint, GLsizei, const GLint *);
+extern void (*glUniformMatrix2fv)(GLint, GLsizei, GLboolean, const GLfloat *);
+extern void (*glUniformMatrix3fv)(GLint, GLsizei, GLboolean, const GLfloat *);
+extern void (*glUniformMatrix4fv)(GLint, GLsizei, GLboolean, const GLfloat *);
+#endif
+@
+\fimcodigo
+
+Estes 21 ponteiros para funções são posicionados aqui:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+GLint (*glGetUniformLocation)(GLuint, const GLchar *);
+void (*glGetActiveUniform)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
+                           GLenum *, GLchar *);
+void (*glUniform1f)(GLint, GLfloat);
+void (*glUniform2f)(GLint, GLfloat, GLfloat);
+void (*glUniform3f)(GLint, GLfloat, GLfloat, GLfloat);
+void (*glUniform4f)(GLint, GLfloat, GLfloat, GLfloat, GLfloat);
+void (*glUniform1i)(GLint, GLint);
+void (*glUniform2i)(GLint, GLint, GLint);
+void (*glUniform3i)(GLint, GLint, GLint, GLint);
+void (*glUniform4i)(GLint, GLint, GLint, GLint, GLint);
+void (*glUniform1fv)(GLint, GLsizei, const GLfloat *);
+void (*glUniform2fv)(GLint, GLsizei, const GLfloat *);
+void (*glUniform3fv)(GLint, GLsizei, const GLfloat *);
+void (*glUniform4fv)(GLint, GLsizei, const GLfloat *);
+void (*glUniform1iv)(GLint, GLsizei, const GLint *);
+void (*glUniform2iv)(GLint, GLsizei, const GLint *);
+void (*glUniform3iv)(GLint, GLsizei, const GLint *);
+void (*glUniform4iv)(GLint, GLsizei, const GLint *);
+void (*glUniformMatrix2fv)(GLint, GLsizei, GLboolean, const GLfloat *);
+void (*glUniformMatrix3fv)(GLint, GLsizei, GLboolean, const GLfloat *);
+void (*glUniformMatrix4fv)(GLint, GLsizei, GLboolean, const GLfloat *);
+#endif
+@
+\fimcodigo
+
+E agora temos que inicializar todos estes ponteiros com suas funções:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glGetUniformLocation = (GLint (*)(GLuint, const GLchar *))
+                            load_function("glGetUniformLocation");
+if(glGetUniformLocation == NULL) return false;
+glGetActiveUniform = (void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
+                      GLenum *, GLchar *)) load_function("glGetActiveUniform");
+if(glGetActiveUniform == NULL) return false;
+glUniform1f = (void (*)(GLint, GLfloat)) load_function("glUniform1f");
+if(glUniform1f == NULL) return false;
+glUniform2f = (void (*)(GLint, GLfloat, GLfloat)) load_function("glUniform2f");
+if(glUniform2f == NULL) return false;
+glUniform3f = (void (*)(GLint, GLfloat, GLfloat, GLfloat))
+                        load_function("glUniform3f");
+if(glUniform3f == NULL) return false;
+glUniform4f = (void (*)(GLint, GLfloat, GLfloat, GLfloat, GLfloat))
+                        load_function("glUniform4f");
+if(glUniform4f == NULL) return false;
+glUniform1i = (void (*)(GLint, GLint)) load_function("glUniform1i");
+if(glUniform1i == NULL) return false;
+glUniform2i = (void (*)(GLint, GLint, GLint)) load_function("glUniform2i");
+if(glUniform2i == NULL) return false;
+glUniform3i = (void (*)(GLint, GLint, GLint, GLint)) load_function("glUniform3i");
+if(glUniform3i == NULL) return false;
+glUniform4i = (void (*)(GLint, GLint, GLint, GLint, GLint))
+                 load_function("glUniform4i");
+if(glUniform4i == NULL) return false;
+glUniform1fv = (void (*)(GLint, GLsizei, const GLfloat *))
+                 load_function("glUniform1fv");
+if(glUniform1fv == NULL) return false;
+glUniform2fv = (void (*)(GLint, GLsizei, const GLfloat *))
+                 load_function("glUniform2fv");
+if(glUniform2fv == NULL) return false;
+glUniform3fv = (void (*)(GLint, GLsizei, const GLfloat *))
+                 load_function("glUniform3fv");
+if(glUniform3fv == NULL) return false;
+glUniform4fv = (void (*)(GLint, GLsizei, const GLfloat *))
+                 load_function("glUniform4fv");
+if(glUniform4fv == NULL) return false;
+glUniform1iv = (void (*)(GLint, GLsizei, const GLint *))
+                 load_function("glUniform1iv");
+if(glUniform1iv == NULL) return false;
+glUniform2iv = (void (*)(GLint, GLsizei, const GLint *))
+                 load_function("glUniform2iv");
+if(glUniform2iv == NULL) return false;
+glUniform3iv = (void (*)(GLint, GLsizei, const GLint *))
+                 load_function("glUniform3iv");
+if(glUniform3iv == NULL) return false;
+glUniform4iv = (void (*)(GLint, GLsizei, const GLint *))
+                 load_function("glUniform4iv");
+if(glUniform4iv == NULL) return false;
+glUniformMatrix2fv = (void (*)(GLint, GLsizei, GLboolean, const GLfloat *))
+                      load_function("glUniformMatrix2fv");
+if(glUniformMatrix2fv == NULL) return false;
+glUniformMatrix3fv = (void (*)(GLint, GLsizei, GLboolean, const GLfloat *))
+                      load_function("glUniformMatrix3fv");
+if(glUniformMatrix3fv == NULL) return false;
+glUniformMatrix4fv = (void (*)(GLint, GLsizei, GLboolean, const GLfloat *))
+                      load_function("glUniformMatrix4fv");
+if(glUniformMatrix4fv == NULL) return false;
+@
+\fimcodigo
+
+As variávei uniformes podem ter o mesmo tipo que atributos de vértice,
+mas podem ter também alguns destes novos tipos:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_INT         0x1404
+#define GL_INT_VEC2    0x8B53
+#define GL_INT_VEC3    0x8B54
+#define GL_INT_VEC4    0x8B55
+#define GL_BOOL        0x8B56
+#define GL_BOOL_VEC2   0x8B57
+#define GL_BOOL_VEC3   0x8B58
+#define GL_BOOL_VEC4   0x8B59
+#define GL_SAMPLER_2D  0x8B5E
+#define GL_SAMPER_CUBE 0x8B60
+#endif
+@
+\fimcodigo
+
+A última coisa que precisamos para renderizar imagens simples é enviar
+vértices para a placa de vídeo. Uma das formas de fazer isso é enviar
+ponteiro para os vértices na placa de vídeo ao invés de enviá-los
+diretamente para acesso mais rápido. Essa opção pode ser feita com as
+funções abaixo:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern void (*glVertexAttrib1f)(GLuint, GLfloat);
+extern void (*glVertexAttrib2f)(GLuint, GLfloat, GLfloat);
+extern void (*glVertexAttrib3f)(GLuint, GLfloat, GLfloat, GLfloat);
+extern void (*glVertexAttrib4f)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat);
+extern void (*glVertexAttrib1fv)(GLuint, GLfloat *);
+extern void (*glVertexAttrib2fv)(GLuint, GLfloat *);
+extern void (*glVertexAttrib3fv)(GLuint, GLfloat *);
+extern void (*glVertexAttrib4fv)(GLuint, GLfloat *);
+extern void (*glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean,
+                                     GLsizei, const void *);
+extern void (*glEnableVertexAttribArray)(GLuint);
+extern void (*glDisableVertexAttribArray)(GLuint);
+extern void (*glDrawArrays)(GLenum, GLint, GLsizei);
+extern void (*glDrawElements)(GLenum, GLsizei, GLenum, const void *);
+#endif
+@
+\fimcodigo
+
+Posicionamos os ponteiros como variáveis globais:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+void (*glVertexAttrib1f)(GLuint, GLfloat);
+void (*glVertexAttrib2f)(GLuint, GLfloat, GLfloat);
+void (*glVertexAttrib3f)(GLuint, GLfloat, GLfloat, GLfloat);
+void (*glVertexAttrib4f)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat);
+void (*glVertexAttrib1fv)(GLuint, GLfloat *);
+void (*glVertexAttrib2fv)(GLuint, GLfloat *);
+void (*glVertexAttrib3fv)(GLuint, GLfloat *);
+void (*glVertexAttrib4fv)(GLuint, GLfloat *);
+void (*glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean,
+                              GLsizei, const void *);
+void (*glEnableVertexAttribArray)(GLuint);
+void (*glDisableVertexAttribArray)(GLuint);
+void (*glDrawArrays)(GLenum, GLint, GLsizei);
+void (*glDrawElements)(GLenum, GLsizei, GLenum, const void *);
+#endif
+@
+\fimcodigo
+
+E as inicializamos:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glVertexAttrib1f = (void (*)(GLuint, GLfloat)) load_function("glVertexAttrib1f");
+if(glVertexAttrib1f == NULL) return false;
+glVertexAttrib2f = (void (*)(GLuint, GLfloat, GLfloat))
+                      load_function("glVertexAttrib2f");
+if(glVertexAttrib2f == NULL) return false;
+glVertexAttrib3f = (void (*)(GLuint, GLfloat, GLfloat, GLfloat))
+                      load_function("glVertexAttrib3f");
+if(glVertexAttrib3f == NULL) return false;
+glVertexAttrib4f = (void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat))
+                      load_function("glVertexAttrib4f");
+if(glVertexAttrib4f == NULL) return false;
+glVertexAttrib1fv = (void (*)(GLuint, GLfloat *))
+                       load_function("glVertexAttrib1fv");
+if(glVertexAttrib1fv == NULL) return false;
+glVertexAttrib2fv = (void (*)(GLuint, GLfloat *))
+                       load_function("glVertexAttrib2fv");
+if(glVertexAttrib2fv == NULL) return false;
+glVertexAttrib3fv = (void (*)(GLuint, GLfloat *))
+                       load_function("glVertexAttrib3fv");
+if(glVertexAttrib3fv == NULL) return false;
+glVertexAttrib4fv = (void (*)(GLuint, GLfloat *))
+                       load_function("glVertexAttrib4fv");
+if(glVertexAttrib4fv == NULL) return false;
+glVertexAttribPointer = (void (*)(GLuint, GLint, GLenum, GLboolean,
+                         GLsizei, const void *))
+                              load_function("glVertexAttribPointer");
+if(glVertexAttribPointer == NULL) return false;
+glEnableVertexAttribArray = (void (*)(GLuint))
+                              load_function("glEnableVertexAttribArray");
+if(glEnableVertexAttribArray == NULL) return false;
+glDisableVertexAttribArray = (void (*)(GLuint))
+                               load_function("glDisableVertexAttribArray");
+if(glDisableVertexAttribArray == NULL) return false;
+glDrawArrays = (void (*)(GLenum, GLint, GLsizei)) load_function("glDrawArrays");
+if(glDrawArrays == NULL) return false;
+glDrawElements = (void (*)(GLenum, GLsizei, GLenum, const void *))
+                    load_function("glDrawElements");
+if(glDrawElements == NULL) return false;
+@
+\fimcodigo
+
+Os atributos de vétices podem ter tipos específicos. Além de tipos que
+já foram definidos (\monoespaco{GL\_FLOAT}), é necessário definir
+também:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+/*#define GL_BYTE           0x1400
+#define GL_UNSIGNED_BYTE  0x1401
+#define GL_SHORT          0x1402
+#define GL_UNSIGNED_SHORT 0x1403*/
+#define GL_FIXED          0x140C
+#endif
+@
+\fimcodigo
 
 
 \subsecao{2.6. Função de Criação de Janelas}
