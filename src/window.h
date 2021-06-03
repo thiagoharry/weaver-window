@@ -208,8 +208,8 @@ extern void(*glDeleteProgram)(GLuint);
 
 #if defined(_WIN32)
 extern GLboolean(*glIsProgram)(GLuint);
-extern void glGetProgramiv(GLuint,GLenum,GLint*);
-extern void glGetProgramInfoLog(GLuint,GLsizei,GLsizei*,GLchar*);
+extern void(*glGetProgramiv)(GLuint,GLenum,GLint*);
+extern void(*glGetProgramInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
 extern void(*glValidadeProgram)(GLuint);
 #endif
 /*:66*//*70:*/

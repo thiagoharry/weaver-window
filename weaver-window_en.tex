@@ -1382,8 +1382,8 @@ functions that deal with program queries:
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern GLboolean (*glIsProgram)(GLuint);
-extern void glGetProgramiv(GLuint, GLenum, GLint *);
-extern void glGetProgramInfoLog(GLuint, GLsizei, GLsizei *, GLchar *);
+extern void (*glGetProgramiv)(GLuint, GLenum, GLint *);
+extern void (*glGetProgramInfoLog)(GLuint, GLsizei, GLsizei *, GLchar *);
 extern void (*glValidadeProgram)(GLuint);
 #endif
 @
@@ -1461,7 +1461,7 @@ The pointers are positioned here:
 void (*glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
                                  GLenum *, GLchar *;)
 GLint (*glGetAttribLocation)(GLuint, const GLchar *);
-void (*glBindAttribLocation)(GLuint, GLuint, cont GLchar *);
+void (*glBindAttribLocation)(GLuint, GLuint, const GLchar *);
 #endif
 @
 \fimcodigo
@@ -1476,7 +1476,7 @@ if(glGetActiveAttrib == NULL) return false;
 glGetAttribLocation = (GLint (*)(GLuint, const GLchar *))
                            load_function("glGetAttribLocation");
 if(glGetAttribLocation == NULL) return false;
-glBindAttribLocationvoid = (void (*)(GLuint, GLuint, cont GLchar *))
+glBindAttribLocationvoid = (void (*)(GLuint, GLuint, const GLchar *))
                               load_function("glBindAttribLocation");
 if(glBindAttribLocation == NULL) return false;
 @

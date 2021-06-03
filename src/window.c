@@ -90,8 +90,8 @@ void(*glDeleteProgram)(GLuint);
 
 #if defined(_WIN32)
 GLboolean(*glIsProgram)(GLuint);
-void glGetProgramiv(GLuint,GLenum,GLint*);
-void glGetProgramInfoLog(GLuint,GLsizei,GLsizei*,GLchar*);
+void(*glGetProgramiv)(GLuint,GLenum,GLint*);
+void(*glGetProgramInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
 void(*glValidadeProgram)(GLuint);
 #endif
 /*:67*//*71:*/
@@ -101,7 +101,7 @@ void(*glValidadeProgram)(GLuint);
 void(*glGetActiveAttrib)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
 GLenum*,GLchar*);
 GLint(*glGetAttribLocation)(GLuint,const GLchar*);
-void(*glBindAttribLocation)(GLuint,GLuint,cont GLchar*);
+void(*glBindAttribLocation)(GLuint,GLuint,const GLchar*);
 #endif
 /*:71*//*75:*/
 #line 1569 "weaver-window.tex"
@@ -716,7 +716,7 @@ if(glGetActiveAttrib==NULL)return false;
 glGetAttribLocation= (GLint(*)(GLuint,const GLchar*))
 load_function("glGetAttribLocation");
 if(glGetAttribLocation==NULL)return false;
-glBindAttribLocationvoid= (void(*)(GLuint,GLuint,cont GLchar*))
+glBindAttribLocationvoid= (void(*)(GLuint,GLuint,const GLchar*))
 load_function("glBindAttribLocation");
 if(glBindAttribLocation==NULL)return false;
 /*:72*//*76:*/
