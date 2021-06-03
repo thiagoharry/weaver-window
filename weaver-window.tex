@@ -1508,7 +1508,7 @@ if(glGetActiveAttrib == NULL) return false;
 glGetAttribLocation = (GLint (*)(GLuint, const GLchar *))
                            load_function("glGetAttribLocation");
 if(glGetAttribLocation == NULL) return false;
-glBindAttribLocationvoid = (void (*)(GLuint, GLuint, const GLchar *))
+glBindAttribLocation = (void (*)(GLuint, GLuint, const GLchar *))
                               load_function("glBindAttribLocation");
 if(glBindAttribLocation == NULL) return false;
 @

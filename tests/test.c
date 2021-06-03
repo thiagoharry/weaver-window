@@ -133,7 +133,7 @@ void test_opengl(void){
     glDeleteShader(fragment_shader);
   }
   {
-    GLuint vbo;
+    //GLuint vbo;
     time_t initial_time, current_time;
     const GLfloat vertices[] = {
       0.0f, 0.5f, 0.0f,
@@ -143,16 +143,17 @@ void test_opengl(void){
     pos = glGetAttribLocation(shader_program, "position");
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glViewport(0, 0, 1366, 768);
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *) 0);
-    glEnableVertexAttribArray(pos);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //glGenBuffers(1, &vbo);
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *) 0);
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
     current_time = initial_time = time(NULL);
     while(current_time < initial_time + 2){
       glClear(GL_COLOR_BUFFER_BIT);
       glUseProgram(shader_program);
+      glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *) vertices);
+      glEnableVertexAttribArray(pos);
       glDrawArrays(GL_TRIANGLES, 0, 3);
       current_time = time(NULL);
       _Wrender_window();
@@ -160,7 +161,7 @@ void test_opengl(void){
       emscripten_sleep(10);
 #endif
     }
-    glDeleteBuffers(1, &vbo);
+    //glDeleteBuffers(1, &vbo);
     glDeleteProgram(shader_program);
   }
   assert("Rendering simple program", glGetError() == GL_NO_ERROR);
