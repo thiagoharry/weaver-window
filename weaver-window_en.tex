@@ -957,9 +957,32 @@ To use OpenGL on Windows, first we need to include the header:
 @
 \fimcodigo
 
-Now we need to specify the format in which pixels will be represented
-on the screen. Using the recommended configuration from the
-documentation, we can set the pixel format with the following struct:
+Configure OpenGL on Windows is a little messy. To start, the default
+function that creates an OpenGL
+context, \monoespaco{wglCreateContext}, is too primitive, without
+support for more recent OpenGL functions. But we can use an
+alternative function to create a modern OpenGL
+context: \monoespaco{wglCreateContextAttribsARB}. Using this function
+we can do some basic stuff, like choosing which OpenGL version we want
+and we can ask for support to modern OpenGL functions.
+
+The problem is that the
+function \monoespaco{wglCreateContextAttribsARB} is not a part of the
+API, but it is an extension. We must load this function using an
+auxiliary function before using it to create a context. But to use the
+function that loads it, we need an existing OpenGL context active.
+
+This can be solved first creating a basic OpenGL context using the
+default API, loading the function that creates a proper context,
+creating a modern context, associating it to our window and loading
+all the necessary function that is not part of the default API. But as
+we already associated a basic OpenGL context to our window, we also
+need to destroy the previously created window and create a new one.
+
+We start creating a basic and temporary OpenGL context. First we
+create a configuration that stores the pixel format for the
+window.Using the recommended configuration from the documentation, we
+set it in a proper struct as below:
 
 \iniciocodigo
 @<Windows: Configure OpenGL@>=
@@ -1056,17 +1079,9 @@ static HDC device_context;
 @
 \fimcodigo
 
-All this work created an OpenGL context and made it current. However,
-the created context is too simple and do not support all that we
-need. We need to load extensions to have access to more
-capacities. For example, shaders. Only after loading extensions we
-will create our final OpenGL context. But the created context above is
-a requeriment to load extensions to create the final context.
-
-One of the things that we need to load are the functions neessary to
-keep compatibility between OpenGL code compiled across different
-platforms. Basically all OpenGL ES 2.0 functions not defined in the
-default API on Windows should be externally loaded.
+All this work created a basic OpenGL context and made it
+current. Having a basic context, now we need to load the function that
+will create the proper OpenGL context.
 
 Loading one of these existing functions that are not normally
 accessible because they are considered extensions, can be done using
@@ -1096,6 +1111,65 @@ function \monoespaco{wglGetProcAddress} can return up to 5 different
 values in case of error. Despite the fact that according with the
 documentation, only \monoespaco{NULL} is the correct way to signal an
 error.
+
+To use this function to load other functions, we first need to declare
+a pointer that will store the memory position for the new loaded
+function. We need to know the function type first. In the case of the
+function that creates real contexts and its associated function that
+chooses the pixel format configuration, its pointers are:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern BOOL (*wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
+                                       int *, UINT *);
+extern HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
+#endif
+@
+\fimcodigo
+
+This is the external declaration that goes
+to \monoespaco{window.h}. The real declaration is positioned
+at \monoespaco{window.c} as a global variable:
+
+\iniciocodigo
+@<Global Variables@>=
+#if defined(_WIN32)
+BOOL (*wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
+                                int *, UINT *);
+HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
+#endif
+@
+\fimcodigo
+
+Once we have the pointers, we can initialize them loading and storing
+in them the functions in which we are interested:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+wglChoosePixelFormatARB = (BOOL (*)(HDC, const int *, const FLOAT *, UINT, int *,
+                           UINT *)) load_function("wglChoosePixelFormatARB");
+if(wglChoosePixelFormatARB == NULL) return false;
+wglCreateContextAttribsARB = (HGLRC (*)(HDC, HGLRC, const int *))
+                               load_function("wglCreateContextAttribsARB");
+if(wglCreateContextAttribsARB == NULL) return false;
+@
+\fimcodigo
+
+If we succeed getting both these functions, then we can destroy the
+window and the context that we have to create new ones:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+  wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(wgl_context);
+  ReleaseDC(window, device_context);
+  DestroyWindow(window);
+@
+\fimcodigo
+
+
+XXX
 
 For example, to use the functions related to shader objects, first we
 need to declare pointer for all them:

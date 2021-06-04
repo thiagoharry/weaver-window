@@ -985,10 +985,33 @@ cabaçalho:
 @
 \fimcodigo
 
-Agora precisamos obter o formato de qual a melhor forma de representar
-pixels no dispositivo em que estamos rodando. Usando a configuração
-recomendada na documentação, podemos definir um formato de píxel com a
-seguinte estrutura:
+Configurar o OpenGL no Windows é um bocado trabahoso. Pra começar, a
+função que cria contexto OpenGL definida por padrão,
+a \monoespaco{wglCreateContext} cria um contexto muito primitivo, sem
+suporte à funções mais recentes OpenGL. Mas existe definida na prática
+uma outra função que cria
+contexto: \monoespaco{wglCreateContextAttribsARB}, a qual permite que
+façamos coisas básicas como pedir por uma versão especípica do OpenGL
+com suporte à funções mais modernas.
+
+O problema é que a função \monoespaco{wglCreateContextAttribsARB} não
+faz parte da API padrão e é considerada uma extensão. Então, para
+podermos criar um contexto OpenGL adequado, precisamos carregar esta
+função primeiro. Por outro lado, para usar a função que carrega
+extensões, um contexto OpenGL já deve estar criado.
+
+A forma de resolver isso é primeiro criar um contexto OpenGL básico e
+primitivo suportado pela API, depois carregar a função de criação de
+contexto moderno, criar o novo contexto, associar o contexto moderno à
+nossa janela e carregar como extensões as funções que precisamos. Mas
+o problema é que já tínhamos carregado o contexto primitivo antes e
+associado ele à janela atual. Por isso precisamos também destruir a
+janela anterior e criar uma nova.
+
+Para começar, vamos criar um contexto OpenGL básico que será
+temporário. Primeiro precisamos criar a configuração do formato de
+pixels dele. Usamos para isso a configuração recomendada na
+documentação:
 
 \iniciocodigo
 @<Windows: Configurar OpenGL@>=
@@ -1086,19 +1109,9 @@ static HDC device_context;
 @
 \fimcodigo
 
-Todo esse trabalho criou e tornou atual um contexto
-OpenGL. Entretanto, o que foi criado foi um contexto simples demais
-sem suporte a muitos recursos. Nós vamos precisar carregar extensões
-para termos suporte a mais coisas. Por exemplo, shaders. E só então
-criaremos o contexto OpenGL final. O que foi criado foi apenas um
-contexto provisório para sermos capazes de fazer isso.
-
-Uma das coisas que precisamos é carregar as funções necessárias que
-não estiverem definidas por padrão, mas que sejam necessárias para
-manter a compatibilidade com o código OpenGL compilado em outras
-plataformas. Basicamente todas as funções que fizerem parte do OpenGL
-ES 2.0 e que não estiverem definidas por padrão na API padrão
-precisarão ser carregadas à parte.
+Todo esse trabalho criou e tornou atual um contexto OpenGL
+básico. Tendo um contexto básico, agora podemos carregar a função que
+criará o contexto OpenGL final.
 
 Carregar uma função existente, mas que não está declarada e acessível
 por ser considerada uma extensão é feito pela função definida abaixo
@@ -1128,6 +1141,66 @@ função \monoespaco{wglGetProcAddress} na prática pode indicar erro ou
 falha de carregamento retornando 5 valores diferentes. Embora somente
 o retorno de \monoespaco{NULL} seja realmente documentado como
 correto.
+
+Para usar esta função e carregar novas funções, primeiro precisamos
+declarar um ponteiro que armazenará a posição de memória onde está a
+nova função que foi carregada. A declaração do ponteiro requer que
+saibamos exatamente o tipo da função. No caso da função que carregará
+o contexto final e sua função auxiliar que escolhe a configuração do
+formato de pixel, a declaração de seus ponteiros é:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern BOOL (*wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
+                                       int *, UINT *);
+extern HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
+#endif
+@
+\fimcodigo
+
+Esta é só a declaração externa que irá para \monoespaco{window.h}. A
+declaração real como variável global posicionaremos
+em \monoespaco{window.c} assim:
+
+\iniciocodigo
+@<Variáveis Globais@>=
+#if defined(_WIN32)
+BOOL (*wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
+                                int *, UINT *);
+HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
+#endif
+@
+\fimcodigo
+
+Uma vez que tenhamos a declaração dos ponteiros, podemos
+inicializá-los carregando para eles as funções nas quais estamos
+interessados:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+wglChoosePixelFormatARB = (BOOL (*)(HDC, const int *, const FLOAT *, UINT, int *,
+                           UINT *)) load_function("wglChoosePixelFormatARB");
+if(wglChoosePixelFormatARB == NULL) return false;
+wglCreateContextAttribsARB = (HGLRC (*)(HDC, HGLRC, const int *))
+                               load_function("wglCreateContextAttribsARB");
+if(wglCreateContextAttribsARB == NULL) return false;
+@
+\fimcodigo
+
+Se conseguimos carregar as duas funções com sucesso, então devemos
+destruir a janela e o contexto atual para criá-los de novo:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+  wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(wgl_context);
+  ReleaseDC(window, device_context);
+  DestroyWindow(window);
+@
+\fimcodigo
+
+XXX
 
 Por exemplo, para usar as funções referentes a objetos de shader, primeiro
 precisamos declarar um ponteiro para cada uma delas:
