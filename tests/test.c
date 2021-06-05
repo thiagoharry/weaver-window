@@ -115,6 +115,7 @@ void test_opengl(void){
       "}\n";
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
+    assert("No errors while using loaded functions", glGetError() == GL_NO_ERROR);
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &ret);
     assert("Compiling simple vertex shader", ret);
