@@ -1200,10 +1200,81 @@ destruir a janela e o contexto atual para criá-los de novo:
 @
 \fimcodigo
 
-XXX
+E agora criamos a janela novamente, buscando respeitar o tamanho
+pedido da janela. Se estivernos em tela cheia, só usamos o máximo do
+tamanho disponível, se não estivermos aí escolhemos o tamanho máximo
+levando em conta a barra do menu iniciar, mas se o usuário definiu um
+tamanho específico e não estamos em tela-cheia, isso é o que terá
+prioridade:
 
-Por exemplo, para usar as funções referentes a objetos de shader, primeiro
-precisamos declarar um ponteiro para cada uma delas:
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+{
+  int size_x, size_y;
+  DWORD fullscreen_flag = WS_POPUP;
+  RECT size;
+  size_x = screen_resolution_x;
+  size_y = screen_resolution_y;
+  SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
+#if defined(W_WINDOW_NO_FULLSCREEN)
+  size_x = size.left - size.right;
+  size_y = size.bottom - size.top;
+  fullscreen_flag = WS_OVERLAPPED;
+#if defined(W_WINDOW_RESOLUTION_X) && W_WINDOW_RESOLUTION_X > 0
+  size_x = W_WINDOW_RESOLUTION_X;
+#endif
+#if defined(W_WINDOW_RESOLUTION_Y) && W_WINDOW_RESOLUTION_Y > 0
+  size_y = W_WINDOW_RESOLUTION_Y;
+#endif
+#endif
+  window = CreateWindowEx(0, class_name,
+                          W_WINDOW_NAME,
+                          fullscreen_flag | WS_VISIBLE,
+                          size.left, size.top, size_x, size_y,
+                          NULL, NULL,
+                          GetModuleHandle(NULL),
+                          NULL);
+device_context = GetDC(window);
+}
+@
+\fimcodigo
+
+Vamos agora configurar o formato de pixel do verdadeiro contexto OpenGL
+que conseguiremos criar agora:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+{
+  const int real_pixel_format[] = {
+    WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+    WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+    WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+    WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+    WGL_COLOR_BITS_ARB, 32,
+    WGL_DEPTH_BITS_ARB, 24,
+    WGL_STENCIL_BITS_ARB, 8,
+    0 };
+  const int attributes[] = {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, W_WINDOW_OPENGL_MAJOR_VERSION,
+    WGL_CONTEXT_MINOR_VERSION_ARB, W_WINDOW_OPENGL_MINOR_VERSION,
+    WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+    0 };
+ int pixel_format = 0;
+ UINT number_of_formats = 0;
+ wglChoosePixelFormatARB(device_context, real_pixel_format, NULL, 1,
+                         &pixel_format, (UINT *) (&number_of_formats));
+ SetPixelFormat(device_context, &pixel_format);
+ wgl_context = wglCreateContextAttribsARB(device_context, 0, attributes);
+ wglMakeCurrent(device_context, wgl_context);
+}
+@
+\fimcodigo
+
+Mas queremos suportar com nossa API as funções presentes no OpenGL ES
+2.0. E tais funções também não fazem parte da API padrão oferecida
+pelo WGL no Windows. O que faremos então é carregar tais funções como
+extensões. Por exemplo, começando com as funções relacionadas à
+criação e gerenciamento de shaders, vamos declarar seus ponteiros:
 
 \iniciocodigo
 @<Declarações de Janela@>+=
