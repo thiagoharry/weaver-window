@@ -1212,6 +1212,7 @@ its real OpenGL context:
 \iniciocodigo
 @<Windows: Configure OpenGL@>+=
 {
+  int ret;
   const int real_pixel_format[] = {
     WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
     WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
@@ -1226,13 +1227,31 @@ its real OpenGL context:
     WGL_CONTEXT_MINOR_VERSION_ARB, W_WINDOW_OPENGL_MINOR_VERSION,
     WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
     0 };
- int pixel_format = 0;
- UINT number_of_formats = 0;
- wglChoosePixelFormatARB(device_context, real_pixel_format, NULL, 1,
-                         &pixel_format, (UINT *) (&number_of_formats));
- SetPixelFormat(device_context, &pixel_format);
- wgl_context = wglCreateContextAttribsARB(device_context, 0, attributes);
- wglMakeCurrent(device_context, wgl_context);
+  int pixel_format = 0;
+  UINT number_of_formats = 0;
+  ret = wglChoosePixelFormatARB(device_context, real_pixel_format, NULL, 1,
+                                &pixel_format, (UINT *) (&number_of_formats));
+  if(ret == FALSE){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: 'wglChoosePixelFormatARB' failed.\n", name);
+#endif
+    return false;
+  }
+  ret = SetPixelFormat(device_context, &pixel_format);
+  if(ret == FALSE){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: 'SetPixelFormat' failed.\n", name);
+#endif
+    return false;
+  }
+  wgl_context = wglCreateContextAttribsARB(device_context, 0, attributes);
+  if(wgl_context == NULL){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: 'wglChoosePixelFormatARB' failed.\n", name);
+#endif
+    return false;
+  }
+  wglMakeCurrent(device_context, wgl_context);
 }
 @
 \fimcodigo
@@ -1241,18 +1260,18 @@ We also need to define most of the macros that we are using:
 
 \iniciocodigo
 @<Headers@>+=
-#define WGL_TYPE_RGBA_ARB              0x202B
-#define WGL_PIXEL_TYPE_ARB             0x2013
-#define WGL_COLOR_BITS_ARB             0x2014
-#define WGL_DEPTH_BITS_ARB             0x2022
-#define WGL_STENCIL_BITS_ARB           0x2023
-#define WGL_DOUBLE_BUFFER_ARB          0x2011
-#define WGL_CONTEXT_FLAGS_ARB          0x2094
-#define WGL_DRAW_TO_WINDOW_ARB         0x2001
-#define WGL_SUPPORT_OPENGL_ARB         0x2010
-#define WGL_CONTEXT_MAJOR_VERSION_ARB  0x2091
-#define WGL_CONTEXT_MINOR_VERSION_ARB  0x2092
-#define WGL_FORWARD_COMPATIBLE_BIT_ARB 0x0002
+#define WGL_TYPE_RGBA_ARB                      0x202B
+#define WGL_PIXEL_TYPE_ARB                     0x2013
+#define WGL_COLOR_BITS_ARB                     0x2014
+#define WGL_DEPTH_BITS_ARB                     0x2022
+#define WGL_STENCIL_BITS_ARB                   0x2023
+#define WGL_DOUBLE_BUFFER_ARB                  0x2011
+#define WGL_CONTEXT_FLAGS_ARB                  0x2094
+#define WGL_DRAW_TO_WINDOW_ARB                 0x2001
+#define WGL_SUPPORT_OPENGL_ARB                 0x2010
+#define WGL_CONTEXT_MAJOR_VERSION_ARB          0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB          0x2092
+#define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
 @
 \fimcodigo
 
