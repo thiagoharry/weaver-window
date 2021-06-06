@@ -1233,21 +1233,21 @@ its real OpenGL context:
                                 &pixel_format, (UINT *) (&number_of_formats));
   if(ret == FALSE){
 #if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: 'wglChoosePixelFormatARB' failed.\n", name);
+    fprintf(stderr, "ERROR: 'wglChoosePixelFormatARB' failed.\n");
 #endif
     return false;
   }
   ret = SetPixelFormat(device_context, &pixel_format);
   if(ret == FALSE){
 #if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: 'SetPixelFormat' failed.\n", name);
+    fprintf(stderr, "ERROR: 'SetPixelFormat' failed.\n");
 #endif
     return false;
   }
   wgl_context = wglCreateContextAttribsARB(device_context, 0, attributes);
   if(wgl_context == NULL){
 #if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: 'wglChoosePixelFormatARB' failed.\n", name);
+    fprintf(stderr, "ERROR: 'wglCreateContextAttribsARB' failed.\n");
 #endif
     return false;
   }
