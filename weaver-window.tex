@@ -632,21 +632,6 @@ static EGLContext egl_context;
 @
 \fimcodigo
 
-E se o usuário não definiu as macros que escolhem qual a versão do
-OpenGL que iremos usar, por padrão será o 3.0:
-
-\iniciocodigo
-@<Define Macros@>=
-#if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
-#define W_WINDOW_OPENGL_MAJOR_VERSION 3
-#endif
-#if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
-#define W_WINDOW_OPENGL_MINOR_VERSION 0
-#endif
-@
-\fimcodigo
-
-
 \subsecao{2.3. Criando uma ``Janela'' em Navegador Web}
 
 Um dos ambientes mais diferentes nos quais nossa API pode executar
@@ -2004,6 +1989,45 @@ aqui:
 \iniciocodigo
 @<Variáveis Locais@>+=
 static bool already_have_window = false;
+@
+\fimcodigo
+
+Há mais uma coisa que é preciso definir para a criação da janela e do
+contexto OpenGL ligado à ela: qual versão do OpenGL iremos usar por
+padrão, caso o usuário não tenha definido para um valor as macros que
+usamos para tomar a decisão.
+
+Caso estejamos rodando o X11, estamos usango o EGL para criar um
+contexto OpenGL ES. Por padrão iremos pedir então para criar um
+contexto OpenGL ES 3.0. Isso fará com que todas as funções e recursos
+do OpenGL ES 2.0 fiquem definidos, além de mais algumas coisas novas
+da versão 3.0.
+
+Se estivermos rodando em navegador de Internet por meio de Web
+Assembly, então estaremos usando WebGL. A versão equivalente ao Open
+GL ES 3.0 é o WebGL 2. Enquanto o primeiro WebGL seria equivalente ao
+OpenGLES 2.0. Neste caso queremos a versão 2.
+
+Já no Windows, nós não temos garantia de que é possível criar um
+contexto OpenGL ES, pois isso depende do hardware em que estamos
+rodando. Sendo assim, pedimos a criação de um contexto OpenGL 4.1, já
+que é a versão mais garantida de funcionar que contém em sua API as
+funções mais modernas do OpenGL Es.
+
+Sendo assim, a nossa macro que define a versão OpenGL é:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(_WIN32) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 4
+#define W_WINDOW_OPENGL_MINOR_VERSION 1
+#elif defined(__EMSCRIPTEN__) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 2
+#define W_WINDOW_OPENGL_MINOR_VERSION 0
+#elif !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 3
+#define W_WINDOW_OPENGL_MINOR_VERSION 0
+#endif
 @
 \fimcodigo
 

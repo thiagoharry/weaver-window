@@ -614,21 +614,6 @@ static EGLContext egl_context;
 @
 \fimcodigo
 
-And if the user did not define the macros that sets the OpenGL
-version, by default we choose version 3.0:
-
-\iniciocodigo
-@<Macro Definition@>=
-#if !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
-#define W_WINDOW_OPENGL_MAJOR_VERSION 3
-#endif
-#if !defined(W_WINDOW_OPENGL_MINOR_VERSION)
-#define W_WINDOW_OPENGL_MINOR_VERSION 0
-#endif
-@
-\fimcodigo
-
-
 \subsecao{2.3. Creating a ``Window'' in a Web Browser}
 
 One of the most different environments where our API can be executed
@@ -1971,6 +1956,39 @@ static bool already_have_window = false;
 @
 \fimcodigo
 
+There is one last thing to define about the window creation, more
+specifically about the OpenL context associated with the created
+window. We need to choose a default OpenGL version to load when the
+used do not set the macros used to choose this.
+
+When we are running in X11, we can use EGL to create an OpenGL ES
+context. In this case, we prefer version 3.0, as is the newer version
+that also supports all OpenGL ES 2.0 resources.
+
+If we are running in a browser using Web Assembly, we want to use
+WebGL 2, as this version is equivalent to OpenGL Es 3.0.
+
+If we are running on Windows, not all drivers and hardware support
+OpenGL ES API. Because of this, we choose to use OpenGL 4.0, as this
+is a more common version that support the modern OpenGL functions used
+by OpenGL ES.
+
+Our macro that sets the OpenGL version, because of this, is:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(_WIN32) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 4
+#define W_WINDOW_OPENGL_MINOR_VERSION 1
+#elif defined(__EMSCRIPTEN__) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 2
+#define W_WINDOW_OPENGL_MINOR_VERSION 0
+#elif !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
+#define W_WINDOW_OPENGL_MAJOR_VERSION 3
+#define W_WINDOW_OPENGL_MINOR_VERSION 0
+#endif
+@
+\fimcodigo
 
 \subsecao{2.7. Closing a Window in X}
 
