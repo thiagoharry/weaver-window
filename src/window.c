@@ -772,9 +772,9 @@ fprintf(stderr,"ERROR: 'wglCreateContextAttribsARB' failed.\n");
 #endif
 return false;
 }
-if(!wglMakeContextCurrent(device_context,wgl_context)){
+if(!wglMakeCurrent(device_context,wgl_context)){
 #if defined(W_DEBUG_WINDOW)
-fprintf(stderr,"ERROR: 'wglMakeContextCurrent' failed.\n");
+fprintf(stderr,"ERROR: 'wglMakeCurrent' failed.\n");
 #endif
 return false;
 }
