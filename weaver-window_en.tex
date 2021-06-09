@@ -1011,9 +1011,7 @@ HWND dummy_window;
   dummy_window_class.lpfnWndProc = WindowProc;
   dummy_window_class.hInstance = GetModuleHandle(NULL);
   dummy_window_class.lpszClassName = "DummyWindow";
-  dummy_window.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-  ret = RegisterClass(&window_class);
-  if(ret == 0){
+  if(!RegisterClass(&dummy_window_class)){
 #if defined(W_DEBUG_WINDOW)
     fprintf(stderr, "ERROR: Failed to register DummyWindow Class. SysError: %d\n",
             GetLastError());
@@ -1199,7 +1197,7 @@ in the modern way with our new function:
     WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
     WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
     WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-    WGL_ACCELERATION_ARB, GL_FULL_ACCELERATION_ARB,
+    WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
     WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
     WGL_COLOR_BITS_ARB, 32,
     WGL_DEPTH_BITS_ARB, 24,
@@ -1207,7 +1205,7 @@ in the modern way with our new function:
     0 };
   int pixel_format_index = 0;
   UINT number_of_formats = 0;
-  if(!wglChoosePixelFormatARB(device_context, real_pixel_format, NULL, 1,
+  if(!wglChoosePixelFormatARB(device_context, pixel_format_attributes, NULL, 1,
                               &pixel_format_index,
                               (UINT *) (&number_of_formats))){
 #if defined(W_DEBUG_WINDOW)
@@ -1217,7 +1215,8 @@ in the modern way with our new function:
   }
   DescribePixelFormat(device_context, pixel_format_index,
                       sizeof(pixel_format_descriptor), &pixel_format_descriptor);
-  if(!SetPixelFormat(device_context, pixel_format_index, &pixel_format)){
+  if(!SetPixelFormat(device_context, pixel_format_index,
+                     &pixel_format_descriptor)){
 #if defined(W_DEBUG_WINDOW)
     fprintf(stderr, "ERROR: 'SetPixelFormat' failed.\n");
 #endif
@@ -1240,7 +1239,7 @@ modern OpenGL context:
     WGL_CONTEXT_MINOR_VERSION_ARB, W_WINDOW_OPENGL_MINOR_VERSION,
     WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
     0 };
-  wgl_context = wglCreateContextAttribsARB(device_context, 0, attributes);
+  wgl_context = wglCreateContextAttribsARB(device_context, 0, opengl_attributes);
   if(wgl_context == NULL){
 #if defined(W_DEBUG_WINDOW)
     fprintf(stderr, "ERROR: 'wglCreateContextAttribsARB' failed.\n");
