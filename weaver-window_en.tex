@@ -942,14 +942,36 @@ To use OpenGL on Windows, first we need to include the header:
 @
 \fimcodigo
 
-Configure OpenGL on Windows is a little messy. To start, the default
-function that creates an OpenGL
+We also need an struct with information about the device where we will
+draw. In our case, a window:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>=
+device_context = GetDC(window);
+@
+\fimcodigo
+
+This struct is declared here with the context that we will soon initialize:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if defined(_WIN32)
+static HGLRC wgl_context;
+static HDC device_context;
+#endif
+@
+\fimcodigo
+
+Besides this, configuring OpenGL on Windows is a little messy. To
+start, the default function that creates an OpenGL
 context, \monoespaco{wglCreateContext}, is too primitive, without
-support for more recent OpenGL functions. But we can use an
-alternative function to create a modern OpenGL
-context: \monoespaco{wglCreateContextAttribsARB}. Using this function
-we can do some basic stuff, like choosing which OpenGL version we want
-and we can ask for support to modern OpenGL functions.
+guaranteed support for more recent OpenGL functions and without
+support for necessary parameters to create a modern OpenGL
+context. But we can use an alternative function to create a modern
+OpenGL context: \monoespaco{wglCreateContextAttribsARB}. Using this
+function we can do some basic stuff, like choosing which OpenGL
+version we want and we can ask for support to modern OpenGL functions
+and that support more parameters.
 
 The problem is that the
 function \monoespaco{wglCreateContextAttribsARB} is not a part of the
@@ -959,69 +981,116 @@ function that loads it, we need an existing OpenGL context active.
 
 This can be solved first creating a basic OpenGL context using the
 default API, loading the function that creates a proper context,
-creating a modern context, associating it to our window and loading
-all the necessary function that is not part of the default API. But as
-we already associated a basic OpenGL context to our window, we also
-need to destroy the previously created window and create a new one.
-
-We start creating a basic and temporary OpenGL context. First we
-create a configuration that stores the pixel format for the
-window.Using the recommended configuration from the documentation, we
-set it in a proper struct as below:
+creating a modern context, associating it to a window and loading all
+the necessary function that is not part of the default API. But it is
+not possible to associate more than one OpenGL context to a single
+window. So to load our function we need to create a dummy window and
+dummy context before:
 
 \iniciocodigo
 @<Windows: Configure OpenGL@>=
-PIXELFORMATDESCRIPTOR pixel_format;
-memset(&pixel_format, 0, sizeof(WNDCLASS));
-pixel_format.nSize = sizeof(PIXELFORMATDESCRIPTOR); // Size of the struct
-pixel_format.nVersion = 1; // Version number
-pixel_format.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
-                       PFD_DOUBLEBUFFER | PFD_DRAW_TO_BITMAP;
-pixel_format.iPixelType = PFD_TYPE_RGBA;
-pixel_format.cColorBits = 24; // 24 bits to RGB colorss
-pixel_format.cDepthBits = 32; // 32 bits to depth buffer
-pixel_format.iLayerType = PFD_MAIN_PLANE;
+{
+@<Windows: Create Dummy Window@>
+@<Windows: Create Dummy Context@>
+@<Windows: Load Initial OpenGL Functions@>
+@<Windows: Remove Dummy Context and Window@>
+}
 @
 \fimcodigo
 
-When we configured EGL, we asked a single bit for each color and for
-the depth channel because EGL considers this as the minimal
-requirement, and in practice will return a configuration with more
-bits than asked. But with WGL is different, these are not the minimal,
-but the recommended requirements. In practice we could end with a
-pixel format with fewer pixels than asked in the depth buffer or for
-each color.
-
-To apply this pixel configuration, first we need a device context to
-the device where we will draw. In our case, a window. We get a device
-context with \monoespaco{GetDC}. Next we try to get the best possible
-pixel format that matches our requirements
-with \monoespaco{ChoosePixelFormat} and set the configuration with
-\monoespaco{SetPixelFormat}.
+First let's create our dummy window. As this will not be our rendering
+window, we do not need to create it using all the specifications from
+the real window:
 
 \iniciocodigo
-@<Windows: Configure OpenGL@>+=
+@<Windows: Create Dummy Window@>=
+HWND dummy_window;
 {
-  device_context = GetDC(window);
-  int real_pixel_format;
-  if(device_context == NULL){
+  WNDCLASS dummy_window_class;
+  memset(&dummy_window_class, 0, sizeof(WNDCLASS));
+  dummy_window_class.lpfnWndProc = WindowProc;
+  dummy_window_class.hInstance = GetModuleHandle(NULL);
+  dummy_window_class.lpszClassName = "DummyWindow";
+  dummy_window.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+  ret = RegisterClass(&window_class);
+  if(ret == 0){
 #if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Failed to get device context. SysError: %d\n",
+    fprintf(stderr, "ERROR: Failed to register DummyWindow Class. SysError: %d\n",
             GetLastError());
 #endif
     return false;
   }
-  real_pixel_format = ChoosePixelFormat(device_context, &pixel_format);
-  if(real_pixel_format == 0){
+  dummy_window = CreateWindowEx(0, dummy_window_class.lpszClassName, "Dummy",
+                                0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+                                CW_USEDEFAULT, 0, 0,
+                                dummy_window_class.hInstance, 0);
+  if(dummy_window == NULL){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed creating window. SysCode: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+}
+@
+\fimcodigo
+
+Now to create a dummy context first we ned to choose an existing pixel
+format similar to what we specify and then we set the pixel format in
+our dummy window:
+
+\iniciocodigo
+@<Windows: Create Dummy Context@>=
+HGLRC dummy_context;
+HDC dummy_device_context = GetDC(dummy_window);
+{
+  PIXELFORMATDESCRIPTOR pixel_format;
+  int chosen_pixel_format;
+  memset(&pixel_format, 0, sizeof(WNDCLASS));
+  pixel_format.nSize = sizeof(PIXELFORMATDESCRIPTOR); // Tamanho da estrutura
+  pixel_format.nVersion = 1; // Número de versão
+  pixel_format.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |
+                         PFD_DOUBLEBUFFER | PFD_DRAW_TO_BITMAP;
+  pixel_format.iPixelType = PFD_TYPE_RGBA;
+  pixel_format.cColorBits = 24; // 24 bits para profundidade de cor
+  pixel_format.cDepthBits = 32; // 32 bits para buffer de profundidade
+  pixel_format.iLayerType = PFD_MAIN_PLANE;
+  chosen_pixel_format = ChoosePixelFormat(dummy_device_context, &pixel_format);
+  if(chosen_pixel_format == 0){
 #if defined(W_DEBUG_WINDOW)
     fprintf(stderr, "ERROR: Failed to choose a pixel format. SysError: %d\n",
             GetLastError());
 #endif
     return false;
   }
-  if(!SetPixelFormat(device_context, real_pixel_format, &pixel_format)){
+  if(! SetPixelFormat(dummy_device_context, chosen_pixel_format, &pixel_format)){
 #if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
+    fprintf(stderr, "ERROR: Failed to set a pixel format. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+  // ...
+@
+\fimcodigo
+
+And after configuring the pixel format, we can get the dummy OpenGL
+context:
+
+\iniciocodigo
+@<Windows: Create Dummy COntext@>+=
+  // ...
+  dummy_context = wglCreateContext(dummy_device_context);
+  if(dummy_context == NULL){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed creating dummy OpenGL context. SysError: %d\n",
+            GetLastError());
+#endif
+    return false;
+  }
+  if(! wglMakeCurrent(dummy_device_context, dummy_context)){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Failed setting dummy OpenGL context. SysError: %d\n",
             GetLastError());
 #endif
     return false;
@@ -1030,47 +1099,10 @@ with \monoespaco{ChoosePixelFormat} and set the configuration with
 @
 \fimcodigo
 
-Finished the configuration, we create the OpenGL context and make it
-current:
-
-\iniciocodigo
-@<Windows: Configure OpenGL@>+=
-wgl_context = wglCreateContext(device_context);
-if(wgl_context == NULL){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
-          GetLastError());
-#endif
-  return false;
-}
-if(!wglMakeCurrent(device_context, wgl_context)){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Failed to set the pixel format. SysError: %d\n",
-          GetLastError());
-#endif
-  return false;
-}
-@
-\fimcodigo
-
-But for this we need to have declared the WGL context variable and the
-device context variable:
-
-@<Local Variables@>+=
-#if defined(_WIN32)
-static HGLRC wgl_context;
-static HDC device_context;
-#endif
-@
-\fimcodigo
-
-All this work created a basic OpenGL context and made it
-current. Having a basic context, now we need to load the function that
-will create the proper OpenGL context.
-
-Loading one of these existing functions that are not normally
-accessible because they are considered extensions, can be done using
-the function \monoespaco{wglGetProcAddress} as in the loading function
+Now we need to load the functions that we need. Loading existing
+functions that are not normally accessible because they are considered
+extensions, can be done using the
+function \monoespaco{wglGetProcAddress} as in the loading function
 below that returns a pointer to the desired function:
 
 \iniciocodigo
@@ -1097,11 +1129,15 @@ values in case of error. Despite the fact that according with the
 documentation, only \monoespaco{NULL} is the correct way to signal an
 error.
 
-To use this function to load other functions, we first need to declare
-a pointer that will store the memory position for the new loaded
-function. We need to know the function type first. In the case of the
-function that creates real contexts and its associated function that
-chooses the pixel format configuration, its pointers are:
+The two needed functions is one that chooses a pixel format (like the
+pixel format chosen above, but with more options and resources) and
+another that creates an OpenGL context (like the dummy context above,
+but also with more options and resources).
+
+To load new functions, first we declare pointers to store the memory
+position where are our new loaded functions. In the case of the two
+functions that we want now, their ponters are declared
+on \monoespaco{window.h} with the code below:
 
 \iniciocodigo
 @<Window Declarations@>+=
@@ -1113,9 +1149,8 @@ extern HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 @
 \fimcodigo
 
-This is the external declaration that goes
-to \monoespaco{window.h}. The real declaration is positioned
-at \monoespaco{window.c} as a global variable:
+
+We also place the real declaration on file \monoespaco{window.c}:
 
 \iniciocodigo
 @<Global Variables@>=
@@ -1131,7 +1166,7 @@ Once we have the pointers, we can initialize them loading and storing
 in them the functions in which we are interested:
 
 \iniciocodigo
-@<Windows: Configure OpenGL@>+=
+@<Windows: Load Initial OpenGL Functions@>+=
 wglChoosePixelFormatARB = (BOOL (*)(HDC, const int *, const FLOAT *, UINT, int *,
                            UINT *)) load_function("wglChoosePixelFormatARB");
 if(wglChoosePixelFormatARB == NULL) return false;
@@ -1141,94 +1176,70 @@ if(wglCreateContextAttribsARB == NULL) return false;
 @
 \fimcodigo
 
-If we succeed getting both these functions, then we can destroy the
-window and the context that we have to create new ones:
+And finally, after loading these two functions, we do not need anymore
+the dummy window and context:
 
 \iniciocodigo
-@<Windows: Configure OpenGL@>+=
-  wglMakeCurrent(NULL, NULL);
-  wglDeleteContext(wgl_context);
-  ReleaseDC(window, device_context);
-  DestroyWindow(window);
+@<Windows: Remove Dummy Context and Window@>=
+wglMakeCurrent(dummy_device_context, 0);
+wglDeleteContext(dummy_context);
+ReleaseDC(dummy_window, dummy_device_context);
+DestroyWindow(dummy_window);
 @
 \fimcodigo
 
-And now we create our window again respecting the expected size. If we
-are in fullscreen, we use the whole screen size. If we are not, but
-the user did not specified a size, we use the screen size without the
-area occupied by the bar where is the start button. But if the user
-specified a size and we are not in fullscreen, we use the specified
-size:
+Now we are ready to choose our pixel format (the OpenGL configuration)
+in the modern way with our new function:
 
 \iniciocodigo
 @<Windows: Configure OpenGL@>+=
 {
-  int size_x, size_y;
-  DWORD fullscreen_flag = WS_POPUP;
-  RECT size;
-  size_x = screen_resolution_x;
-  size_y = screen_resolution_y;
-  SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
-#if defined(W_WINDOW_NO_FULLSCREEN)
-  size_x = size.left - size.right;
-  size_y = size.bottom - size.top;
-  fullscreen_flag = WS_OVERLAPPED;
-#if defined(W_WINDOW_RESOLUTION_X) && W_WINDOW_RESOLUTION_X > 0
-  size_x = W_WINDOW_RESOLUTION_X;
-#endif
-#if defined(W_WINDOW_RESOLUTION_Y) && W_WINDOW_RESOLUTION_Y > 0
-  size_y = W_WINDOW_RESOLUTION_Y;
-#endif
-#endif
-  window = CreateWindowEx(0, class_name,
-                          W_WINDOW_NAME,
-                          fullscreen_flag | WS_VISIBLE,
-                          size.left, size.top, size_x, size_y,
-                          NULL, NULL,
-                          GetModuleHandle(NULL),
-                          NULL);
-}
-@
-\fimcodigo
-
-Now we can finally configure the real pixel format for our window and
-its real OpenGL context:
-
-\iniciocodigo
-@<Windows: Configure OpenGL@>+=
-{
-  int ret;
-  const int real_pixel_format[] = {
+  PIXELFORMATDESCRIPTOR pixel_format_descriptor;
+  const int pixel_format_attributes[] = {
     WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
     WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
     WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+    WGL_ACCELERATION_ARB, GL_FULL_ACCELERATION_ARB,
     WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
     WGL_COLOR_BITS_ARB, 32,
     WGL_DEPTH_BITS_ARB, 24,
     WGL_STENCIL_BITS_ARB, 8,
     0 };
-  const int attributes[] = {
-    WGL_CONTEXT_MAJOR_VERSION_ARB, W_WINDOW_OPENGL_MAJOR_VERSION,
-    WGL_CONTEXT_MINOR_VERSION_ARB, W_WINDOW_OPENGL_MINOR_VERSION,
-    WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-    0 };
-  int pixel_format = 0;
+  int pixel_format_index = 0;
   UINT number_of_formats = 0;
-  ret = wglChoosePixelFormatARB(device_context, real_pixel_format, NULL, 1,
-                                &pixel_format, (UINT *) (&number_of_formats));
-  if(ret == FALSE){
+  if(!wglChoosePixelFormatARB(device_context, real_pixel_format, NULL, 1,
+                              &pixel_format_index,
+                              (UINT *) (&number_of_formats))){
 #if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: 'wglChoosePixelFormatARB' failed.\n");
+     fprintf(stderr, "ERROR: 'wglChoosePixelFormatARB' failed.\n");
 #endif
-    return false;
+     return false;
   }
-  ret = SetPixelFormat(device_context, &pixel_format);
-  if(ret == FALSE){
+  DescribePixelFormat(device_context, pixel_format_index,
+                      sizeof(pixel_format_descriptor), &pixel_format_descriptor);
+  if(!SetPixelFormat(device_context, pixel_format_index, &pixel_format)){
 #if defined(W_DEBUG_WINDOW)
     fprintf(stderr, "ERROR: 'SetPixelFormat' failed.\n");
 #endif
     return false;
-  }
+  } 
+}
+@
+\fimcodigo
+
+
+Now we will specify that we want a context with OpenGL version
+specified by two macros. And then use the funtion that creates a
+modern OpenGL context:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+{
+  const int opengl_attributes[] = {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, W_WINDOW_OPENGL_MAJOR_VERSION,
+    WGL_CONTEXT_MINOR_VERSION_ARB, W_WINDOW_OPENGL_MINOR_VERSION,
+    WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+    0 };
   wgl_context = wglCreateContextAttribsARB(device_context, 0, attributes);
   if(wgl_context == NULL){
 #if defined(W_DEBUG_WINDOW)
@@ -1236,12 +1247,19 @@ its real OpenGL context:
 #endif
     return false;
   }
-  wglMakeCurrent(device_context, wgl_context);
+  if(!wglMakeContextCurrent(device_context, wgl_context)){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: 'wglMakeContextCurrent' failed.\n");
+#endif
+    return false;
+  }
 }
 @
 \fimcodigo
 
-We also need to define most of the macros that we are using:
+While creating a real OpenGL context, we used some macros that are not
+defined. As we use them locally, we declare them in the header of file
+\monoespaco{window.c}:
 
 \iniciocodigo
 @<Headers@>+=
@@ -1250,10 +1268,12 @@ We also need to define most of the macros that we are using:
 #define WGL_COLOR_BITS_ARB                     0x2014
 #define WGL_DEPTH_BITS_ARB                     0x2022
 #define WGL_STENCIL_BITS_ARB                   0x2023
+#define WGL_ACCELERATION_ARB                   0x2003
 #define WGL_DOUBLE_BUFFER_ARB                  0x2011
 #define WGL_CONTEXT_FLAGS_ARB                  0x2094
 #define WGL_DRAW_TO_WINDOW_ARB                 0x2001
 #define WGL_SUPPORT_OPENGL_ARB                 0x2010
+#define WGL_FULL_ACCELERATION_ARB              0x2027
 #define WGL_CONTEXT_MAJOR_VERSION_ARB          0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB          0x2092
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
