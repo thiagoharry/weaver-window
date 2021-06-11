@@ -64,7 +64,7 @@
 
 #if defined(_WIN32)
 static void*load_function(const char*name){
-void*ret= wglGetProcAddress("glCreateShader");
+void*ret= wglGetProcAddress(name);
 if(ret==NULL||ret==(void*)-1||ret==(void*)0x1||
 ret==(void*)0x2||ret==(void*)0x3){
 #if defined(W_DEBUG_WINDOW)
