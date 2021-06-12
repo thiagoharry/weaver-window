@@ -1242,6 +1242,13 @@ do OpenGL) da forma moderna com nossa nova função:
 #endif
      return false;
   }
+  if(number_of_formats == 0){
+#if defined(W_DEBUG_WINDOW)
+     fprintf(stderr,
+             "ERROR: no pixel format returned by 'wglChoosePixelFormatARB'.\n");
+#endif
+     return false;
+  }
   DescribePixelFormat(device_context, pixel_format_index,
                       sizeof(pixel_format_descriptor), &pixel_format_descriptor);
   if(!SetPixelFormat(device_context, pixel_format_index,
@@ -1250,7 +1257,7 @@ do OpenGL) da forma moderna com nossa nova função:
     fprintf(stderr, "ERROR: 'SetPixelFormat' failed.\n");
 #endif
     return false;
-  } 
+  }
 }
 @
 \fimcodigo
