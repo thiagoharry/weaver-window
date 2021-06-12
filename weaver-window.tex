@@ -1169,8 +1169,8 @@ ponteiro delas no cabeçalho \monoespaco{window.h} com o código abaixo:
 \iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
-extern BOOL (*wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
-                                       int *, UINT *);
+extern BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *,
+                                                 UINT, int *, UINT *);
 extern HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 #endif
 @
@@ -1181,8 +1181,8 @@ Também colocamos a declaração real no arquivo \monoespaco{window.c}:
 \iniciocodigo
 @<Variáveis Globais@>=
 #if defined(_WIN32)
-BOOL (*wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
-                                int *, UINT *);
+BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
+                                          int *, UINT *);
 HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 #endif
 @
@@ -1194,8 +1194,9 @@ interessados:
 
 \iniciocodigo
 @<Windows: Carregar Funções OpenGL Iniciais@>+=
-wglChoosePixelFormatARB = (BOOL (*)(HDC, const int *, const FLOAT *, UINT, int *,
-                           UINT *)) load_function("wglChoosePixelFormatARB");
+wglChoosePixelFormatARB = (BOOL (__stdcall *)(HDC, const int *, const FLOAT *,
+                                              UINT, int *, UINT *))
+                          load_function("wglChoosePixelFormatARB");
 if(wglChoosePixelFormatARB == NULL) return false;
 wglCreateContextAttribsARB = (HGLRC (*)(HDC, HGLRC, const int *))
                                load_function("wglCreateContextAttribsARB");
