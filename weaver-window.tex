@@ -1041,13 +1041,11 @@ HWND dummy_window;
   dummy_window_class.lpfnWndProc = WindowProc;
   dummy_window_class.hInstance = GetModuleHandle(NULL);
   dummy_window_class.lpszClassName = "DummyWindow";
-  if(!RegisterClass(&dummy_window_class)){
-#if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Failed to register DummyWindow Class. SysError: %d\n",
-            GetLastError());
-#endif
-    return false;
-  }
+  // Esta função pode falhar se a classe já está registrada. Isso ocorre
+  // quando a função que cria janelas é invocada mais de uma vez. Apenas
+  // ignoramos os erros ao invocar a função abaixo:
+  RegisterClass(&dummy_window_class);
+  SetLastError(0);
   dummy_window = CreateWindowEx(0, dummy_window_class.lpszClassName, "Dummy",
                                 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                                 CW_USEDEFAULT, 0, 0,
