@@ -97,7 +97,7 @@ void test_opengl(void){
   memcpy(&(message[34]), renderer, strlen((const char *) shading) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   memcpy(message, "Getting OpenGL Vendor: ", 24);
-  memcpy(&(message[23]), renderer, strlen((const char *) vendor) + 1);
+  memcpy(&(message[23]), vendor, strlen((const char *) vendor) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   {
     GLint vertex_shader, fragment_shader;

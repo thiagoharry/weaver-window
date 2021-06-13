@@ -792,7 +792,7 @@ glCreateShader= (GLuint(*)(GLenum))load_function("glCreateShader");
 if(glCreateShader==NULL)
 return false;
 glShaderSource= (void(*)(GLuint,GLsizei,const GLchar**,const GLint*))
-load_function("glCreateShader");
+load_function("glShaderSource");
 if(glShaderSource==NULL)
 return false;
 glCompileShader= (void(*)(GLuint))load_function("glCompileShader");
