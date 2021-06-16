@@ -114,22 +114,55 @@ void test_opengl(void){
       "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
       "}\n";
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    assert("Creating vertex shader", vertex_shader != 0);
     glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
     assert("No errors while using loaded functions", glGetError() == GL_NO_ERROR);
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &ret);
     assert("Compiling simple vertex shader", ret);
+    if(!ret){
+      GLint info_len = 0;
+      glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &info_len);
+      if(info_len > 1){
+	char *info_log = (char *) malloc(sizeof(char) * info_len);
+	glGetShaderInfoLog(vertex_shader, info_len, NULL, info_log);
+	fprintf(stderr, "Error compiling vertex shader:\n%s\n", info_log);
+	free(info_log);
+      }
+    }
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    assert("Creating fragmentshader", fragment_shader != 0);
     glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
     glCompileShader(fragment_shader);
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &ret);
     assert("Compiling simple fragment shader", ret);
+    if(!ret){
+      GLint info_len = 0;
+      glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &info_len);
+      if(info_len > 1){
+	char *info_log = (char *) malloc(sizeof(char) * info_len);
+	glGetShaderInfoLog(fragment_shader, info_len, NULL, info_log);
+	fprintf(stderr, "Error compiling fragment shader:\n%s\n", info_log);
+	free(info_log);
+      }
+    }
     shader_program = glCreateProgram();
+    assert("Creating shader program", shader_program != 0);
     glAttachShader(shader_program, vertex_shader);
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
     glGetProgramiv(shader_program, GL_LINK_STATUS, &ret);
     assert("Linking simple shader program", ret);
+    if(!ret){
+      GLint info_len = 0;
+      glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &info_len);
+      if(info_len > 1){
+	char *info_log = (char *) malloc(sizeof(char) * info_len);
+	glGetProgramInfoLog(shader_program, info_len, NULL, info_log);
+	fprintf(stderr, "Error compiling fragment shader:\n%s\n", info_log);
+	free(info_log);
+      }
+    }
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
   }
