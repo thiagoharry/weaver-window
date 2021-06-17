@@ -77,9 +77,9 @@ void test_create_destroy_window(void){
   assert("Can create successive windows", ret);
 }
 
-void test_opengl(void){
+void test_opengl_simple(void){
   char message[128];
-  GLint shader_program, pos;
+  time_t initial_time, current_time;
   _Wcreate_window();
   const GLubyte *version = glGetString(GL_VERSION);
   const GLubyte *vendor = glGetString(GL_VENDOR);
@@ -94,11 +94,27 @@ void test_opengl(void){
   memcpy(&(message[18]), renderer, strlen((const char *) renderer) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   memcpy(message, "Getting Shading Language Version: ", 35);
-  memcpy(&(message[34]), renderer, strlen((const char *) shading) + 1);
+  memcpy(&(message[34]), shading, strlen((const char *) shading) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   memcpy(message, "Getting OpenGL Vendor: ", 24);
   memcpy(&(message[23]), vendor, strlen((const char *) vendor) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
+  current_time = initial_time = time(NULL);
+  while(current_time < initial_time + 2){
+    glClearColor(1.0, 0.5, 0.5, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    current_time = time(NULL);
+    _Wrender_window();
+#if defined(__EMSCRIPTEN__)
+    emscripten_sleep(10);
+#endif
+  }
+  _Wdestroy_window();
+}
+
+void test_opengl_shader(void){
+  GLint shader_program, pos;
+  _Wcreate_window();
   {
     GLint vertex_shader, fragment_shader;
     GLint ret;
@@ -204,7 +220,8 @@ void test_opengl(void){
 
 int main(int argc, char **argv){
   test_create_destroy_window();
-  test_opengl();
+  test_opengl_simple();
+  test_opengl_shader();
   imprime_resultado();
   return 0;
 }
