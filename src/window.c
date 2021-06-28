@@ -1,5 +1,5 @@
 /*100:*/
-#line 2187 "weaver-window.tex"
+#line 2211 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -27,7 +27,7 @@
 #include <string.h> 
 #endif
 /*:38*//*58:*/
-#line 1299 "weaver-window.tex"
+#line 1304 "weaver-window.tex"
 
 #define WGL_TYPE_RGBA_ARB                      0x202B
 #define WGL_PIXEL_TYPE_ARB                     0x2013
@@ -44,7 +44,7 @@
 #define WGL_CONTEXT_MINOR_VERSION_ARB          0x2092
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
 /*:58*//*93:*/
-#line 2040 "weaver-window.tex"
+#line 2064 "weaver-window.tex"
 
 #if defined(_WIN32) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 4
@@ -57,10 +57,10 @@
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
 /*:93*/
-#line 2189 "weaver-window.tex"
+#line 2213 "weaver-window.tex"
 
 /*51:*/
-#line 1134 "weaver-window.tex"
+#line 1139 "weaver-window.tex"
 
 #if defined(_WIN32)
 static void*load_function(const char*name){
@@ -76,10 +76,10 @@ return ret;
 }
 #endif
 /*:51*/
-#line 2190 "weaver-window.tex"
+#line 2214 "weaver-window.tex"
 
 /*53:*/
-#line 1180 "weaver-window.tex"
+#line 1185 "weaver-window.tex"
 
 #if defined(_WIN32)
 BOOL(__stdcall*wglChoosePixelFormatARB)(HDC,const int*,const FLOAT*,UINT,
@@ -87,106 +87,107 @@ int*,UINT*);
 HGLRC(*wglCreateContextAttribsARB)(HDC,HGLRC,const int*);
 #endif
 /*:53*//*60:*/
-#line 1339 "weaver-window.tex"
+#line 1345 "weaver-window.tex"
 
 #if defined(_WIN32)
-GLuint(*glCreateShader)(GLenum shaderType);
-void(*glShaderSource)(GLuint,GLsizei,const GLchar**,const GLint*);
-void(*glCompileShader)(GLuint);
-void(*glReleaseShaderCompiler)(void);
-void(*glDeleteShader)(GLuint);
+GLuint(__stdcall*glCreateShader)(GLenum shaderType);
+void(__stdcall*glShaderSource)(GLuint,GLsizei,const GLchar*const*,
+const GLint*);
+void(__stdcall*glCompileShader)(GLuint);
+void(__stdcall*glReleaseShaderCompiler)(void);
+void(__stdcall*glDeleteShader)(GLuint);
 #endif
 /*:60*//*65:*/
-#line 1425 "weaver-window.tex"
+#line 1435 "weaver-window.tex"
 
 #if defined(_WIN32)
-boolean(*glIsShader)(GLuint);
-void(*glGetShaderiv)(GLuint,GLenum,GLint*);
-void(*glGetAttachedShaders)(GLuint,GLsizei,GLsizei*,GLuint*);
-void(*glGetShaderInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
-void(*glGetShaderSource)(GLuint,GLsizei,GLsizei*,GLchar*);
-void(*glGetShaderPrecisionFormat)(GLenum,GLenum,GLint*,GLint*);
-void(*glGetVertexAttribfv)(GLuint,GLenum,GLfloat*);
-void(*glGetVertexAttribiv)(GLuint,GLenum,GLint*);
-void(*glGetVertexAttribPointerv)(GLuint,GLenum,void**);
-void(*glGetUniformfv)(GLuint,GLint,GLfloat*);
-void(*glGetUniformiv)(GLuint,GLint,GLint*);
+GLboolean(__stdcall*glIsShader)(GLuint);
+void(__stdcall*glGetShaderiv)(GLuint,GLenum,GLint*);
+void(__stdcall*glGetAttachedShaders)(GLuint,GLsizei,GLsizei*,GLuint*);
+void(__stdcall*glGetShaderInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
+void(__stdcall*glGetShaderSource)(GLuint,GLsizei,GLsizei*,GLchar*);
+void(__stdcall*glGetShaderPrecisionFormat)(GLenum,GLenum,GLint*,GLint*);
+void(__stdcall*glGetVertexAttribfv)(GLuint,GLenum,GLfloat*);
+void(__stdcall*glGetVertexAttribiv)(GLuint,GLenum,GLint*);
+void(__stdcall*glGetVertexAttribPointerv)(GLuint,GLenum,void**);
+void(__stdcall*glGetUniformfv)(GLuint,GLint,GLfloat*);
+void(__stdcall*glGetUniformiv)(GLuint,GLint,GLint*);
 #endif
 /*:65*//*73:*/
-#line 1577 "weaver-window.tex"
+#line 1588 "weaver-window.tex"
 
 #if defined(_WIN32)
-GLuint(*glCreateProgram)(void);
-void(*glAttachShader)(GLuint,GLuint);
-void(*glDetachShader)(GLuint,GLuint);
-void(*glLinkProgram)(GLuint);
-void(*glUseProgram)(GLuint);
-void(*glDeleteProgram)(GLuint);
+GLuint(__stdcall*glCreateProgram)(void);
+void(__stdcall*glAttachShader)(GLuint,GLuint);
+void(__stdcall*glDetachShader)(GLuint,GLuint);
+void(__stdcall*glLinkProgram)(GLuint);
+void(__stdcall*glUseProgram)(GLuint);
+void(__stdcall*glDeleteProgram)(GLuint);
 #endif
 /*:73*//*76:*/
-#line 1626 "weaver-window.tex"
+#line 1640 "weaver-window.tex"
 
 #if defined(_WIN32)
-GLboolean(*glIsProgram)(GLuint);
-void(*glGetProgramiv)(GLuint,GLenum,GLint*);
-void(*glGetProgramInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
-void(*glValidadeProgram)(GLuint);
+GLboolean(__stdcall*glIsProgram)(GLuint);
+void(__stdcall*glGetProgramiv)(GLuint,GLenum,GLint*);
+void(__stdcall*glGetProgramInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
+void(__stdcall*glValidadeProgram)(GLuint);
 #endif
 /*:76*//*80:*/
-#line 1690 "weaver-window.tex"
+#line 1705 "weaver-window.tex"
 
 #if defined(_WIN32)
-void(*glGetActiveAttrib)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
+void(__stdcall*glGetActiveAttrib)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
 GLenum*,GLchar*);
-GLint(*glGetAttribLocation)(GLuint,const GLchar*);
-void(*glBindAttribLocation)(GLuint,GLuint,const GLchar*);
+GLint(__stdcall*glGetAttribLocation)(GLuint,const GLchar*);
+void(__stdcall*glBindAttribLocation)(GLuint,GLuint,const GLchar*);
 #endif
 /*:80*//*84:*/
-#line 1768 "weaver-window.tex"
+#line 1787 "weaver-window.tex"
 
 #if defined(_WIN32)
-GLint(*glGetUniformLocation)(GLuint,const GLchar*);
-void(*glGetActiveUniform)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
+GLint(__stdcall*glGetUniformLocation)(GLuint,const GLchar*);
+void(__stdcall*glGetActiveUniform)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
 GLenum*,GLchar*);
-void(*glUniform1f)(GLint,GLfloat);
-void(*glUniform2f)(GLint,GLfloat,GLfloat);
-void(*glUniform3f)(GLint,GLfloat,GLfloat,GLfloat);
-void(*glUniform4f)(GLint,GLfloat,GLfloat,GLfloat,GLfloat);
-void(*glUniform1i)(GLint,GLint);
-void(*glUniform2i)(GLint,GLint,GLint);
-void(*glUniform3i)(GLint,GLint,GLint,GLint);
-void(*glUniform4i)(GLint,GLint,GLint,GLint,GLint);
-void(*glUniform1fv)(GLint,GLsizei,const GLfloat*);
-void(*glUniform2fv)(GLint,GLsizei,const GLfloat*);
-void(*glUniform3fv)(GLint,GLsizei,const GLfloat*);
-void(*glUniform4fv)(GLint,GLsizei,const GLfloat*);
-void(*glUniform1iv)(GLint,GLsizei,const GLint*);
-void(*glUniform2iv)(GLint,GLsizei,const GLint*);
-void(*glUniform3iv)(GLint,GLsizei,const GLint*);
-void(*glUniform4iv)(GLint,GLsizei,const GLint*);
-void(*glUniformMatrix2fv)(GLint,GLsizei,GLboolean,const GLfloat*);
-void(*glUniformMatrix3fv)(GLint,GLsizei,GLboolean,const GLfloat*);
-void(*glUniformMatrix4fv)(GLint,GLsizei,GLboolean,const GLfloat*);
+void(__stdcall*glUniform1f)(GLint,GLfloat);
+void(__stdcall*glUniform2f)(GLint,GLfloat,GLfloat);
+void(__stdcall*glUniform3f)(GLint,GLfloat,GLfloat,GLfloat);
+void(__stdcall*glUniform4f)(GLint,GLfloat,GLfloat,GLfloat,GLfloat);
+void(__stdcall*glUniform1i)(GLint,GLint);
+void(__stdcall*glUniform2i)(GLint,GLint,GLint);
+void(__stdcall*glUniform3i)(GLint,GLint,GLint,GLint);
+void(__stdcall*glUniform4i)(GLint,GLint,GLint,GLint,GLint);
+void(__stdcall*glUniform1fv)(GLint,GLsizei,const GLfloat*);
+void(__stdcall*glUniform2fv)(GLint,GLsizei,const GLfloat*);
+void(__stdcall*glUniform3fv)(GLint,GLsizei,const GLfloat*);
+void(__stdcall*glUniform4fv)(GLint,GLsizei,const GLfloat*);
+void(__stdcall*glUniform1iv)(GLint,GLsizei,const GLint*);
+void(__stdcall*glUniform2iv)(GLint,GLsizei,const GLint*);
+void(__stdcall*glUniform3iv)(GLint,GLsizei,const GLint*);
+void(__stdcall*glUniform4iv)(GLint,GLsizei,const GLint*);
+void(__stdcall*glUniformMatrix2fv)(GLint,GLsizei,GLboolean,const GLfloat*);
+void(__stdcall*glUniformMatrix3fv)(GLint,GLsizei,GLboolean,const GLfloat*);
+void(__stdcall*glUniformMatrix4fv)(GLint,GLsizei,GLboolean,const GLfloat*);
 #endif
 /*:84*//*88:*/
-#line 1909 "weaver-window.tex"
+#line 1935 "weaver-window.tex"
 
 #if defined(_WIN32)
-void(*glVertexAttrib1f)(GLuint,GLfloat);
-void(*glVertexAttrib2f)(GLuint,GLfloat,GLfloat);
-void(*glVertexAttrib3f)(GLuint,GLfloat,GLfloat,GLfloat);
-void(*glVertexAttrib4f)(GLuint,GLfloat,GLfloat,GLfloat,GLfloat);
-void(*glVertexAttrib1fv)(GLuint,GLfloat*);
-void(*glVertexAttrib2fv)(GLuint,GLfloat*);
-void(*glVertexAttrib3fv)(GLuint,GLfloat*);
-void(*glVertexAttrib4fv)(GLuint,GLfloat*);
-void(*glVertexAttribPointer)(GLuint,GLint,GLenum,GLboolean,
+void(__stdcall*glVertexAttrib1f)(GLuint,GLfloat);
+void(__stdcall*glVertexAttrib2f)(GLuint,GLfloat,GLfloat);
+void(__stdcall*glVertexAttrib3f)(GLuint,GLfloat,GLfloat,GLfloat);
+void(__stdcall*glVertexAttrib4f)(GLuint,GLfloat,GLfloat,GLfloat,GLfloat);
+void(__stdcall*glVertexAttrib1fv)(GLuint,GLfloat*);
+void(__stdcall*glVertexAttrib2fv)(GLuint,GLfloat*);
+void(__stdcall*glVertexAttrib3fv)(GLuint,GLfloat*);
+void(__stdcall*glVertexAttrib4fv)(GLuint,GLfloat*);
+void(__stdcall*glVertexAttribPointer)(GLuint,GLint,GLenum,GLboolean,
 GLsizei,const void*);
-void(*glEnableVertexAttribArray)(GLuint);
-void(*glDisableVertexAttribArray)(GLuint);
+void(__stdcall*glEnableVertexAttribArray)(GLuint);
+void(__stdcall*glDisableVertexAttribArray)(GLuint);
 #endif
 /*:88*/
-#line 2191 "weaver-window.tex"
+#line 2215 "weaver-window.tex"
 
 /*8:*/
 #line 295 "weaver-window.tex"
@@ -246,18 +247,18 @@ static bool already_created_a_class= false;
 static HWND window;
 #endif
 /*:41*//*46:*/
-#line 986 "weaver-window.tex"
+#line 991 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HGLRC wgl_context;
 static HDC device_context;
 #endif
 /*:46*//*92:*/
-#line 2010 "weaver-window.tex"
+#line 2034 "weaver-window.tex"
 
 static bool already_have_window= false;
 /*:92*/
-#line 2192 "weaver-window.tex"
+#line 2216 "weaver-window.tex"
 
 /*35:*/
 #line 793 "weaver-window.tex"
@@ -281,7 +282,7 @@ return DefWindowProc(window,msg,param1,param2);
 }
 #endif
 /*:35*//*91:*/
-#line 1993 "weaver-window.tex"
+#line 2017 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -475,7 +476,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:17*/
-#line 1997 "weaver-window.tex"
+#line 2021 "weaver-window.tex"
 
 /*28:*/
 #line 668 "weaver-window.tex"
@@ -528,7 +529,7 @@ return false;
 }
 #endif
 /*:30*/
-#line 1998 "weaver-window.tex"
+#line 2022 "weaver-window.tex"
 
 /*33:*/
 #line 763 "weaver-window.tex"
@@ -603,15 +604,15 @@ return false;
 
 #if defined(_WIN32)
 /*45:*/
-#line 977 "weaver-window.tex"
+#line 982 "weaver-window.tex"
 
 device_context= GetDC(window);
 /*:45*//*47:*/
-#line 1021 "weaver-window.tex"
+#line 1026 "weaver-window.tex"
 
 {
 /*48:*/
-#line 1036 "weaver-window.tex"
+#line 1041 "weaver-window.tex"
 
 HWND dummy_window;
 {
@@ -638,10 +639,10 @@ return false;
 }
 }
 /*:48*/
-#line 1023 "weaver-window.tex"
+#line 1028 "weaver-window.tex"
 
 /*49:*/
-#line 1069 "weaver-window.tex"
+#line 1074 "weaver-window.tex"
 
 HGLRC dummy_context;
 HDC dummy_device_context= GetDC(dummy_window);
@@ -674,7 +675,7 @@ return false;
 }
 
 /*:49*//*50:*/
-#line 1107 "weaver-window.tex"
+#line 1112 "weaver-window.tex"
 
 
 dummy_context= wglCreateContext(dummy_device_context);
@@ -694,10 +695,10 @@ return false;
 }
 }
 /*:50*/
-#line 1024 "weaver-window.tex"
+#line 1029 "weaver-window.tex"
 
 /*54:*/
-#line 1194 "weaver-window.tex"
+#line 1199 "weaver-window.tex"
 
 wglChoosePixelFormatARB= (BOOL(__stdcall*)(HDC,const int*,const FLOAT*,
 UINT,int*,UINT*))
@@ -707,21 +708,21 @@ wglCreateContextAttribsARB= (HGLRC(*)(HDC,HGLRC,const int*))
 load_function("wglCreateContextAttribsARB");
 if(wglCreateContextAttribsARB==NULL)return false;
 /*:54*/
-#line 1025 "weaver-window.tex"
+#line 1030 "weaver-window.tex"
 
 /*55:*/
-#line 1209 "weaver-window.tex"
+#line 1214 "weaver-window.tex"
 
 wglMakeCurrent(dummy_device_context,0);
 wglDeleteContext(dummy_context);
 ReleaseDC(dummy_window,dummy_device_context);
 DestroyWindow(dummy_window);
 /*:55*/
-#line 1026 "weaver-window.tex"
+#line 1031 "weaver-window.tex"
 
 }
 /*:47*//*56:*/
-#line 1221 "weaver-window.tex"
+#line 1226 "weaver-window.tex"
 
 {
 PIXELFORMATDESCRIPTOR pixel_format_descriptor;
@@ -763,7 +764,7 @@ return false;
 }
 }
 /*:56*//*57:*/
-#line 1270 "weaver-window.tex"
+#line 1275 "weaver-window.tex"
 
 {
 const int opengl_attributes[]= {
@@ -786,195 +787,209 @@ return false;
 }
 }
 /*:57*//*61:*/
-#line 1355 "weaver-window.tex"
+#line 1362 "weaver-window.tex"
 
-glCreateShader= (GLuint(*)(GLenum))load_function("glCreateShader");
+glCreateShader= (GLuint(__stdcall*)(GLenum))load_function("glCreateShader");
 if(glCreateShader==NULL)
 return false;
-glShaderSource= (void(*)(GLuint,GLsizei,const GLchar**,const GLint*))
+glShaderSource= (void(__stdcall*)(GLuint,GLsizei,const GLchar*const*,
+const GLint*))
 load_function("glShaderSource");
 if(glShaderSource==NULL)
 return false;
-glCompileShader= (void(*)(GLuint))load_function("glCompileShader");
+glCompileShader= (void(__stdcall*)(GLuint))load_function("glCompileShader");
 if(glCompileShader==NULL)
 return false;
-glReleaseShaderCompiler= (void(*)(void))
+glReleaseShaderCompiler= (void(__stdcall*)(void))
 load_function("glReleaseShaderCompiler");
 if(glReleaseShaderCompiler==NULL)
 return false;
-glDeleteShader= (void(*)(GLuint))load_function("glDeleteShader");
+glDeleteShader= (void(__stdcall*)(GLuint))load_function("glDeleteShader");
 if(glDeleteShader==NULL)
 return false;
 /*:61*//*66:*/
-#line 1446 "weaver-window.tex"
+#line 1456 "weaver-window.tex"
 
-glIsShader= (boolean(*)(GLuint))load_function("glIsShader");
+glIsShader= (GLboolean(__stdcall*)(GLuint))load_function("glIsShader");
 if(glIsShader==NULL)return false;
-glGetShaderiv= (void(*)(GLuint,GLenum,GLint*))
+glGetShaderiv= (void(__stdcall*)(GLuint,GLenum,GLint*))
 load_function("glGetShaderiv");
 if(glGetShaderiv==NULL)return false;
-glGetAttachedShaders= (void(*)(GLuint,GLsizei,GLsizei*,GLuint*))
+glGetAttachedShaders= (void(__stdcall*)(GLuint,GLsizei,GLsizei*,GLuint*))
 load_function("glGetAttachedShaders");
 if(glGetAttachedShaders==NULL)return false;
-glGetShaderInfoLog= (void(*)(GLuint,GLsizei,GLsizei*,GLchar*))
+glGetShaderInfoLog= (void(__stdcall*)(GLuint,GLsizei,GLsizei*,GLchar*))
 load_function("glGetShaderInfoLog");
 if(glGetShaderInfoLog==NULL)return false;
-glGetShaderSource= (void(*)(GLuint,GLsizei,GLsizei*,GLchar*))
+glGetShaderSource= (void(__stdcall*)(GLuint,GLsizei,GLsizei*,GLchar*))
 load_function("glGetShaderSource");
 if(glGetShaderSource==NULL)return false;
-glGetShaderPrecisionFormat= (void(*)(GLenum,GLenum,GLint*,GLint*))
+glGetShaderPrecisionFormat= (void(__stdcall*)(GLenum,GLenum,GLint*,
+GLint*))
 load_function("glGetShaderPrecisionFormat");
 if(glGetShaderPrecisionFormat==NULL)return false;
-glGetVertexAttribfv= (void(*)(GLuint,GLenum,GLfloat*))
+glGetVertexAttribfv= (void(__stdcall*)(GLuint,GLenum,GLfloat*))
 load_function("glGetVertexAttribfv");
 if(glGetVertexAttribfv==NULL)return false;
-glGetVertexAttribiv= (void(*)(GLuint,GLenum,GLint*))
+glGetVertexAttribiv= (void(__stdcall*)(GLuint,GLenum,GLint*))
 load_function("glGetVertexAttribiv");
 if(glGetVertexAttribiv==NULL)return false;
-glGetVertexAttribPointerv= (void(*)(GLuint,GLenum,void**))
+glGetVertexAttribPointerv= (void(__stdcall*)(GLuint,GLenum,void**))
 load_function("glGetVertexAttribPointerv");
 if(glGetVertexAttribPointerv==NULL)return false;
-glGetUniformfv= (void(*)(GLuint,GLint,GLfloat*))
+glGetUniformfv= (void(__stdcall*)(GLuint,GLint,GLfloat*))
 load_function("glGetUniformfv");
 if(glGetUniformfv==NULL)return false;
-glGetUniformiv= (void(*)(GLuint,GLint,GLint*))
+glGetUniformiv= (void(__stdcall*)(GLuint,GLint,GLint*))
 load_function("glGetUniformiv");
 if(glGetUniformiv==NULL)return false;
 /*:66*//*74:*/
-#line 1592 "weaver-window.tex"
+#line 1603 "weaver-window.tex"
 
-glCreateProgram= (GLuint(*)(void))load_function("glCreateProgram");
+glCreateProgram= (GLuint(__stdcall*)(void))load_function("glCreateProgram");
 if(glCreateProgram==NULL)return false;
-glAttachShader= (void(*)(GLuint,GLuint))load_function("glAttachShader");
+glAttachShader= (void(__stdcall*)(GLuint,GLuint))
+load_function("glAttachShader");
 if(glAttachShader==NULL)return false;
-glDetachShader= (void(*)(GLuint,GLuint))load_function("glDetachShader");
+glDetachShader= (void(__stdcall*)(GLuint,GLuint))
+load_function("glDetachShader");
 if(glDetachShader==NULL)return false;
-glLinkProgram= (void(*)(GLuint))load_function("glLinkProgram");
+glLinkProgram= (void(__stdcall*)(GLuint))load_function("glLinkProgram");
 if(glLinkProgram==NULL)return false;
-glUseProgram= (void(*)(GLuint))load_function("glUseProgram");
+glUseProgram= (void(__stdcall*)(GLuint))load_function("glUseProgram");
 if(glUseProgram==NULL)return false;
-glDeleteProgram= (void(*)(GLuint))load_function("glDeleteProgram");
+glDeleteProgram= (void(__stdcall*)(GLuint))load_function("glDeleteProgram");
 if(glDeleteProgram==NULL)return false;
 /*:74*//*77:*/
-#line 1639 "weaver-window.tex"
+#line 1653 "weaver-window.tex"
 
-glIsProgram= (GLboolean(*)(GLuint))load_function("glIsProgram");
+glIsProgram= (GLboolean(__stdcall*)(GLuint))load_function("glIsProgram");
 if(glIsProgram==NULL)return false;
-glGetProgramiv= (void(*)(GLuint,GLenum,GLint*))
+glGetProgramiv= (void(__stdcall*)(GLuint,GLenum,GLint*))
 load_function("glGetProgramiv");
 if(glGetProgramiv==NULL)return false;
-glGetProgramInfoLog= (void(*)(GLuint,GLsizei,GLsizei*,GLchar*))
+glGetProgramInfoLog= (void(__stdcall*)(GLuint,GLsizei,GLsizei*,GLchar*))
 load_function("glGetProgramInfoLog");
 if(glGetProgramInfoLog==NULL)return false;
-glValidadeProgram= (void(*)(GLuint))load_function("glValidateProgram");
+glValidadeProgram= (void(__stdcall*)(GLuint))
+load_function("glValidateProgram");
 if(glValidadeProgram==NULL)return false;
 /*:77*//*81:*/
-#line 1703 "weaver-window.tex"
+#line 1718 "weaver-window.tex"
 
-glGetActiveAttrib= (void(*)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
-GLenum*,GLchar*))load_function("glGetActiveAttrib");
+glGetActiveAttrib= (void(__stdcall*)(GLuint,GLuint,GLsizei,GLsizei*,
+GLint*,GLenum*,GLchar*))
+load_function("glGetActiveAttrib");
 if(glGetActiveAttrib==NULL)return false;
-glGetAttribLocation= (GLint(*)(GLuint,const GLchar*))
+glGetAttribLocation= (GLint(__stdcall*)(GLuint,const GLchar*))
 load_function("glGetAttribLocation");
 if(glGetAttribLocation==NULL)return false;
-glBindAttribLocation= (void(*)(GLuint,GLuint,const GLchar*))
+glBindAttribLocation= (void(__stdcall*)(GLuint,GLuint,const GLchar*))
 load_function("glBindAttribLocation");
 if(glBindAttribLocation==NULL)return false;
 /*:81*//*85:*/
-#line 1799 "weaver-window.tex"
+#line 1818 "weaver-window.tex"
 
-glGetUniformLocation= (GLint(*)(GLuint,const GLchar*))
+glGetUniformLocation= (GLint(__stdcall*)(GLuint,const GLchar*))
 load_function("glGetUniformLocation");
 if(glGetUniformLocation==NULL)return false;
-glGetActiveUniform= (void(*)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
-GLenum*,GLchar*))load_function("glGetActiveUniform");
+glGetActiveUniform= (void(__stdcall*)(GLuint,GLuint,GLsizei,GLsizei*,
+GLint*,GLenum*,GLchar*))
+load_function("glGetActiveUniform");
 if(glGetActiveUniform==NULL)return false;
-glUniform1f= (void(*)(GLint,GLfloat))load_function("glUniform1f");
+glUniform1f= (void(__stdcall*)(GLint,GLfloat))load_function("glUniform1f");
 if(glUniform1f==NULL)return false;
-glUniform2f= (void(*)(GLint,GLfloat,GLfloat))load_function("glUniform2f");
+glUniform2f= (void(__stdcall*)(GLint,GLfloat,GLfloat))
+load_function("glUniform2f");
 if(glUniform2f==NULL)return false;
-glUniform3f= (void(*)(GLint,GLfloat,GLfloat,GLfloat))
+glUniform3f= (void(__stdcall*)(GLint,GLfloat,GLfloat,GLfloat))
 load_function("glUniform3f");
 if(glUniform3f==NULL)return false;
-glUniform4f= (void(*)(GLint,GLfloat,GLfloat,GLfloat,GLfloat))
+glUniform4f= (void(__stdcall*)(GLint,GLfloat,GLfloat,GLfloat,GLfloat))
 load_function("glUniform4f");
 if(glUniform4f==NULL)return false;
-glUniform1i= (void(*)(GLint,GLint))load_function("glUniform1i");
+glUniform1i= (void(__stdcall*)(GLint,GLint))load_function("glUniform1i");
 if(glUniform1i==NULL)return false;
-glUniform2i= (void(*)(GLint,GLint,GLint))load_function("glUniform2i");
+glUniform2i= (void(__stdcall*)(GLint,GLint,GLint))load_function("glUniform2i");
 if(glUniform2i==NULL)return false;
-glUniform3i= (void(*)(GLint,GLint,GLint,GLint))load_function("glUniform3i");
+glUniform3i= (void(__stdcall*)(GLint,GLint,GLint,GLint))
+load_function("glUniform3i");
 if(glUniform3i==NULL)return false;
-glUniform4i= (void(*)(GLint,GLint,GLint,GLint,GLint))
+glUniform4i= (void(__stdcall*)(GLint,GLint,GLint,GLint,GLint))
 load_function("glUniform4i");
 if(glUniform4i==NULL)return false;
-glUniform1fv= (void(*)(GLint,GLsizei,const GLfloat*))
+glUniform1fv= (void(__stdcall*)(GLint,GLsizei,const GLfloat*))
 load_function("glUniform1fv");
 if(glUniform1fv==NULL)return false;
-glUniform2fv= (void(*)(GLint,GLsizei,const GLfloat*))
+glUniform2fv= (void(__stdcall*)(GLint,GLsizei,const GLfloat*))
 load_function("glUniform2fv");
 if(glUniform2fv==NULL)return false;
-glUniform3fv= (void(*)(GLint,GLsizei,const GLfloat*))
+glUniform3fv= (void(__stdcall*)(GLint,GLsizei,const GLfloat*))
 load_function("glUniform3fv");
 if(glUniform3fv==NULL)return false;
-glUniform4fv= (void(*)(GLint,GLsizei,const GLfloat*))
+glUniform4fv= (void(__stdcall*)(GLint,GLsizei,const GLfloat*))
 load_function("glUniform4fv");
 if(glUniform4fv==NULL)return false;
-glUniform1iv= (void(*)(GLint,GLsizei,const GLint*))
+glUniform1iv= (void(__stdcall*)(GLint,GLsizei,const GLint*))
 load_function("glUniform1iv");
 if(glUniform1iv==NULL)return false;
-glUniform2iv= (void(*)(GLint,GLsizei,const GLint*))
+glUniform2iv= (void(__stdcall*)(GLint,GLsizei,const GLint*))
 load_function("glUniform2iv");
 if(glUniform2iv==NULL)return false;
-glUniform3iv= (void(*)(GLint,GLsizei,const GLint*))
+glUniform3iv= (void(__stdcall*)(GLint,GLsizei,const GLint*))
 load_function("glUniform3iv");
 if(glUniform3iv==NULL)return false;
-glUniform4iv= (void(*)(GLint,GLsizei,const GLint*))
+glUniform4iv= (void(__stdcall*)(GLint,GLsizei,const GLint*))
 load_function("glUniform4iv");
 if(glUniform4iv==NULL)return false;
-glUniformMatrix2fv= (void(*)(GLint,GLsizei,GLboolean,const GLfloat*))
+glUniformMatrix2fv= (void(__stdcall*)(GLint,GLsizei,GLboolean,
+const GLfloat*))
 load_function("glUniformMatrix2fv");
 if(glUniformMatrix2fv==NULL)return false;
-glUniformMatrix3fv= (void(*)(GLint,GLsizei,GLboolean,const GLfloat*))
+glUniformMatrix3fv= (void(__stdcall*)(GLint,GLsizei,GLboolean,
+const GLfloat*))
 load_function("glUniformMatrix3fv");
 if(glUniformMatrix3fv==NULL)return false;
-glUniformMatrix4fv= (void(*)(GLint,GLsizei,GLboolean,const GLfloat*))
+glUniformMatrix4fv= (void(__stdcall*)(GLint,GLsizei,GLboolean,
+const GLfloat*))
 load_function("glUniformMatrix4fv");
 if(glUniformMatrix4fv==NULL)return false;
 /*:85*//*89:*/
-#line 1930 "weaver-window.tex"
+#line 1956 "weaver-window.tex"
 
-glVertexAttrib1f= (void(*)(GLuint,GLfloat))load_function("glVertexAttrib1f");
+glVertexAttrib1f= (void(__stdcall*)(GLuint,GLfloat))
+load_function("glVertexAttrib1f");
 if(glVertexAttrib1f==NULL)return false;
-glVertexAttrib2f= (void(*)(GLuint,GLfloat,GLfloat))
+glVertexAttrib2f= (void(__stdcall*)(GLuint,GLfloat,GLfloat))
 load_function("glVertexAttrib2f");
 if(glVertexAttrib2f==NULL)return false;
-glVertexAttrib3f= (void(*)(GLuint,GLfloat,GLfloat,GLfloat))
+glVertexAttrib3f= (void(__stdcall*)(GLuint,GLfloat,GLfloat,GLfloat))
 load_function("glVertexAttrib3f");
 if(glVertexAttrib3f==NULL)return false;
-glVertexAttrib4f= (void(*)(GLuint,GLfloat,GLfloat,GLfloat,GLfloat))
+glVertexAttrib4f= (void(__stdcall*)(GLuint,GLfloat,GLfloat,GLfloat,
+GLfloat))
 load_function("glVertexAttrib4f");
 if(glVertexAttrib4f==NULL)return false;
-glVertexAttrib1fv= (void(*)(GLuint,GLfloat*))
+glVertexAttrib1fv= (void(__stdcall*)(GLuint,GLfloat*))
 load_function("glVertexAttrib1fv");
 if(glVertexAttrib1fv==NULL)return false;
-glVertexAttrib2fv= (void(*)(GLuint,GLfloat*))
+glVertexAttrib2fv= (void(__stdcall*)(GLuint,GLfloat*))
 load_function("glVertexAttrib2fv");
 if(glVertexAttrib2fv==NULL)return false;
-glVertexAttrib3fv= (void(*)(GLuint,GLfloat*))
+glVertexAttrib3fv= (void(__stdcall*)(GLuint,GLfloat*))
 load_function("glVertexAttrib3fv");
 if(glVertexAttrib3fv==NULL)return false;
-glVertexAttrib4fv= (void(*)(GLuint,GLfloat*))
+glVertexAttrib4fv= (void(__stdcall*)(GLuint,GLfloat*))
 load_function("glVertexAttrib4fv");
 if(glVertexAttrib4fv==NULL)return false;
-glVertexAttribPointer= (void(*)(GLuint,GLint,GLenum,GLboolean,
+glVertexAttribPointer= (void(__stdcall*)(GLuint,GLint,GLenum,GLboolean,
 GLsizei,const void*))
 load_function("glVertexAttribPointer");
 if(glVertexAttribPointer==NULL)return false;
-glEnableVertexAttribArray= (void(*)(GLuint))
+glEnableVertexAttribArray= (void(__stdcall*)(GLuint))
 load_function("glEnableVertexAttribArray");
 if(glEnableVertexAttribArray==NULL)return false;
-glDisableVertexAttribArray= (void(*)(GLuint))
+glDisableVertexAttribArray= (void(__stdcall*)(GLuint))
 load_function("glDisableVertexAttribArray");
 if(glDisableVertexAttribArray==NULL)return false;
 /*:89*/
@@ -994,13 +1009,13 @@ GetMessage(&msg,NULL,0,0);
 }
 #endif
 /*:43*/
-#line 1999 "weaver-window.tex"
+#line 2023 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
 /*:91*//*94:*/
-#line 2064 "weaver-window.tex"
+#line 2088 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -1018,7 +1033,7 @@ return true;
 }
 #endif
 /*:94*//*95:*/
-#line 2091 "weaver-window.tex"
+#line 2115 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -1034,7 +1049,7 @@ return true;
 }
 #endif
 /*:95*//*96:*/
-#line 2114 "weaver-window.tex"
+#line 2138 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -1048,7 +1063,7 @@ return true;
 }
 #endif
 /*:96*//*97:*/
-#line 2138 "weaver-window.tex"
+#line 2162 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -1056,7 +1071,7 @@ return eglSwapBuffers(egl_display,egl_window);
 }
 #endif
 /*:97*//*98:*/
-#line 2155 "weaver-window.tex"
+#line 2179 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -1065,7 +1080,7 @@ return true;
 }
 #endif
 /*:98*//*99:*/
-#line 2172 "weaver-window.tex"
+#line 2196 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wrender_window(void){
@@ -1073,6 +1088,6 @@ return wglSwapLayerBuffers(device_context,WGL_SWAP_MAIN_PLANE);
 }
 #endif
 /*:99*/
-#line 2193 "weaver-window.tex"
+#line 2217 "weaver-window.tex"
 
 /*:100*/
