@@ -33,6 +33,7 @@
 
 \def\secao#1{\vskip12pt\noindent{\trezebold#1}\parshape 1 0cm 15cm}
 \def\subsecao#1{\vskip12pt\noindent{\twelvebold#1}}
+\def\subsubsecao#1{\vskip12pt\noindent{\negrito{#1}}}
 \def\referencia#1{\vskip6pt\parshape 5 0cm 15cm 0.5cm 14.5cm 0.5cm 14.5cm
 0.5cm 14.5cm 0.5cm 14.5cm {\twelve\noindent#1}}
 
@@ -186,16 +187,34 @@ This function will render in the screen all pending ommands since last
 rendering. It will return false in case of error. This function
 probably will be called in the end of each iteration in a main loop.
 
+\iniciocodigo
+@<Window Declarations@>=
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y);
+@
+\fimcodigo
+
+This function gets the screen resolution and store in the pointers
+passed as argument. If we have more than one screen, it will return
+data about the main window. In case of error, it returns false and
+stores zero as the resolution.
 
 \secao{2. Creating and Managing the Window}
 
-\subsecao{2.1. Creating a Window in X}
+\subsecao{2.1. Getting Screen Resolution}
+
+Before creating our window, it is important to check what is our
+window resolution. If we are running in fullscreen mode, this will be
+our window size. This is accomplished differently accordig with the
+operating system.
+
+\subsubsecao{2.1.1. Getting Screen Resolution on X}
 
 The X Window System, also known as X11, is a windowing system present
 in many Operating System, as Linux, BSD and even in MacOX, where it
 exists to ensure compatibility with older programs developed before
-their current windowing system. We will begin our window creation with
-X11 because is the most widely present windowing system.
+their current windowing system. We will begin our function
+implementation with X11 because is the most widely present windowing
+system.
 
 X11 works in a client-server architecture. When we create a graphical
 program, we create a client that communicates with X server using
@@ -216,8 +235,93 @@ header:
 @
 \fimcodigo
 
-In X11, as we need to communicate with a server, we create a window
-following the steps below:
+In X11, as we need to communicate with a server, we assume that we
+have a variable with some data structure with information about this
+connection. This variable is called ``\monoespaco{display}''.
+
+Using such connection, that we assume being a static variable
+in \monoespaco{window.c}, we read the resolution using the function
+below:
+
+\iniciocodigo
+@<API Functions@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wget_resolution(int *resolution_x, int *resolution_y){
+  // The first called unction should be this that prepares X11 for any
+  // multi-threaded invocation
+  XInitThreads();
+  // If we still do not have an active connection, we create it:
+  if(display == NULL)
+    display = XOpenDisplay(NULL);
+  // Now we get the default screen number:
+  int screen = DefaultScreen(display);
+  // And ask for its resolution:
+  *resolution_x = DisplayWidth(display, screen);
+  *resolution_y = DisplayHeight(display, screen);
+  // Se tudo deu certo podemos retornar verdadeiro:
+  return true;
+}
+}
+#endif
+@
+\fimcodigo
+
+Of course, we assume the existence of the following static variable:
+
+\iniciocodigo
+@<Local Variables@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static Display *display = NULL; //Connection with server and info about screens
+#endif
+@
+\fimcodigo
+
+\subsubsecao{2.1.1. Getting Screen Resolution on Web Assembly}
+
+If we are running Web Assembly, then we are in a web broser. Our
+``window'' will be a HTML canvas. And to obtain the screen size, we
+need to run javascript code. We can do this with the help of
+Emscripten API:
+
+\iniciocodigo
+@<API Functions@>=
+#if defined(__EMSCRIPTEN__)
+bool _Wget_resolution(int *resolution_x, int *resolution_y){
+  *resolution_x = EM_ASM_INT({
+    return window.screen.width * window.devicePixelRatio;
+  });
+  *resolution_y = EM_ASM_INT({
+    return window.screen.height * window.devicePixelRatio;
+  });
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+
+\subsubsecao{2.1.1. Getting Screen Resolution on Windows}
+
+Finally, on Windows, we do this calling an API function that gives us
+this information:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(_WIN32)
+bool _Wget_resolution(int *resolution_x, int *resolution_y){
+  *resolution_x = GetSystemMetrics(SM_CXSCREEN);
+  *resolution_y = GetSystemMetrics(SM_CYSCREEN);
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+
+\subsecao{2.1. Creating a Window in X}
+
+
+
 
 0. We ask the X libraryq to be prepared for simultaneous
 communications caming from multiple threads. It is not common needing
@@ -273,10 +377,9 @@ window = XCreateSimpleWindow(display, // X11 connection
 This code assumes that we have the following declared variables:
 
 \iniciocodigo
-@<Local Variables@>=
+@<Local Variables@>+=
 static int screen_resolution_x, screen_resolution_y; //Screen resolution
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static Display *display = NULL; //Connection with server and screen info
 static int screen;       // Deafult screen id
 static Window window;    // Created window struct
 #endif

@@ -32,6 +32,7 @@
 
 \def\secao#1{\vskip12pt\noindent{\trezebold#1}\parshape 1 0cm 15cm}
 \def\subsecao#1{\vskip12pt\noindent{\twelvebold#1}}
+\def\subsubsecao#1{\vskip12pt\noindent{\negrito{#1}}}
 \def\referencia#1{\vskip6pt\parshape 5 0cm 15cm 0.5cm 14.5cm 0.5cm 14.5cm
 0.5cm 14.5cm 0.5cm 14.5cm {\twelve\noindent#1}}
 
@@ -203,17 +204,35 @@ OpenGL pendentes desde a última renderização. Retornará falso em caso
 de erro. Esta função provavelmente será chamada no fim de cada
 iteração de um laço principal.
 
+\iniciocodigo
+@<Declarações de Janela@>=
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y);
+@
+\fimcodigo
+
+Esta função obtém a resolução da tela e a armazena nos ponteiros
+passados. Se houver mais de uma, retornará aquela que o sistema
+identifica como sendo a principal. Se um erro ocorrer, ela retornará
+falso e a resolução será armazenada como zero.
+
 
 \secao{2. Criando e Gerenciando a Janela}
 
-\subsecao{2.1. Criando uma Janela no X}
+\subsecao{2.1. Obtendo a Resolução da Tela}
+
+Antes de criar nossa janela, é importante checar qual a resolução da
+tela. Se estivermos iniciando em modo de tela cheia, este será o
+tamanho da nossa janela. Isso é feito de maneira diferente dependendo
+do sistema operacional.
+
+\subsubsecao{2.1.1. Obtendo a Resolução da Tela no X}
 
 O Sistema de Janelas X, também conhecido como X11, é um sistema de
 janelas presente em muitos Sistemas Operacionais, como Linux, BSD, e
 até mesmo no MacOX X, onde ele está presente para garantir
 compatibilidade com programas mais antigos desenvolvidos antes de seu
-sistema de janelas atual. Iremos começar com a criação de janelas no
-X11 por ser o sistema de janelas mais amplamente presente.
+sistema de janelas atual. Iremos começar com a implementação de nossa
+função no X11 por ser o sistema de janelas mais amplamente presente.
 
 O X11 funciona em uma arquitetura de cliente-servidor. Quando criamos
 um programa gráfico, criamos um cliente que se comunica com o servidor
@@ -235,8 +254,94 @@ inserir seu cabeçalho relevante:
 @
 \fimcodigo
 
-No X11, como temos que nos comunicar com um servidor, criamos uma
-janela fazendo os seguintes passos:
+No X11, como temos que nos comunicar com um servidor, assumimos que
+temos uma variável com algum tipo de estrutura de dados com informação
+sobre a nossa conexão. Esta variável é chamada de
+``\monoespaco{display}''.
+
+Usando tal conexão, que assumimos ser uma variável estática
+em \monoespaco{window.c}, ler a resolução da tela é feito com a função
+abaixo:
+
+\iniciocodigo
+@<Funções da API@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wget_resolution(int *resolution_x, int *resolution_y){
+  // A primeira coisa a ser feita é chamar esta função para preparar o X11
+  // para código multi-thread:
+  XInitThreads();
+  // Se não temos uma conexcão ativa, criamos ela:
+  if(display == NULL)
+    display = XOpenDisplay(NULL);
+  // Obtemos a tela padrão:
+  int screen = DefaultScreen(display);
+  // E perguntamos a resolução
+  *resolution_x = DisplayWidth(display, screen);
+  *resolution_y = DisplayHeight(display, screen);
+  // Se tudo deu certo podemos retornar verdadeiro:
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+Claro, temos que assumir a existência da seguinte variável estática:
+
+\iniciocodigo
+@<Variáveis Locais@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static Display *display = NULL; //Conexão com servidor e info sobre tela
+#endif
+@
+\fimcodigo
+
+\subsubsecao{2.1.2. Obtendo a Resolução da Tela no Web Assembly}
+
+Se estivermos executando em Web Assembly, então assumimos estar em um
+Navegador de Internet. A nossa ``janela'' será um ``canvas'' HTML. E
+nesse caso para obter o tamanho da tela, temos que recorrer à
+invocação de Javascript. Fazemos isso com ajuda da API do Emscripten:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wget_resolution(int *resolution_x, int *resolution_y){
+  *resolution_x = EM_ASM_INT({
+    return window.screen.width * window.devicePixelRatio;
+  });
+  *resolution_y = EM_ASM_INT({
+    return window.screen.height * window.devicePixelRatio;
+  });
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+
+\subsubsecao{2.1.3. Obtendo a Resolução da Tela no Windows}
+
+Finalmente, no Windows, isso é feito simplesmente chamando uma função
+da API que nos dá esta informação:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(_WIN32)
+bool _Wget_resolution(int *resolution_x, int *resolution_y){
+  *resolution_x = GetSystemMetrics(SM_CXSCREEN);
+  *resolution_y = GetSystemMetrics(SM_CYSCREEN);
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+
+\subsecao{2.1. Criando uma Janela no X}
+
+
+
+
 
 0. Avisamos a biblioteca X que pode ser que múltiplas threads tentem
 se comunicar com ele. É raro haver motivos para se fazer isso, mas é
@@ -292,10 +397,9 @@ window = XCreateSimpleWindow(display, // Conexão com o X11
 Este código assume que temos as seguintes variáveis declaradas:
 
 \iniciocodigo
-@<Variáveis Locais@>=
+@<Variáveis Locais@>+=
 static int screen_resolution_x, screen_resolution_y; // Resolução da tela
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static Display *display = NULL; //Conexão com servidor e info sobre tela
 static int screen;       // Identificação da tela padrão
 static Window window;    // Estrutura da janela criada
 #endif
