@@ -1,5 +1,5 @@
-/*105:*/
-#line 2315 "weaver-window.tex"
+/*104:*/
+#line 2335 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -14,20 +14,14 @@
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xlib.h> 
 #endif
-/*:7*//*37:*/
-#line 856 "weaver-window.tex"
-
-#if defined(_WIN32)
-#include <Windows.h> 
-#endif
-/*:37*//*43:*/
-#line 962 "weaver-window.tex"
+/*:7*//*33:*/
+#line 799 "weaver-window.tex"
 
 #if defined(_WIN32)
 #include <string.h> 
 #endif
-/*:43*//*63:*/
-#line 1408 "weaver-window.tex"
+/*:33*//*64:*/
+#line 1449 "weaver-window.tex"
 
 #define WGL_TYPE_RGBA_ARB                      0x202B
 #define WGL_PIXEL_TYPE_ARB                     0x2013
@@ -43,8 +37,8 @@
 #define WGL_CONTEXT_MAJOR_VERSION_ARB          0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB          0x2092
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
-/*:63*//*98:*/
-#line 2168 "weaver-window.tex"
+/*:64*//*97:*/
+#line 2187 "weaver-window.tex"
 
 #if defined(_WIN32) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 4
@@ -56,11 +50,11 @@
 #define W_WINDOW_OPENGL_MAJOR_VERSION 3
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
-/*:98*/
-#line 2317 "weaver-window.tex"
+/*:97*/
+#line 2337 "weaver-window.tex"
 
-/*56:*/
-#line 1243 "weaver-window.tex"
+/*57:*/
+#line 1284 "weaver-window.tex"
 
 #if defined(_WIN32)
 static void*load_function(const char*name){
@@ -75,19 +69,19 @@ return NULL;
 return ret;
 }
 #endif
-/*:56*/
-#line 2318 "weaver-window.tex"
+/*:57*/
+#line 2338 "weaver-window.tex"
 
-/*58:*/
-#line 1289 "weaver-window.tex"
+/*59:*/
+#line 1330 "weaver-window.tex"
 
 #if defined(_WIN32)
 BOOL(__stdcall*wglChoosePixelFormatARB)(HDC,const int*,const FLOAT*,UINT,
 int*,UINT*);
 HGLRC(*wglCreateContextAttribsARB)(HDC,HGLRC,const int*);
 #endif
-/*:58*//*65:*/
-#line 1449 "weaver-window.tex"
+/*:59*//*66:*/
+#line 1490 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLuint(__stdcall*glCreateShader)(GLenum shaderType);
@@ -97,8 +91,8 @@ void(__stdcall*glCompileShader)(GLuint);
 void(__stdcall*glReleaseShaderCompiler)(void);
 void(__stdcall*glDeleteShader)(GLuint);
 #endif
-/*:65*//*70:*/
-#line 1539 "weaver-window.tex"
+/*:66*//*71:*/
+#line 1580 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLboolean(__stdcall*glIsShader)(GLuint);
@@ -113,8 +107,8 @@ void(__stdcall*glGetVertexAttribPointerv)(GLuint,GLenum,void**);
 void(__stdcall*glGetUniformfv)(GLuint,GLint,GLfloat*);
 void(__stdcall*glGetUniformiv)(GLuint,GLint,GLint*);
 #endif
-/*:70*//*78:*/
-#line 1692 "weaver-window.tex"
+/*:71*//*79:*/
+#line 1733 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLuint(__stdcall*glCreateProgram)(void);
@@ -124,8 +118,8 @@ void(__stdcall*glLinkProgram)(GLuint);
 void(__stdcall*glUseProgram)(GLuint);
 void(__stdcall*glDeleteProgram)(GLuint);
 #endif
-/*:78*//*81:*/
-#line 1744 "weaver-window.tex"
+/*:79*//*82:*/
+#line 1785 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLboolean(__stdcall*glIsProgram)(GLuint);
@@ -133,8 +127,8 @@ void(__stdcall*glGetProgramiv)(GLuint,GLenum,GLint*);
 void(__stdcall*glGetProgramInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
 void(__stdcall*glValidadeProgram)(GLuint);
 #endif
-/*:81*//*85:*/
-#line 1809 "weaver-window.tex"
+/*:82*//*86:*/
+#line 1850 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glGetActiveAttrib)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
@@ -142,8 +136,8 @@ GLenum*,GLchar*);
 GLint(__stdcall*glGetAttribLocation)(GLuint,const GLchar*);
 void(__stdcall*glBindAttribLocation)(GLuint,GLuint,const GLchar*);
 #endif
-/*:85*//*89:*/
-#line 1891 "weaver-window.tex"
+/*:86*//*90:*/
+#line 1932 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLint(__stdcall*glGetUniformLocation)(GLuint,const GLchar*);
@@ -169,8 +163,8 @@ void(__stdcall*glUniformMatrix2fv)(GLint,GLsizei,GLboolean,const GLfloat*);
 void(__stdcall*glUniformMatrix3fv)(GLint,GLsizei,GLboolean,const GLfloat*);
 void(__stdcall*glUniformMatrix4fv)(GLint,GLsizei,GLboolean,const GLfloat*);
 #endif
-/*:89*//*93:*/
-#line 2039 "weaver-window.tex"
+/*:90*//*94:*/
+#line 2080 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glVertexAttrib1f)(GLuint,GLfloat);
@@ -186,110 +180,117 @@ GLsizei,const void*);
 void(__stdcall*glEnableVertexAttribArray)(GLuint);
 void(__stdcall*glDisableVertexAttribArray)(GLuint);
 #endif
-/*:93*/
-#line 2319 "weaver-window.tex"
+/*:94*/
+#line 2339 "weaver-window.tex"
 
 /*9:*/
-#line 291 "weaver-window.tex"
+#line 300 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static Display*display= NULL;
 #endif
 /*:9*//*13:*/
-#line 400 "weaver-window.tex"
+#line 413 "weaver-window.tex"
 
-static int screen_resolution_x,screen_resolution_y;
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static int screen;
 static Window window;
 #endif
-/*:13*//*25:*/
-#line 620 "weaver-window.tex"
-
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLDisplay*egl_display;
-#endif
-/*:25*//*27:*/
-#line 666 "weaver-window.tex"
-
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-EGLConfig egl_config;
-#endif
-/*:27*//*29:*/
-#line 695 "weaver-window.tex"
-
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLSurface egl_window;
-#endif
-/*:29*//*31:*/
-#line 732 "weaver-window.tex"
-
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLContext egl_context;
-#endif
-/*:31*//*36:*/
-#line 843 "weaver-window.tex"
+/*:13*//*27:*/
+#line 692 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 static SDL_Surface*window;
 #endif
-/*:36*//*39:*/
-#line 880 "weaver-window.tex"
+/*:27*//*29:*/
+#line 717 "weaver-window.tex"
 
 #if defined(_WIN32)
 static const char*class_name= "WeaverWindow";
 #endif
-/*:39*//*44:*/
-#line 973 "weaver-window.tex"
+/*:29*//*34:*/
+#line 810 "weaver-window.tex"
 
 #if defined(_WIN32)
 static bool already_created_a_class= false;
 #endif
-/*:44*//*46:*/
-#line 1027 "weaver-window.tex"
+/*:34*//*36:*/
+#line 864 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
-/*:46*//*51:*/
-#line 1095 "weaver-window.tex"
+/*:36*//*40:*/
+#line 926 "weaver-window.tex"
+
+static bool already_have_window= false;
+/*:40*//*43:*/
+#line 979 "weaver-window.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLDisplay*egl_display;
+#endif
+/*:43*//*45:*/
+#line 1025 "weaver-window.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig egl_config;
+#endif
+/*:45*//*47:*/
+#line 1054 "weaver-window.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLSurface egl_window;
+#endif
+/*:47*//*49:*/
+#line 1091 "weaver-window.tex"
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLContext egl_context;
+#endif
+/*:49*//*52:*/
+#line 1136 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HGLRC wgl_context;
 static HDC device_context;
 #endif
-/*:51*//*97:*/
-#line 2138 "weaver-window.tex"
-
-static bool already_have_window= false;
-/*:97*/
-#line 2320 "weaver-window.tex"
+/*:52*/
+#line 2340 "weaver-window.tex"
 
 /*8:*/
 #line 267 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-bool _Wget_resolution(int*resolution_x,int*resolution_y){
+bool _Wget_screen_resolution(int*resolution_x,int*resolution_y){
+bool keep_alive= true;
 
 
 XInitThreads();
 
-if(display==NULL)
+if(display==NULL){
 display= XOpenDisplay(NULL);
+keep_alive= false;
+}
 
 int screen= DefaultScreen(display);
 
 *resolution_x= DisplayWidth(display,screen);
 *resolution_y= DisplayHeight(display,screen);
 
+
+if(!keep_alive){
+XCloseDisplay(display);
+display= NULL;
+}
+
 return true;
 }
 #endif
 /*:8*//*10:*/
-#line 306 "weaver-window.tex"
+#line 315 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
-bool _Wget_resolution(int*resolution_x,int*resolution_y){
+bool _Wget_screen_resolution(int*resolution_x,int*resolution_y){
 *resolution_x= EM_ASM_INT({
 return window.screen.width*window.devicePixelRatio;
 });
@@ -300,46 +301,48 @@ return true;
 }
 #endif
 /*:10*//*11:*/
-#line 328 "weaver-window.tex"
+#line 337 "weaver-window.tex"
 
 #if defined(_WIN32)
-bool _Wget_resolution(int*resolution_x,int*resolution_y){
+bool _Wget_screen_resolution(int*resolution_x,int*resolution_y){
 *resolution_x= GetSystemMetrics(SM_CXSCREEN);
 *resolution_y= GetSystemMetrics(SM_CYSCREEN);
 return true;
 }
 #endif
-/*:11*//*40:*/
-#line 897 "weaver-window.tex"
+/*:11*//*30:*/
+#line 734 "weaver-window.tex"
 
 #if defined(_WIN32)
 LRESULT CALLBACK WindowProc(HWND window,UINT msg,WPARAM param1,LPARAM param2){
 switch(msg){
-/*41:*/
-#line 915 "weaver-window.tex"
+/*31:*/
+#line 752 "weaver-window.tex"
 
 case WM_DESTROY:
 PostQuitMessage(0);
 return 0;
 break;
-/*:41*/
-#line 901 "weaver-window.tex"
+/*:31*/
+#line 738 "weaver-window.tex"
 
 default:
 return DefWindowProc(window,msg,param1,param2);
 }
 }
 #endif
-/*:40*//*96:*/
-#line 2121 "weaver-window.tex"
+/*:30*//*39:*/
+#line 909 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
 return false;
 /*12:*/
-#line 368 "weaver-window.tex"
+#line 379 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+int screen_resolution_x,screen_resolution_y;
+int screen;
 
 XInitThreads();
 
@@ -353,8 +356,7 @@ return false;
 
 screen= DefaultScreen(display);
 
-screen_resolution_x= DisplayWidth(display,screen);
-screen_resolution_y= DisplayHeight(display,screen);
+_Wget_screen_resolution(&screen_resolution_x,&screen_resolution_y);
 
 window= XCreateSimpleWindow(display,
 DefaultRootWindow(display),
@@ -365,7 +367,7 @@ screen_resolution_y,
 0);
 #endif
 /*:12*//*14:*/
-#line 420 "weaver-window.tex"
+#line 431 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if !defined(W_WINDOW_NO_FULLSCREEN)
@@ -378,7 +380,7 @@ XChangeWindowAttributes(display,window,CWOverrideRedirect,
 #endif
 #endif
 /*:14*//*15:*/
-#line 446 "weaver-window.tex"
+#line 457 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_NO_FULLSCREEN)
@@ -399,7 +401,7 @@ XResizeWindow(display,window,size_x,size_y);
 #endif
 #endif
 /*:15*//*16:*/
-#line 472 "weaver-window.tex"
+#line 483 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
@@ -419,7 +421,7 @@ XSetWMNormalHints(display,window,&hints);
 }
 #endif
 /*:16*//*18:*/
-#line 518 "weaver-window.tex"
+#line 529 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XSelectInput(display,window,StructureNotifyMask|KeyPressMask|
@@ -427,17 +429,17 @@ KeyReleaseMask|ButtonPressMask|
 ButtonReleaseMask|PointerMotionMask);
 #endif
 /*:18*//*19:*/
-#line 533 "weaver-window.tex"
+#line 544 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XStoreName(display,window,W_WINDOW_NAME);
 #endif
 /*:19*//*21:*/
-#line 553 "weaver-window.tex"
+#line 564 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-/*24:*/
-#line 604 "weaver-window.tex"
+/*42:*/
+#line 963 "weaver-window.tex"
 
 egl_display= eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR,display,
 NULL);
@@ -448,8 +450,8 @@ fprintf(stderr,"ERROR: Could not create EGL display.\n");
 return false;
 }
 eglInitialize(egl_display,NULL,NULL);
-/*:24*//*26:*/
-#line 632 "weaver-window.tex"
+/*:42*//*44:*/
+#line 991 "weaver-window.tex"
 
 {
 bool ret;
@@ -478,8 +480,8 @@ fprintf(stderr,"ERROR: Could not create valid EGL config.\n");
 return false;
 }
 }
-/*:26*//*28:*/
-#line 680 "weaver-window.tex"
+/*:44*//*46:*/
+#line 1039 "weaver-window.tex"
 
 egl_window= eglCreateWindowSurface(egl_display,egl_config,window,
 NULL);
@@ -489,8 +491,8 @@ fprintf(stderr,"ERROR: Could not create EGL window.\n");
 #endif
 return false;
 }
-/*:28*//*30:*/
-#line 709 "weaver-window.tex"
+/*:46*//*48:*/
+#line 1068 "weaver-window.tex"
 
 {
 int context_attribs[]= {
@@ -508,12 +510,12 @@ return false;
 }
 eglMakeCurrent(egl_display,egl_window,egl_window,egl_context);
 }
-/*:30*/
-#line 555 "weaver-window.tex"
+/*:48*/
+#line 566 "weaver-window.tex"
 
 #endif
 /*:21*//*22:*/
-#line 569 "weaver-window.tex"
+#line 580 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XMapWindow(display,window);
@@ -525,27 +527,23 @@ XNextEvent(display,&e);
 }
 #endif
 /*:22*/
-#line 2125 "weaver-window.tex"
+#line 913 "weaver-window.tex"
 
-/*33:*/
-#line 772 "weaver-window.tex"
+/*24:*/
+#line 625 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
-screen_resolution_x= EM_ASM_INT({
-return window.screen.width*window.devicePixelRatio;
-});
-screen_resolution_y= EM_ASM_INT({
-return window.screen.height*window.devicePixelRatio;
-});
+int screen_resolution_x,screen_resolution_y;
+_Wget_screen_resolution(&screen_resolution_x,&screen_resolution_y);
 #endif
-/*:33*//*34:*/
-#line 789 "weaver-window.tex"
+/*:24*//*25:*/
+#line 638 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 SDL_Init(SDL_INIT_VIDEO);
 #endif
-/*:34*//*35:*/
-#line 806 "weaver-window.tex"
+/*:25*//*26:*/
+#line 655 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 {
@@ -577,18 +575,18 @@ if(window==NULL)
 return false;
 }
 #endif
-/*:35*/
-#line 2126 "weaver-window.tex"
+/*:26*/
+#line 914 "weaver-window.tex"
 
-/*38:*/
-#line 867 "weaver-window.tex"
+/*28:*/
+#line 704 "weaver-window.tex"
 
 #if defined(_WIN32)
-screen_resolution_x= GetSystemMetrics(SM_CXSCREEN);
-screen_resolution_y= GetSystemMetrics(SM_CYSCREEN);
+int screen_resolution_x,screen_resolution_y;
+_Wget_screen_resolution(&screen_resolution_x,&screen_resolution_y);
 #endif
-/*:38*//*42:*/
-#line 932 "weaver-window.tex"
+/*:28*//*32:*/
+#line 769 "weaver-window.tex"
 
 #if defined(_WIN32)
 if(!already_created_a_class){
@@ -610,8 +608,8 @@ return false;
 already_created_a_class= true;
 }
 #endif
-/*:42*//*45:*/
-#line 984 "weaver-window.tex"
+/*:32*//*35:*/
+#line 821 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -648,20 +646,20 @@ return false;
 }
 }
 #endif
-/*:45*//*47:*/
-#line 1038 "weaver-window.tex"
+/*:35*//*37:*/
+#line 875 "weaver-window.tex"
 
 #if defined(_WIN32)
-/*50:*/
-#line 1086 "weaver-window.tex"
+/*51:*/
+#line 1127 "weaver-window.tex"
 
 device_context= GetDC(window);
-/*:50*//*52:*/
-#line 1130 "weaver-window.tex"
+/*:51*//*53:*/
+#line 1171 "weaver-window.tex"
 
 {
-/*53:*/
-#line 1145 "weaver-window.tex"
+/*54:*/
+#line 1186 "weaver-window.tex"
 
 HWND dummy_window;
 {
@@ -687,11 +685,11 @@ GetLastError());
 return false;
 }
 }
-/*:53*/
-#line 1132 "weaver-window.tex"
+/*:54*/
+#line 1173 "weaver-window.tex"
 
-/*54:*/
-#line 1178 "weaver-window.tex"
+/*55:*/
+#line 1219 "weaver-window.tex"
 
 HGLRC dummy_context;
 HDC dummy_device_context= GetDC(dummy_window);
@@ -723,8 +721,8 @@ GetLastError());
 return false;
 }
 
-/*:54*//*55:*/
-#line 1216 "weaver-window.tex"
+/*:55*//*56:*/
+#line 1257 "weaver-window.tex"
 
 
 dummy_context= wglCreateContext(dummy_device_context);
@@ -743,11 +741,11 @@ GetLastError());
 return false;
 }
 }
-/*:55*/
-#line 1133 "weaver-window.tex"
+/*:56*/
+#line 1174 "weaver-window.tex"
 
-/*59:*/
-#line 1303 "weaver-window.tex"
+/*60:*/
+#line 1344 "weaver-window.tex"
 
 wglChoosePixelFormatARB= (BOOL(__stdcall*)(HDC,const int*,const FLOAT*,
 UINT,int*,UINT*))
@@ -756,22 +754,22 @@ if(wglChoosePixelFormatARB==NULL)return false;
 wglCreateContextAttribsARB= (HGLRC(*)(HDC,HGLRC,const int*))
 load_function("wglCreateContextAttribsARB");
 if(wglCreateContextAttribsARB==NULL)return false;
-/*:59*/
-#line 1134 "weaver-window.tex"
+/*:60*/
+#line 1175 "weaver-window.tex"
 
-/*60:*/
-#line 1318 "weaver-window.tex"
+/*61:*/
+#line 1359 "weaver-window.tex"
 
 wglMakeCurrent(dummy_device_context,0);
 wglDeleteContext(dummy_context);
 ReleaseDC(dummy_window,dummy_device_context);
 DestroyWindow(dummy_window);
-/*:60*/
-#line 1135 "weaver-window.tex"
+/*:61*/
+#line 1176 "weaver-window.tex"
 
 }
-/*:52*//*61:*/
-#line 1330 "weaver-window.tex"
+/*:53*//*62:*/
+#line 1371 "weaver-window.tex"
 
 {
 PIXELFORMATDESCRIPTOR pixel_format_descriptor;
@@ -812,8 +810,8 @@ fprintf(stderr,"ERROR: 'SetPixelFormat' failed.\n");
 return false;
 }
 }
-/*:61*//*62:*/
-#line 1379 "weaver-window.tex"
+/*:62*//*63:*/
+#line 1420 "weaver-window.tex"
 
 {
 const int opengl_attributes[]= {
@@ -835,8 +833,8 @@ fprintf(stderr,"ERROR: 'wglMakeCurrent' failed.\n");
 return false;
 }
 }
-/*:62*//*66:*/
-#line 1466 "weaver-window.tex"
+/*:63*//*67:*/
+#line 1507 "weaver-window.tex"
 
 glCreateShader= (GLuint(__stdcall*)(GLenum))load_function("glCreateShader");
 if(glCreateShader==NULL)
@@ -856,8 +854,8 @@ return false;
 glDeleteShader= (void(__stdcall*)(GLuint))load_function("glDeleteShader");
 if(glDeleteShader==NULL)
 return false;
-/*:66*//*71:*/
-#line 1560 "weaver-window.tex"
+/*:67*//*72:*/
+#line 1601 "weaver-window.tex"
 
 glIsShader= (GLboolean(__stdcall*)(GLuint))load_function("glIsShader");
 if(glIsShader==NULL)return false;
@@ -892,8 +890,8 @@ if(glGetUniformfv==NULL)return false;
 glGetUniformiv= (void(__stdcall*)(GLuint,GLint,GLint*))
 load_function("glGetUniformiv");
 if(glGetUniformiv==NULL)return false;
-/*:71*//*79:*/
-#line 1707 "weaver-window.tex"
+/*:72*//*80:*/
+#line 1748 "weaver-window.tex"
 
 glCreateProgram= (GLuint(__stdcall*)(void))load_function("glCreateProgram");
 if(glCreateProgram==NULL)return false;
@@ -909,8 +907,8 @@ glUseProgram= (void(__stdcall*)(GLuint))load_function("glUseProgram");
 if(glUseProgram==NULL)return false;
 glDeleteProgram= (void(__stdcall*)(GLuint))load_function("glDeleteProgram");
 if(glDeleteProgram==NULL)return false;
-/*:79*//*82:*/
-#line 1757 "weaver-window.tex"
+/*:80*//*83:*/
+#line 1798 "weaver-window.tex"
 
 glIsProgram= (GLboolean(__stdcall*)(GLuint))load_function("glIsProgram");
 if(glIsProgram==NULL)return false;
@@ -923,8 +921,8 @@ if(glGetProgramInfoLog==NULL)return false;
 glValidadeProgram= (void(__stdcall*)(GLuint))
 load_function("glValidateProgram");
 if(glValidadeProgram==NULL)return false;
-/*:82*//*86:*/
-#line 1822 "weaver-window.tex"
+/*:83*//*87:*/
+#line 1863 "weaver-window.tex"
 
 glGetActiveAttrib= (void(__stdcall*)(GLuint,GLuint,GLsizei,GLsizei*,
 GLint*,GLenum*,GLchar*))
@@ -936,8 +934,8 @@ if(glGetAttribLocation==NULL)return false;
 glBindAttribLocation= (void(__stdcall*)(GLuint,GLuint,const GLchar*))
 load_function("glBindAttribLocation");
 if(glBindAttribLocation==NULL)return false;
-/*:86*//*90:*/
-#line 1922 "weaver-window.tex"
+/*:87*//*91:*/
+#line 1963 "weaver-window.tex"
 
 glGetUniformLocation= (GLint(__stdcall*)(GLuint,const GLchar*))
 load_function("glGetUniformLocation");
@@ -1003,8 +1001,8 @@ glUniformMatrix4fv= (void(__stdcall*)(GLint,GLsizei,GLboolean,
 const GLfloat*))
 load_function("glUniformMatrix4fv");
 if(glUniformMatrix4fv==NULL)return false;
-/*:90*//*94:*/
-#line 2060 "weaver-window.tex"
+/*:91*//*95:*/
+#line 2101 "weaver-window.tex"
 
 glVertexAttrib1f= (void(__stdcall*)(GLuint,GLfloat))
 load_function("glVertexAttrib1f");
@@ -1041,12 +1039,12 @@ if(glEnableVertexAttribArray==NULL)return false;
 glDisableVertexAttribArray= (void(__stdcall*)(GLuint))
 load_function("glDisableVertexAttribArray");
 if(glDisableVertexAttribArray==NULL)return false;
-/*:94*/
-#line 1040 "weaver-window.tex"
+/*:95*/
+#line 877 "weaver-window.tex"
 
 #endif
-/*:47*//*48:*/
-#line 1050 "weaver-window.tex"
+/*:37*//*38:*/
+#line 887 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -1057,14 +1055,14 @@ GetMessage(&msg,NULL,0,0);
 }while(msg.message==WM_CREATE);
 }
 #endif
-/*:48*/
-#line 2127 "weaver-window.tex"
+/*:38*/
+#line 915 "weaver-window.tex"
 
 already_have_window= true;
 return true;
 }
-/*:96*//*99:*/
-#line 2192 "weaver-window.tex"
+/*:39*//*98:*/
+#line 2211 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -1077,12 +1075,13 @@ eglDestroyContext(egl_display,egl_context);
 eglTerminate(egl_display);
 XDestroyWindow(display,window);
 XCloseDisplay(display);
+display= NULL;
 already_have_window= false;
 return true;
 }
 #endif
-/*:99*//*100:*/
-#line 2219 "weaver-window.tex"
+/*:98*//*99:*/
+#line 2239 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -1097,8 +1096,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:100*//*101:*/
-#line 2242 "weaver-window.tex"
+/*:99*//*100:*/
+#line 2262 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -1111,16 +1110,16 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:101*//*102:*/
-#line 2266 "weaver-window.tex"
+/*:100*//*101:*/
+#line 2286 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
 return eglSwapBuffers(egl_display,egl_window);
 }
 #endif
-/*:102*//*103:*/
-#line 2283 "weaver-window.tex"
+/*:101*//*102:*/
+#line 2303 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -1128,15 +1127,15 @@ glFlush();
 return true;
 }
 #endif
-/*:103*//*104:*/
-#line 2300 "weaver-window.tex"
+/*:102*//*103:*/
+#line 2320 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wrender_window(void){
 return wglSwapLayerBuffers(device_context,WGL_SWAP_MAIN_PLANE);
 }
 #endif
-/*:104*/
-#line 2321 "weaver-window.tex"
+/*:103*/
+#line 2341 "weaver-window.tex"
 
-/*:105*/
+/*:104*/

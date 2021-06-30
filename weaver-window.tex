@@ -266,18 +266,27 @@ abaixo:
 \iniciocodigo
 @<Funções da API@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-bool _Wget_resolution(int *resolution_x, int *resolution_y){
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
+  bool keep_alive = true; //Devemos manter a conexão ativa?
   // A primeira coisa a ser feita é chamar esta função para preparar o X11
   // para código multi-thread:
   XInitThreads();
   // Se não temos uma conexcão ativa, criamos ela:
-  if(display == NULL)
+  if(display == NULL){
     display = XOpenDisplay(NULL);
+    keep_alive = false;
+  }
   // Obtemos a tela padrão:
   int screen = DefaultScreen(display);
   // E perguntamos a resolução
   *resolution_x = DisplayWidth(display, screen);
   *resolution_y = DisplayHeight(display, screen);
+  // Se não havia uma conexão ativa ao servidor X antes de invocar a função,
+  // fechamos a conexão que abrimos para obter a resolução:
+  if(!keep_alive){
+    XCloseDisplay(display);
+    display = NULL;
+  }
   // Se tudo deu certo podemos retornar verdadeiro:
   return true;
 }
@@ -305,7 +314,7 @@ invocação de Javascript. Fazemos isso com ajuda da API do Emscripten:
 \iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
-bool _Wget_resolution(int *resolution_x, int *resolution_y){
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
   *resolution_x = EM_ASM_INT({
     return window.screen.width * window.devicePixelRatio;
   });
@@ -327,7 +336,7 @@ da API que nos dá esta informação:
 \iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
-bool _Wget_resolution(int *resolution_x, int *resolution_y){
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
   *resolution_x = GetSystemMetrics(SM_CXSCREEN);
   *resolution_y = GetSystemMetrics(SM_CYSCREEN);
   return true;
@@ -336,12 +345,15 @@ bool _Wget_resolution(int *resolution_x, int *resolution_y){
 @
 \fimcodigo
 
+\subsecao{2.2. Criando uma Janela}
 
-\subsecao{2.1. Criando uma Janela no X}
+Agora descreveremos como criar uma janela nos diferentes tipos de
+ambiente que suportamos: ambiente gráfico X11, Windows e rodando em
+navegador web com Web Assembly.
 
+\subsubsecao{2.2.1. Criando uma Janela no X}
 
-
-
+Os passos para criar uma janela no X11 são:
 
 0. Avisamos a biblioteca X que pode ser que múltiplas threads tentem
 se comunicar com ele. É raro haver motivos para se fazer isso, mas é
@@ -351,11 +363,10 @@ primeira coisa a ser feita antes de usar outras funções da biblioteca.
 1. Abrimos uma conexão com o servidor. Se isso for bem-sucedido, o
 servidor nos revela várias informações relevantes sobre a tela.
 
-2. Obtemos da resposta dada pelo servidor qual é a tela padrão onde
-devemos criar nossa janela (um computador pode ter muitos monitores e
-telas diferentes).
+2. Obemos qual o número de identificação da tela principal (quando há
+mais de um monitor).
 
-3. Também checamos na resposta dada a resolução da tela.
+3. Lemos a resolução da tela com a função que definimos na seção 2.1.
 
 4. Enviamos uma nova mensagem para o servidor pedindo que a janela
 seja criada. Em princípio criaremos uma janela com o máximo de tamanho
@@ -367,6 +378,8 @@ macros:
 \iniciocodigo
 @<X11: Criar Janela@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+int screen_resolution_x, screen_resolution_y; // Resolução da tela
+int screen;  // Identificação da tela padrão
 /* Passo 0: */
 XInitThreads();
 /* Passo 1: */
@@ -380,8 +393,7 @@ if(display == NULL){
 /* Passo 2: */
 screen = DefaultScreen(display);
 /* Passo 3: */
-screen_resolution_x = DisplayWidth(display, screen);
-screen_resolution_y = DisplayHeight(display, screen);
+_Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 /* Passo 4: */
 window = XCreateSimpleWindow(display, // Conexão com o X11
                              DefaultRootWindow(display), // Janela-mãe
@@ -394,13 +406,12 @@ window = XCreateSimpleWindow(display, // Conexão com o X11
 @
 \fimcodigo
 
-Este código assume que temos as seguintes variáveis declaradas:
+Este código assume que temos as seguintes variável declarada para
+armazenar e memorizar a janela criada:
 
 \iniciocodigo
 @<Variáveis Locais@>+=
-static int screen_resolution_x, screen_resolution_y; // Resolução da tela
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static int screen;       // Identificação da tela padrão
 static Window window;    // Estrutura da janela criada
 #endif
 @
@@ -579,164 +590,7 @@ XMapWindow(display, window);
 @
 \fimcodigo
 
-\subsecao{2.2. Configurando OpenGL ES no X11}
-
-No X11, a interface por meio da qual programamos usando OpenGL ES se
-chama EGL e suas funções e macros são declaradas no seguinte
-cabeçalho:
-
-\iniciocodigo
-@<Cabeçalho OpenGL@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#include <EGL/eglext.h>
-#endif
-@
-\fimcodigo
-
-Agora precisamos criar uma estrutura que armazena as informações sobre
-nossa interface gráfica para o OpenGL ES. Assim como com o servidor X,
-isso é armazenado em uma estrutura chamada \monoespaco{display}. E
-podemos obter ela à partir do \monoespaco{display} da biblioteca X:
-
-\iniciocodigo
-@<X11: Configurar OpenGL ES@>+=
-egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
-                                    NULL);
-if(egl_display == EGL_NO_DISPLAY){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Could not create EGL display.\n");
-#endif
-  return false;
-}
-eglInitialize(egl_display, NULL, NULL);
-@
-\fimcodigo
-
-Essa variável é declarada aqui:
-
-\iniciocodigo
-@<Variáveis Locais@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLDisplay *egl_display;
-#endif
-@
-\fimcodigo
-
-Agora obtemos uma configuração possível para o contexto OpenGL ES a
-ser criado. Primeiro especificamos uma série de exigências e em
-seguida obtemos da biblioteca uma configuração possível:
-
-\iniciocodigo
-@<X11: Configurar OpenGL ES@>+=
-{
-  bool ret;
-  int number_of_configs_returned;
-  int requested_attributes[] = {
-    // Devemos suportar desenhar em janelas e em texturas:
-    EGL_SURFACE_TYPE,  EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-    // Devemos suportar ao menos 1 bit para a cor vermelha:
-    EGL_RED_SIZE, 1,
-    // Devemos suportar ao menos 1 bit para a cor verde:
-    EGL_GREEN_SIZE, 1,
-    // Devemos suportar ao menos 1 bit para a cor azul:
-    EGL_BLUE_SIZE, 1,
-    // Devemos suportar ao menos 1 bit para o canal alfa:
-    EGL_ALPHA_SIZE, 1,
-    // Devemos suportar ao menos 1 bit para a profundidade:
-    EGL_DEPTH_SIZE, 1,
-    EGL_NONE
-  };
-  ret = eglChooseConfig(egl_display, requested_attributes,
-                        &egl_config, 1, &number_of_configs_returned);
-  if(ret == EGL_FALSE){
-#if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Could not create valid EGL config.\n");
-#endif
-    return false;
-  }
-}
-@
-\fimcodigo
-
-A estrutura que armazena a configuração que usaremos é declarada aqui:
-
-\iniciocodigo
-@<Variáveis Locais@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-EGLConfig egl_config;
-#endif
-@
-\fimcodigo
-
-
-Assim como o EGL precisa de sua própria estrutura de display, ele
-também precisará de uma estrutura própria para armazenar informações
-sobre a janela na qual iremos desenhar. Podemos inicializar a
-estrutura EGL para a janela à partir da estrutura de janela do X:
-
-\iniciocodigo
-@<X11: Configurar OpenGL ES@>+=
-egl_window = eglCreateWindowSurface(egl_display, egl_config, window,
-                                    NULL);
-if(egl_window == EGL_NO_SURFACE){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Could not create EGL window.\n");
-#endif
-  return false;
-}
-@
-\fimcodigo
-
-A janela EGL é declarada aqui:
-
-\iniciocodigo
-@<Variáveis Locais@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLSurface egl_window;
-#endif
-@
-\fimcodigo
-
-
-Agora criaremos o contexto OpenGL ES. Deixaremos que o usuário escolha
-qual a versão do OpenGL por meio das
-macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} e
-\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. Usando tal informação, o código abaixo cria o contexto:
-
-\iniciocodigo
-@<X11: Configurar OpenGL ES@>+=
-{
-  int context_attribs[] = {
-    EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
-    EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
-    EGL_NONE
-  };
-  egl_context = eglCreateContext(egl_display, egl_config,
-                                 EGL_NO_CONTEXT, context_attribs);
-  if(egl_context == EGL_NO_CONTEXT){
-#if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Could not create EGL context.\n");
-#endif
-    return false;
-  }
-  eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
-}
-@
-\fimcodigo
-
-O contexto OpenGL é declarado aqui:
-
-\iniciocodigo
-@<Variáveis Locais@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLContext egl_context;
-#endif
-@
-\fimcodigo
-
-\subsecao{2.3. Criando uma ``Janela'' em Navegador Web}
+\subsubsecao{2.2.2. Criando uma Janela com Web Assembly}
 
 Um dos ambientes mais diferentes nos quais nossa API pode executar
 será navegadores de Internet após ter o código compilado para Web
@@ -765,18 +619,13 @@ Primeiro vamos inserir o cabeçalho do Emscripten com os cabeçalhos SDL:
 @
 \fimcodigo
 
-Nosso primeiro desafio neste ambiente é descobrir a resolução da
-tela. Para isso, usaremos o seguinte código javascript:
+Agora vamos ler a resolução da tela com a função definida na Subsubseção 2.1.2:
 
 \iniciocodigo
 @<Web Assembly: Criar Janela@>=
 #if defined(__EMSCRIPTEN__)
-screen_resolution_x = EM_ASM_INT({
-  return window.screen.width * window.devicePixelRatio;
-});
-screen_resolution_y = EM_ASM_INT({
-  return window.screen.height * window.devicePixelRatio;
-});
+int screen_resolution_x, screen_resolution_y;
+_Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
 \fimcodigo
@@ -847,27 +696,15 @@ static SDL_Surface *window;
 @
 \fimcodigo
 
-\subsecao{2.4. Criando uma Janela no Windows}
+\subsubsecao{2.2.3. Criando uma Janela no Windows}
 
-Como sempre, para programar algo para o Windows precisamos inserir o
-cabeçalho abaixo:
-
-\iniciocodigo
-@<Cabeçalhos@>+=
-#if defined(_WIN32)
-#include <Windows.h>
-#endif
-@
-\fimcodigo
-
-Agora para obtermos a resolução do monitor principal, usamos o código
-abaixo:
+Como nos códigos anteriores, começamos lendo a resolução da tela:
 
 \iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
-screen_resolution_x = GetSystemMetrics(SM_CXSCREEN);
-screen_resolution_y = GetSystemMetrics(SM_CYSCREEN);
+int screen_resolution_x, screen_resolution_y;
+_Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
 \fimcodigo
@@ -1059,6 +896,210 @@ foi criada:
 #endif
 @
 \fimcodigo
+
+\subsubsecao{2.2.4. Definindo a Função de Criação de Janelas para Todo Ambiente}
+
+Nas subsubseções anteriores, definimos código para a criação de janela
+em diferentes tipos de ambiente. E cada um dos códigos apresentado
+ficava dentro de macros condicionais para ser executado somente no
+ambiente correto.Agora podemos unir todos estes trechos de código
+anteriores em uma só função:
+
+\iniciocodigo
+@<Funções da API@>=
+bool _Wcreate_window(void){
+  if(already_have_window == true)
+    return false;
+  @<X11: Criar Janela@>
+  @<Web Assembly: Criar Janela@>
+  @<Windows: Criar Janela@>
+  already_have_window = true;
+  return true;
+}
+@
+\fimcodigo
+
+A variável que armazena se a janela já está criada será declarada
+aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+static bool already_have_window = false;
+@
+\fimcodigo
+
+\subsecao{2.3. Configurando o OpenGL}
+
+
+% XXXXXXXXXXXX
+
+
+
+
+
+
+\subsecao{2.2. Configurando OpenGL ES no X11}
+
+No X11, a interface por meio da qual programamos usando OpenGL ES se
+chama EGL e suas funções e macros são declaradas no seguinte
+cabeçalho:
+
+\iniciocodigo
+@<Cabeçalho OpenGL@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <EGL/eglext.h>
+#endif
+@
+\fimcodigo
+
+Agora precisamos criar uma estrutura que armazena as informações sobre
+nossa interface gráfica para o OpenGL ES. Assim como com o servidor X,
+isso é armazenado em uma estrutura chamada \monoespaco{display}. E
+podemos obter ela à partir do \monoespaco{display} da biblioteca X:
+
+\iniciocodigo
+@<X11: Configurar OpenGL ES@>+=
+egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
+                                    NULL);
+if(egl_display == EGL_NO_DISPLAY){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL display.\n");
+#endif
+  return false;
+}
+eglInitialize(egl_display, NULL, NULL);
+@
+\fimcodigo
+
+Essa variável é declarada aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLDisplay *egl_display;
+#endif
+@
+\fimcodigo
+
+Agora obtemos uma configuração possível para o contexto OpenGL ES a
+ser criado. Primeiro especificamos uma série de exigências e em
+seguida obtemos da biblioteca uma configuração possível:
+
+\iniciocodigo
+@<X11: Configurar OpenGL ES@>+=
+{
+  bool ret;
+  int number_of_configs_returned;
+  int requested_attributes[] = {
+    // Devemos suportar desenhar em janelas e em texturas:
+    EGL_SURFACE_TYPE,  EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    // Devemos suportar ao menos 1 bit para a cor vermelha:
+    EGL_RED_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para a cor verde:
+    EGL_GREEN_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para a cor azul:
+    EGL_BLUE_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para o canal alfa:
+    EGL_ALPHA_SIZE, 1,
+    // Devemos suportar ao menos 1 bit para a profundidade:
+    EGL_DEPTH_SIZE, 1,
+    EGL_NONE
+  };
+  ret = eglChooseConfig(egl_display, requested_attributes,
+                        &egl_config, 1, &number_of_configs_returned);
+  if(ret == EGL_FALSE){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create valid EGL config.\n");
+#endif
+    return false;
+  }
+}
+@
+\fimcodigo
+
+A estrutura que armazena a configuração que usaremos é declarada aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig egl_config;
+#endif
+@
+\fimcodigo
+
+
+Assim como o EGL precisa de sua própria estrutura de display, ele
+também precisará de uma estrutura própria para armazenar informações
+sobre a janela na qual iremos desenhar. Podemos inicializar a
+estrutura EGL para a janela à partir da estrutura de janela do X:
+
+\iniciocodigo
+@<X11: Configurar OpenGL ES@>+=
+egl_window = eglCreateWindowSurface(egl_display, egl_config, window,
+                                    NULL);
+if(egl_window == EGL_NO_SURFACE){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL window.\n");
+#endif
+  return false;
+}
+@
+\fimcodigo
+
+A janela EGL é declarada aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLSurface egl_window;
+#endif
+@
+\fimcodigo
+
+
+Agora criaremos o contexto OpenGL ES. Deixaremos que o usuário escolha
+qual a versão do OpenGL por meio das
+macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} e
+\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. Usando tal informação, o código abaixo cria o contexto:
+
+\iniciocodigo
+@<X11: Configurar OpenGL ES@>+=
+{
+  int context_attribs[] = {
+    EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
+    EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
+    EGL_NONE
+  };
+  egl_context = eglCreateContext(egl_display, egl_config,
+                                 EGL_NO_CONTEXT, context_attribs);
+  if(egl_context == EGL_NO_CONTEXT){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create EGL context.\n");
+#endif
+    return false;
+  }
+  eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
+}
+@
+\fimcodigo
+
+O contexto OpenGL é declarado aqui:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLContext egl_context;
+#endif
+@
+\fimcodigo
+
+\subsecao{2.3. Criando uma ``Janela'' em Navegador Web}
+
+
+\subsecao{2.4. Criando uma Janela no Windows}
+
 
 \subsecao{2.5. Configurando OpenGL no Windows}
 
@@ -2117,28 +2158,6 @@ fazer isso, faremos uma checagem para ver se já não temos uma janela
 criada. Armazenaremos em uma variável se temos ou não uma janela já
 criada.
 
-\iniciocodigo
-@<Funções da API@>=
-bool _Wcreate_window(void){
-  if(already_have_window == true)
-    return false;
-  @<X11: Criar Janela@>
-  @<Web Assembly: Criar Janela@>
-  @<Windows: Criar Janela@>
-  already_have_window = true;
-  return true;
-}
-@
-\fimcodigo
-
-A variável que armazena se a janela já está criada será declarada
-aqui:
-
-\iniciocodigo
-@<Variáveis Locais@>+=
-static bool already_have_window = false;
-@
-\fimcodigo
 
 Há mais uma coisa que é preciso definir para a criação da janela e do
 contexto OpenGL ligado à ela: qual versão do OpenGL iremos usar por
@@ -2201,6 +2220,7 @@ bool _Wdestroy_window(void){
   eglTerminate(egl_display);
   XDestroyWindow(display, window);
   XCloseDisplay(display);
+  display = NULL;
   already_have_window = false;
   return true;
 }

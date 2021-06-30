@@ -77,6 +77,15 @@ void test_create_destroy_window(void){
   assert("Can create successive windows", ret);
 }
 
+void test_resolution(void){
+  int res_x, res_y;
+  bool ret;
+  char message[128];
+  ret = _Wget_screen_resolution(&res_x, &res_y);
+  snprintf(message, 128, "Getting screen resolution: %dx%d", res_x, res_y);
+  assert(message, ret && (res_x > 0) && (res_y > 0));
+}
+
 void test_opengl_simple(void){
   char message[128];
   time_t initial_time, current_time;
@@ -147,7 +156,7 @@ void test_opengl_shader(void){
       }
     }
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    assert("Creating fragmentshader", fragment_shader != 0);
+    assert("Creating fragment shader", fragment_shader != 0);
     glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
     glCompileShader(fragment_shader);
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &ret);
@@ -220,6 +229,7 @@ void test_opengl_shader(void){
 
 int main(int argc, char **argv){
   test_create_destroy_window();
+  test_resolution();
   test_opengl_simple();
   test_opengl_shader();
   imprime_resultado();

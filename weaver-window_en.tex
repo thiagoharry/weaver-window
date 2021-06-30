@@ -246,19 +246,28 @@ below:
 \iniciocodigo
 @<API Functions@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-bool _Wget_resolution(int *resolution_x, int *resolution_y){
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
+  bool keep_alive = true; // Should we keep the connection alive?
   // The first called unction should be this that prepares X11 for any
   // multi-threaded invocation
   XInitThreads();
   // If we still do not have an active connection, we create it:
-  if(display == NULL)
+  if(display == NULL){
     display = XOpenDisplay(NULL);
+    keep_alive = false;
+  }
   // Now we get the default screen number:
   int screen = DefaultScreen(display);
   // And ask for its resolution:
   *resolution_x = DisplayWidth(display, screen);
   *resolution_y = DisplayHeight(display, screen);
-  // Se tudo deu certo podemos retornar verdadeiro:
+  // If we had not an active connection before invoking this function, we
+  // should keep things this way:
+  if(!keep_alive){
+    XCloseDisplay(display);
+    display = NULL;
+  }
+  // If everything is ok, we should return true:
   return true;
 }
 }
@@ -276,7 +285,7 @@ static Display *display = NULL; //Connection with server and info about screens
 @
 \fimcodigo
 
-\subsubsecao{2.1.1. Getting Screen Resolution on Web Assembly}
+\subsubsecao{2.1.2. Getting Screen Resolution on Web Assembly}
 
 If we are running Web Assembly, then we are in a web broser. Our
 ``window'' will be a HTML canvas. And to obtain the screen size, we
@@ -286,7 +295,7 @@ Emscripten API:
 \iniciocodigo
 @<API Functions@>=
 #if defined(__EMSCRIPTEN__)
-bool _Wget_resolution(int *resolution_x, int *resolution_y){
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
   *resolution_x = EM_ASM_INT({
     return window.screen.width * window.devicePixelRatio;
   });
@@ -300,7 +309,7 @@ bool _Wget_resolution(int *resolution_x, int *resolution_y){
 \fimcodigo
 
 
-\subsubsecao{2.1.1. Getting Screen Resolution on Windows}
+\subsubsecao{2.1.3. Getting Screen Resolution on Windows}
 
 Finally, on Windows, we do this calling an API function that gives us
 this information:
@@ -308,7 +317,7 @@ this information:
 \iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
-bool _Wget_resolution(int *resolution_x, int *resolution_y){
+bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
   *resolution_x = GetSystemMetrics(SM_CXSCREEN);
   *resolution_y = GetSystemMetrics(SM_CYSCREEN);
   return true;
@@ -317,11 +326,15 @@ bool _Wget_resolution(int *resolution_x, int *resolution_y){
 @
 \fimcodigo
 
+\subsecao{2.2. Creating a Window}
 
-\subsecao{2.1. Creating a Window in X}
+Now we describe how to create a window in all the supported
+environments: X11 graphical environment, windows and a web browser
+running Web Assembly.
 
+\subsubsecao{2.2.1. Creating a Window on X}
 
-
+The steps to create a window on X11 are:
 
 0. We ask the X libraryq to be prepared for simultaneous
 communications caming from multiple threads. It is not common needing
@@ -332,11 +345,10 @@ library functions.
 1. We open a connection with the server. If we succeed, we get as
 response a list of relevant information about the screen.
 
-2. We read from the response which is the default screen where we
-should create our window (a computer could have many different
-monitors and screens).
+2. We get the number that identifies the default screen (when we have
+more than one screen).
 
-3. We also read the screen resolution.
+3. We read the resolution using the function defined on section 2.1.
 
 4. We send a new message to the server asking to create a new
 window. We will do it in the default screen, The window size will be
@@ -347,6 +359,8 @@ The above steps are implemented using the functions and macros below:
 \iniciocodigo
 @<X11: Create Window@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+int screen_resolution_x, screen_resolution_y; //Screen resolution
+int screen;       // Deafult screen id
 /* Step 0: */
 XInitThreads();
 /* Step 1: */
@@ -360,8 +374,7 @@ if(display == NULL){
 /* Step 2: */
 screen = DefaultScreen(display);
 /* Step 3: */
-screen_resolution_x = DisplayWidth(display, screen);
-screen_resolution_y = DisplayHeight(display, screen);
+_Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 /* Step 4: */
 window = XCreateSimpleWindow(display, // X11 connection
                              DefaultRootWindow(display),// Parent window
@@ -374,13 +387,12 @@ window = XCreateSimpleWindow(display, // X11 connection
 @
 \fimcodigo
 
-This code assumes that we have the following declared variables:
+This code assumes that we have the following declared variable to
+store and remember the created window:
 
 \iniciocodigo
 @<Local Variables@>+=
-static int screen_resolution_x, screen_resolution_y; //Screen resolution
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static int screen;       // Deafult screen id
 static Window window;    // Created window struct
 #endif
 @
@@ -558,166 +570,7 @@ XMapWindow(display, window);
 @
 \fimcodigo
 
-\subsecao{2.2. Configuring OpenGL ES in X11}
-
-In X11, the interface used to program in OpenGL ES is called EGL and
-its functions and macros are declared in the following header:
-
-\iniciocodigo
-@<OpenGL Header@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#include <EGL/eglext.h>
-#endif
-@
-\fimcodigo
-
-Now we need to create a structure needed by OpenGL ES to store
-information about the graphical interface: a OpenGL display. Such
-display can be obtained from the X display that we already created:
-
-\iniciocodigo
-@<X11: Configure OpenGL ES@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
-                                    NULL);
-if(egl_display == EGL_NO_DISPLAY){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Could not create EGL display.\n");
-#endif
-  return false;
-}
-eglInitialize(egl_display, NULL, NULL);
-#endif
-@
-\fimcodigo
-
-This variable is declared here:
-
-\iniciocodigo
-@<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLDisplay *egl_display;
-#endif
-@
-\fimcodigo
-
-Now we need to obtain a configuration to the creation of a OpenGL
-context. We specify some requirements and get a configuration using
-the code below:
-
-\iniciocodigo
-@<X11: Configure OpenGL ES@>+=
-{
-  bool ret;
-  int number_of_configs_returned;
-  int requested_attributes[] = {
-    // We should support drawing in the screen and textures
-    EGL_SURFACE_TYPE,  EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-    // And at least 1 bit to the red color:
-    EGL_RED_SIZE, 1,
-    // At least 1 bit to the green color:
-    EGL_GREEN_SIZE, 1,
-    // At least 1 bit to the blue color:
-    EGL_BLUE_SIZE, 1,
-    // At least 1 bit to the alpha channel:
-    EGL_ALPHA_SIZE, 1,
-    // At least 1 bit to the depth channel:
-    EGL_DEPTH_SIZE, 1,
-    EGL_NONE
-  };
-  ret = eglChooseConfig(egl_display, requested_attributes,
-                        &egl_config, 1, &number_of_configs_returned);
-  if(ret == EGL_FALSE){
-#if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Could not create valid EGL config.\n");
-#endif
-    return false;
-  }
-}
-@
-\fimcodigo
-
-The struct that stores which configuration we will use is declared
-here:
-
-\iniciocodigo
-@<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-EGLConfig egl_config;
-#endif
-@
-\fimcodigo
-
-
-Like how EGL needs its own display struct, it also needs its own
-window struct to store information about the window where it will
-draw. We can initialize such structure from the window struct used by
-the X library:
-
-\iniciocodigo
-@<X11: Configure OpenGL ES@>+=
-egl_window = eglCreateWindowSurface(egl_display, egl_config,
-                                    window, NULL);
-if(egl_window == EGL_NO_SURFACE){
-#if defined(W_DEBUG_WINDOW)
-  fprintf(stderr, "ERROR: Could not create EGL window.\n");
-#endif
-  return false;
-}
-@
-\fimcodigo
-
-The EGL window is decared here:
-
-\iniciocodigo
-@<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLSurface egl_window;
-#endif
-@
-\fimcodigo
-
-
-Now we can create the OpenGL context. We let the user choose which
-will be the major and minor OpenGL version using
-macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} and
-\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. With this information, we create the context:
-
-\iniciocodigo
-@<X11: Configure OpenGL ES@>+=
-{
-  int context_attribs[] = {
-    EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
-    EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
-    EGL_NONE
-  };
-  egl_context = eglCreateContext(egl_display, egl_config,
-                                 EGL_NO_CONTEXT, context_attribs);
-  if(egl_context == EGL_NO_CONTEXT){
-#if defined(W_DEBUG_WINDOW)
-    fprintf(stderr, "ERROR: Could not create EGL context.\n");
-#endif
-    return false;
-  }
-  eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
-}
-@
-\fimcodigo
-
-The variable that stores the handle to the OpenGL context is declared
-here:
-
-\iniciocodigo
-@<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-static EGLContext egl_context;
-#endif
-@
-\fimcodigo
-
-\subsecao{2.3. Creating a ``Window'' in a Web Browser}
+\subsubsecao{2.2.2. Creating a Window on Web Assembly}
 
 One of the most different environments where our API can be executed
 are web browsers after the code is compiled to Web Assembly. In this
@@ -727,12 +580,12 @@ of the user resize the window, for example. But we still need to pay
 attention to the size of the screen and should allow the resizing of
 our canvas.
 
-Here we can create and manipulare the drawing area combining two
+Here we can create and manipulate the drawing area combining two
 things: the SDL library, presented as an interface to graphical
 actions by Emscripten environment and Javascript code that we also can
 execute.
 
-First we include the Emscripten and SDL headers:
+Now we include the Emscripten and SDL headers:
 
 \iniciocodigo
 @<OpenGL Header@>+=
@@ -744,25 +597,20 @@ First we include the Emscripten and SDL headers:
 @
 \fimcodigo
 
-
-Our first challenge in this environment is discover screen
-resolution. We can do this using the following Javascript code:
+First we get the screen resolution with the function defined in
+Subsubsection 2.1.2:
 
 \iniciocodigo
 @<Web Assembly: Create Window@>=
 #if defined(__EMSCRIPTEN__)
-screen_resolution_x = EM_ASM_INT({
-  return window.screen.width * window.devicePixelRatio;
-});
-screen_resolution_y = EM_ASM_INT({
-  return window.screen.height * window.devicePixelRatio;
-});
+int screen_resolution_x, screen_resolution_y;
+_Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
 \fimcodigo
 
-Next we want to initialize the window SDL subsystem. This is done
-calling the function below:
+The next step is initialize the video subsystem in SDL library. This
+is done with the following initialization:
 
 \iniciocodigo
 @<Web Assembly: Create Window@>+=
@@ -826,25 +674,15 @@ static SDL_Surface *window;
 @
 \fimcodigo
 
-\subsecao{2.4. Creating a Windows in (Microsoft) Windows}
+\subsubsecao{2.2.3. Creating a Window on (Microsoft) Windows}
 
-As always, to program in Windows we need the following header:
-
-\iniciocodigo
-@<Headers@>+=
-#if defined(_WIN32)
-#include <Windows.h>
-#endif
-@
-\fimcodigo
-
-Now we obtain the resolution of the main monitor using:
+As in the previous code, we begin asking for the screen resolution:
 
 \iniciocodigo
 @<Windows: Create Window@>+=
 #if defined(_WIN32)
-screen_resolution_x = GetSystemMetrics(SM_CXSCREEN);
-screen_resolution_y = GetSystemMetrics(SM_CYSCREEN);
+int screen_resolution_x, screen_resolution_y;
+_Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
 \fimcodigo
@@ -1031,6 +869,207 @@ a loop until we get a message saying that the window was created:
 #endif
 @
 \fimcodigo
+
+\subsubsecao{2.2.4. Defining the Function for Window Creation in All Environments}
+
+In the previous subsubsections, we defined code for window creation in
+different environments, and all code was placed inside conditional
+macros that uses each code only in the right environment. Now we can
+unite all these previous code blocks in a single function:
+
+\iniciocodigo
+@<API Functions@>=
+bool _Wcreate_window(void){
+  if(already_have_window == true)
+    return false;
+  @<X11: Create Window@>
+  @<Web Assembly: Create Window@>
+  @<Windows: Create Window@>
+  already_have_window = true;
+  return true;
+}
+@
+\fimcodigo
+
+The variable that stores if the window already was created will be
+declared here:
+
+\iniciocodigo
+@<Local Variables@>+=
+static bool already_have_window = false;
+@
+\fimcodigo
+
+\subsecao{2.3. Configuring OpenGL}
+
+% XXXXXXXXXXXX
+
+
+
+\subsecao{2.2. Configuring OpenGL ES in X11}
+
+In X11, the interface used to program in OpenGL ES is called EGL and
+its functions and macros are declared in the following header:
+
+\iniciocodigo
+@<OpenGL Header@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <EGL/eglext.h>
+#endif
+@
+\fimcodigo
+
+Now we need to create a structure needed by OpenGL ES to store
+information about the graphical interface: a OpenGL display. Such
+display can be obtained from the X display that we already created:
+
+\iniciocodigo
+@<X11: Configure OpenGL ES@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
+                                    NULL);
+if(egl_display == EGL_NO_DISPLAY){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL display.\n");
+#endif
+  return false;
+}
+eglInitialize(egl_display, NULL, NULL);
+#endif
+@
+\fimcodigo
+
+This variable is declared here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLDisplay *egl_display;
+#endif
+@
+\fimcodigo
+
+Now we need to obtain a configuration to the creation of a OpenGL
+context. We specify some requirements and get a configuration using
+the code below:
+
+\iniciocodigo
+@<X11: Configure OpenGL ES@>+=
+{
+  bool ret;
+  int number_of_configs_returned;
+  int requested_attributes[] = {
+    // We should support drawing in the screen and textures
+    EGL_SURFACE_TYPE,  EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    // And at least 1 bit to the red color:
+    EGL_RED_SIZE, 1,
+    // At least 1 bit to the green color:
+    EGL_GREEN_SIZE, 1,
+    // At least 1 bit to the blue color:
+    EGL_BLUE_SIZE, 1,
+    // At least 1 bit to the alpha channel:
+    EGL_ALPHA_SIZE, 1,
+    // At least 1 bit to the depth channel:
+    EGL_DEPTH_SIZE, 1,
+    EGL_NONE
+  };
+  ret = eglChooseConfig(egl_display, requested_attributes,
+                        &egl_config, 1, &number_of_configs_returned);
+  if(ret == EGL_FALSE){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create valid EGL config.\n");
+#endif
+    return false;
+  }
+}
+@
+\fimcodigo
+
+The struct that stores which configuration we will use is declared
+here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+EGLConfig egl_config;
+#endif
+@
+\fimcodigo
+
+
+Like how EGL needs its own display struct, it also needs its own
+window struct to store information about the window where it will
+draw. We can initialize such structure from the window struct used by
+the X library:
+
+\iniciocodigo
+@<X11: Configure OpenGL ES@>+=
+egl_window = eglCreateWindowSurface(egl_display, egl_config,
+                                    window, NULL);
+if(egl_window == EGL_NO_SURFACE){
+#if defined(W_DEBUG_WINDOW)
+  fprintf(stderr, "ERROR: Could not create EGL window.\n");
+#endif
+  return false;
+}
+@
+\fimcodigo
+
+The EGL window is decared here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLSurface egl_window;
+#endif
+@
+\fimcodigo
+
+
+Now we can create the OpenGL context. We let the user choose which
+will be the major and minor OpenGL version using
+macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} and
+\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. With this information, we create the context:
+
+\iniciocodigo
+@<X11: Configure OpenGL ES@>+=
+{
+  int context_attribs[] = {
+    EGL_CONTEXT_MAJOR_VERSION, W_WINDOW_OPENGL_MAJOR_VERSION,
+    EGL_CONTEXT_MINOR_VERSION, W_WINDOW_OPENGL_MINOR_VERSION,
+    EGL_NONE
+  };
+  egl_context = eglCreateContext(egl_display, egl_config,
+                                 EGL_NO_CONTEXT, context_attribs);
+  if(egl_context == EGL_NO_CONTEXT){
+#if defined(W_DEBUG_WINDOW)
+    fprintf(stderr, "ERROR: Could not create EGL context.\n");
+#endif
+    return false;
+  }
+  eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
+}
+@
+\fimcodigo
+
+The variable that stores the handle to the OpenGL context is declared
+here:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+static EGLContext egl_context;
+#endif
+@
+\fimcodigo
+
+\subsecao{2.3. Creating a ``Window'' in a Web Browser}
+
+
+\subsecao{2.4. Creating a Windows in (Microsoft) Windows}
+
 
 \subsecao{2.5. Configuring OpenGL on Windows}
 
@@ -2087,29 +2126,6 @@ executed. But before this we will add code to check if a window
 already was created. This information will be stored in a boolean
 variable:
 
-\iniciocodigo
-@<API Functions@>=
-bool _Wcreate_window(void){
-  if(already_have_window == true)
-    return false;
-  @<X11: Create Window@>
-  @<Web Assembly: Create Window@>
-  @<Windows: Create Window@>
-  already_have_window = true;
-  return true;
-}
-@
-\fimcodigo
-
-The variable that stores if the window already was created will be
-declared here:
-
-\iniciocodigo
-@<Local Variables@>+=
-static bool already_have_window = false;
-@
-\fimcodigo
-
 There is one last thing to define about the window creation, more
 specifically about the OpenL context associated with the created
 window. We need to choose a default OpenGL version to load when the
@@ -2165,6 +2181,7 @@ bool _Wdestroy_window(void){
   eglTerminate(egl_display);
   XDestroyWindow(display, window);
   XCloseDisplay(display);
+  display = NULL;
   already_have_window = false;
   return true;
 }
