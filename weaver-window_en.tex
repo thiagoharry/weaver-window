@@ -902,11 +902,13 @@ static bool already_have_window = false;
 
 \subsecao{2.3. Configuring OpenGL}
 
-% XXXXXXXXXXXX
+Our API aim to support at least OpenGL S 2.0. In most environments
+this is not a problem. But on Windows, for example, we have no
+guarantees that we have OpenGL ES support. In this case, we should use
+OpenGL 4, but we should support only the functions and macros that
+exists on OpenGL ES 2.0.
 
-
-
-\subsecao{2.2. Configuring OpenGL ES in X11}
+\subsubsecao{2.3.1. Configuring OpenGL ES in X11}
 
 In X11, the interface used to program in OpenGL ES is called EGL and
 its functions and macros are declared in the following header:
@@ -1065,13 +1067,16 @@ static EGLContext egl_context;
 @
 \fimcodigo
 
-\subsecao{2.3. Creating a ``Window'' in a Web Browser}
+\subsubsecao{2.3.2. Configuring OpenGL on Web Assembly}
 
+No additional configuration is necessary. We already support OpenGL
+because when we created a ``window'' on Subsubsection 2.2.2, we passed
+a flag that activated OpenGL.
 
-\subsecao{2.4. Creating a Windows in (Microsoft) Windows}
+It should be noted that the OpenGL version in this case is WebGL, but
+this version is compatible with OpenGL ES.
 
-
-\subsecao{2.5. Configuring OpenGL on Windows}
+\subsubsecao{2.3.3. Configuring OpenGL on Windows}
 
 To use OpenGL on Windows, first we warn the compiler about the
 necessary libraries, so that we do not need to pass them explicitly
@@ -2117,6 +2122,21 @@ the following type for vertex attributes:
 @
 \fimcodigo
 
+\subsubsecao{2.3.4. Choosing OpenGL Version}
+
+In the previously defined code, in all environments. we choosed the
+OpenGL version according with the following two macros:
+
+1) \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION}
+
+2) \monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}
+
+We will now define what these macros values will be if the user did
+not personalized them to some valuye.
+
+
+
+
 
 \subsecao{2.6. Window Creation Function}
 
@@ -2129,7 +2149,7 @@ variable:
 There is one last thing to define about the window creation, more
 specifically about the OpenL context associated with the created
 window. We need to choose a default OpenGL version to load when the
-used do not set the macros used to choose this.
+user do not set her own value.
 
 When we are running in X11, we can use EGL to create an OpenGL ES
 context. In this case, we prefer version 3.0, as is the newer version
@@ -2160,7 +2180,13 @@ Our macro that sets the OpenGL version, because of this, is:
 @
 \fimcodigo
 
-\subsecao{2.7. Closing a Window in X}
+\subsecao{2.4. Closing a Window}
+
+Closing a window makes the window disappear and also finalizes any
+data initialized during window creation. This includes the OpenGL
+context.
+
+\subsubsecao{2.4.1. Closing a Window on X11}
 
 Closing a window in X11 means calling the function that asks the
 server to close the window and also closing the connection with the
@@ -2189,7 +2215,7 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.8. Closing a Window in Web Assembly}
+\subsubsecao{2.4.2. Closing a Window in Web Assembly}
 
 Closing a window when running in a web browser means finalize the SDL
 structures and hide the canvas where we were drawing. We do this with
@@ -2213,10 +2239,10 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.9. Closing a Window on Windows}
+\subsecao{2.4.3. Closing a Window on Windows}
 
-Closing a window in Windows means calling a simple function to destroy
-the window:
+Closing a window in Windows means calling a function to destroy the
+window:
 
 \iniciocodigo
 @<API Functions@>+=
@@ -2234,7 +2260,14 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.10. Rendering window in X} 
+\subsecao{2.5. Rendering the Window}
+
+In a graphical program, usually we have some main loop and in this
+loop, we call some function that draws in our window. This means
+asking to update the window after making OpenGL calls to draw. How we
+do this depends on our environment and API.
+
+\subsecao{2.5.1. Rendering window in X} 
 
 In X, when we asked EGL to create a window, by default it creates a
 double buffered window. Rendering in the screen means in this case to
@@ -2252,12 +2285,18 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.10. Rendering window in Emscripten}
+\subsecao{2.5.2. Rendering window in Emscripten}
 
-It is not necessary to perform any additional operation to render the
-previous Open GL commands if we are using Web Assembly compiled by
-Emscripten. So we only use \monoespaco{glFlush} to wait for any
-pending command to execute before resuming our code.
+The function \monoespaco{emscripten\_sleep} is what makes the window
+update in a main loop. However, using it is a bad practice. In Web
+Assembly, programs should not run in an infinite loop, but a function
+should be registered to be executed over and over again instead of a
+more usual infinite loop. When we register a function this way, we do
+not need to use any additional function to ask to update our
+window. Therefore, in the following code we use only a flush command
+to ensure that all OpenGL calls are sent. But we do not need to make
+anything to update the screen, assuming that the program do not follow
+a bad practice:
 
 \iniciocodigo
 @<API Functions@>+=
@@ -2270,7 +2309,7 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.10. Rendering window in (Microsoft) Windows}
+\subsecao{2.5.3. Rendering window in (Microsoft) Windows}
 
 In Windows, the WGL function responsible for swapping buffers in the
 window making our drawings visible is
@@ -2285,6 +2324,9 @@ bool _Wrender_window(void){
 #endif
 @
 \fimcodigo
+
+
+
 
 
 

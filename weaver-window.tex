@@ -930,15 +930,13 @@ static bool already_have_window = false;
 
 \subsecao{2.3. Configurando o OpenGL}
 
+Nossa API deve suportar pelo menos o OpenG ES 2.0. Na maioria dos
+ambientes isso não é um problema. Mas no Windows, por exemplo, nós não
+temos garantias de que o sistema suporta OpenGL ES. Em tais casos,
+devemos ativar o OpenGL 4, mas iremos suportar não a sua API inteira,
+mas apenas a funções que estão prsentes no OpenGL ES 2.0.
 
-% XXXXXXXXXXXX
-
-
-
-
-
-
-\subsecao{2.2. Configurando OpenGL ES no X11}
+\subsubsecao{2.3.1. Configurando OpenGL ES no X11}
 
 No X11, a interface por meio da qual programamos usando OpenGL ES se
 chama EGL e suas funções e macros são declaradas no seguinte
@@ -1095,13 +1093,16 @@ static EGLContext egl_context;
 @
 \fimcodigo
 
-\subsecao{2.3. Criando uma ``Janela'' em Navegador Web}
+\subsubsecao{2.3.2.Configuring OpenGL on Web Assembly}
 
+Nenhuma configuração adicional é necessária. Nós já suportamos OpenGL
+porque passamos uma flag que pediu o suporte quando criamos uma
+``janela'' na Subsubseção 2.2.2.
 
-\subsecao{2.4. Criando uma Janela no Windows}
+Note que a versção do OpenGL neste caso é o WebGL, mas esta versão é
+compatível com o OpenGL ES.
 
-
-\subsecao{2.5. Configurando OpenGL no Windows}
+\subsubsecao{2.3.3. Configurando OpenGL no Windows}
 
 Para usar o OpenGL no Windows, primeiro precisamos avisamos o
 compilador das bibliotecas necessárias para não precisar declará-las
@@ -2149,20 +2150,17 @@ também:
 @
 \fimcodigo
 
+\subsubsecao{2.3.4. Escolhendo a Versão do OpenGL}
 
-\subsecao{2.6. Função de Criação de Janelas}
+No código definido antes, em todos os ambientes, nós escolhemos como
+versão do OpenGL aquilo que estivesse definido nas macros:
 
-Nossa função de geração de nova janela então executará o código
-adequado, dependendo do ambiente gráfico em que estamos. Mas antes de
-fazer isso, faremos uma checagem para ver se já não temos uma janela
-criada. Armazenaremos em uma variável se temos ou não uma janela já
-criada.
+1) \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION}
 
+2) \monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}
 
-Há mais uma coisa que é preciso definir para a criação da janela e do
-contexto OpenGL ligado à ela: qual versão do OpenGL iremos usar por
-padrão, caso o usuário não tenha definido para um valor as macros que
-usamos para tomar a decisão.
+Vamos agora definir qual será a versão padrão caso o usuário não
+personalize estas macros.
 
 Caso estejamos rodando o X11, estamos usango o EGL para criar um
 contexto OpenGL ES. Por padrão iremos pedir então para criar um
@@ -2198,7 +2196,13 @@ Sendo assim, a nossa macro que define a versão OpenGL é:
 @
 \fimcodigo
 
-\subsecao{2.7. Fechando uma Janela no X}
+\subsecao{2.4. Fechando uma Janela}
+
+Fechar um janela faz a janela desaparecer e finaliza qualquer coisa
+que tenha sido inicializada durante a criação da janela. O que inclui
+o contexto OpenGL.
+
+\subsubsecao{2.4.1. Closing a Window on X11}
 
 Fechar uma janela no X11 significa invocar a função do X que pede ao
 servidor para que a janela seja fechada. E além disso, fechar a
@@ -2228,7 +2232,7 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.8. Fechando uma Janela em Web Assembly}
+\subsubsecao{2.4.2. Fechando uma Janela em Web Assembly}
 
 Fechar uma janela quando executando dentro de um navegador de Internet
 graças ao Web Assembly significa finalizar todas as estruturas SDL e
@@ -2253,9 +2257,9 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.9. Fechando uma Janela no Windows}
+\subsecao{2.4.3. Fechando uma Janela no Windows}
 
-Fechar a janela no Windows significa chamar uma única função que irá
+Fechar a janela no Windows significa chamar a  função que irá
 encerrá-la:
 
 \iniciocodigo
@@ -2274,7 +2278,15 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.10. Renderizando a Janela no X} 
+\subsecao{2.5. Renderizando a Janela}
+
+Em um programa gráfico, geralmente temos um laço principal e dentro
+deste laço, chamamos alguma função para desenhar na tela. Isso
+significa pedir para que a janela seja atualizada depois de realizar
+chamadas OpenGL para desenhar. O modo de fazer isso depende do nosso
+ambiente e API.
+
+\subsecao{2.5.1. Renderizando a Janela no X} 
 
 No X, como pedimos para o EGL criar uma janela e por padrão ele cria
 uma janela com buffer duplo, para renderizarmos os comandos OpenGL
@@ -2292,12 +2304,21 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.11. Renderizando a Janela no Emscripten} 
+\subsecao{2.5.2. Renderizando a Janela no Emscripten} 
 
-O Emscripten requer nenhum comando adicional para renderizar na
-tela. Por isso, na nossa função de renderizar na tela apenas
-chamamos \monoespaco{glFlush} para realizar quaisquer operações que
-estejam pendentes no Open GL.
+A função \monoespaco{emscripten\_sleep} seria a que realiza a
+atualização de uma janela quando estamos em um laço
+principal. Contudo, usá-la é uma má prática. No Web Assembly,
+programas nunca devem rodar em um laço infinito, mas ao invés disso
+uma função deve ser registrada para rodar várias vezes seguidas sem
+parar ao invés de ser feito um laço infinito como é mais comum. Quando
+registramos uma função desta forma, não é necessário usar nenhum
+comando adicioinal para que a janela seja atualizada, isso é feito
+automaticamente. Por isso, na nssa função abaixo, a única coisa que
+fazemos é chamar uma função inócua apenas para garantir que enviamos
+todos os comandos OpenGL. Mas não usamos nada para pedir para a tela
+ser atualizada, já que assumimos que o programa não irá seguir a
+má-prática:
 
 \iniciocodigo
 @<Funções da API@>+=
@@ -2310,7 +2331,7 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.11. Renderizando a Janela no Windows}
+\subsecao{2.5.3. Renderizando a Janela no Windows}
 
 No Windows, a função WGL responsável por trocar os buffers da janela e
 assim tornar visíveis os desenhos feitos é
