@@ -1154,7 +1154,7 @@ return true;
 #line 2397 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
-bool _Wrender_window(void){
+bool _Wget_window_size(int*width,int*height){
 if(!already_have_window){
 *width= 0;
 *height= 0;
