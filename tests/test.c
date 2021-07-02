@@ -37,7 +37,7 @@ void assert(char *descricao, bool valor){
   while(*s)
     tamanho_string += (*s++ & 0xC0) != 0x80;
   pontos[0] = ' ';
-  for(i = 1; i < 71 - tamanho_string; i ++)
+  for(i = 1; i < 71 - (int) tamanho_string; i ++)
     pontos[i] = '.';
   pontos[i] = '\0';
   numero_de_testes ++;
@@ -93,7 +93,7 @@ void test_resolution(void){
 }
 
 void test_opengl_simple(void){
-  char message[128];
+  char message[1024];
   time_t initial_time, current_time;
   _Wcreate_window();
   const GLubyte *version = glGetString(GL_VERSION);
@@ -108,7 +108,7 @@ void test_opengl_simple(void){
   memcpy(message, "Getting Renderer: ", 19);
   memcpy(&(message[18]), renderer, strlen((const char *) renderer) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
-  memcpy(message, "Getting Shading Language Version: ", 35);
+  memcpy(message, "Shading Language Version: ", 35);
   memcpy(&(message[34]), shading, strlen((const char *) shading) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   memcpy(message, "Getting OpenGL Vendor: ", 24);
