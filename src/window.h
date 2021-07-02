@@ -8,7 +8,7 @@ extern"C"{
 #endif
 #include <stdbool.h>  
 /*24:*/
-#line 624 "weaver-window.tex"
+#line 618 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #include <GLES2/gl2.h> 
@@ -16,7 +16,7 @@ extern"C"{
 #include <emscripten.h> 
 #endif
 /*:24*//*42:*/
-#line 957 "weaver-window.tex"
+#line 951 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <EGL/egl.h> 
@@ -24,7 +24,7 @@ extern"C"{
 #include <EGL/eglext.h> 
 #endif
 /*:42*//*51:*/
-#line 1124 "weaver-window.tex"
+#line 1118 "weaver-window.tex"
 
 #if defined(_WIN32)
 #pragma comment(lib, "Opengl32.lib")
@@ -37,26 +37,26 @@ extern"C"{
 #line 116 "weaver-window.tex"
 
 /*21:*/
-#line 564 "weaver-window.tex"
+#line 558 "weaver-window.tex"
 
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
 /*:21*//*69:*/
-#line 1545 "weaver-window.tex"
+#line 1539 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_VERTEX_SHADER          0x8B31
 #define GL_FRAGMENT_SHADER        0x8B30
 #endif
 /*:69*//*70:*/
-#line 1556 "weaver-window.tex"
+#line 1550 "weaver-window.tex"
 
 #if defined(_WIN32)
 typedef char GLchar;
 #endif
 /*:70*//*74:*/
-#line 1655 "weaver-window.tex"
+#line 1649 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_SHADER_TYPE          0x8B4F
@@ -66,7 +66,7 @@ typedef char GLchar;
 #define GL_SHADER_SOURCE_LENGTH 0x8B88
 #endif
 /*:74*//*75:*/
-#line 1671 "weaver-window.tex"
+#line 1665 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_LOW_FLOAT    0x8DF0
@@ -77,7 +77,7 @@ typedef char GLchar;
 #define GL_HIGH_INT     0x8DF5
 #endif
 /*:75*//*76:*/
-#line 1689 "weaver-window.tex"
+#line 1683 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
@@ -89,19 +89,19 @@ typedef char GLchar;
 #define GL_CURRENT_VERTEX_ATTRIB              0x8626
 #endif
 /*:76*//*77:*/
-#line 1706 "weaver-window.tex"
+#line 1700 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_VERTEX_ATTRIB_ARRAY_POINTER 0x8645
 #endif
 /*:77*//*78:*/
-#line 1717 "weaver-window.tex"
+#line 1711 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_SHADING_LANGUAGE_VERSION 0x8B8C
 #endif
 /*:78*//*85:*/
-#line 1830 "weaver-window.tex"
+#line 1824 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_DELETE_STATUS               0x8B80
@@ -115,7 +115,7 @@ typedef char GLchar;
 #define GL_ACTIVE_UNIFORM_MAX_LENGTH   0x8B87
 #endif
 /*:85*//*89:*/
-#line 1893 "weaver-window.tex"
+#line 1887 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_FLOAT      0x1406
@@ -127,7 +127,7 @@ typedef char GLchar;
 #define GL_FLOAT_MAT4 0x8B5C
 #endif
 /*:89*//*93:*/
-#line 2047 "weaver-window.tex"
+#line 2041 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_INT         0x1404
@@ -142,7 +142,7 @@ typedef char GLchar;
 #define GL_SAMPER_CUBE 0x8B60
 #endif
 /*:93*//*97:*/
-#line 2157 "weaver-window.tex"
+#line 2151 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_FIXED          0x140C
@@ -171,7 +171,7 @@ bool _Wget_screen_resolution(int*resolution_x,int*resolution_y);
 
 bool _Wget_window_size(int*width,int*height);
 /*:7*//*59:*/
-#line 1330 "weaver-window.tex"
+#line 1324 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern BOOL(__stdcall*wglChoosePixelFormatARB)(HDC,const int*,const FLOAT*,
@@ -179,7 +179,7 @@ UINT,int*,UINT*);
 extern HGLRC(*wglCreateContextAttribsARB)(HDC,HGLRC,const int*);
 #endif
 /*:59*//*66:*/
-#line 1486 "weaver-window.tex"
+#line 1480 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLuint(__stdcall*glCreateShader)(GLenum shaderType);
@@ -190,7 +190,7 @@ extern void(__stdcall*glReleaseShaderCompiler)(void);
 extern void(__stdcall*glDeleteShader)(GLuint);
 #endif
 /*:66*//*71:*/
-#line 1570 "weaver-window.tex"
+#line 1564 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLboolean(__stdcall*glIsShader)(GLuint);
@@ -208,7 +208,7 @@ extern void(__stdcall*glGetUniformfv)(GLuint,GLint,GLfloat*);
 extern void(__stdcall*glGetUniformiv)(GLuint,GLint,GLint*);
 #endif
 /*:71*//*79:*/
-#line 1730 "weaver-window.tex"
+#line 1724 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLuint(__stdcall*glCreateProgram)(void);
@@ -219,7 +219,7 @@ extern void(__stdcall*glUseProgram)(GLuint);
 extern void(__stdcall*glDeleteProgram)(GLuint);
 #endif
 /*:79*//*82:*/
-#line 1783 "weaver-window.tex"
+#line 1777 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLboolean(__stdcall*glIsProgram)(GLuint);
@@ -229,7 +229,7 @@ GLchar*);
 extern void(__stdcall*glValidadeProgram)(GLuint);
 #endif
 /*:82*//*86:*/
-#line 1849 "weaver-window.tex"
+#line 1843 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern void(__stdcall*glGetActiveAttrib)(GLuint,GLuint,GLsizei,GLsizei*,
@@ -238,7 +238,7 @@ extern GLint(__stdcall*glGetAttribLocation)(GLuint,const GLchar*);
 extern void(__stdcall*glBindAttribLocation)(GLuint,GLuint,const GLchar*);
 #endif
 /*:86*//*90:*/
-#line 1910 "weaver-window.tex"
+#line 1904 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern GLint(__stdcall*glGetUniformLocation)(GLuint,const GLchar*);
@@ -268,7 +268,7 @@ extern void(__stdcall*glUniformMatrix4fv)(GLint,GLsizei,GLboolean,
 const GLfloat*);
 #endif
 /*:90*//*94:*/
-#line 2070 "weaver-window.tex"
+#line 2064 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern void(__stdcall*glVertexAttrib1f)(GLuint,GLfloat);

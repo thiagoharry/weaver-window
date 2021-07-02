@@ -358,12 +358,9 @@ library functions.
 1. We open a connection with the server. If we succeed, we get as
 response a list of relevant information about the screen.
 
-2. We get the number that identifies the default screen (when we have
-more than one screen).
+2. We read the resolution using the function defined on section 2.1.
 
-3. We read the resolution using the function defined on section 2.1.
-
-4. We send a new message to the server asking to create a new
+3. We send a new message to the server asking to create a new
 window. We will do it in the default screen, The window size will be
 the greatest value allowed given the screen resolution.
 
@@ -373,7 +370,6 @@ The above steps are implemented using the functions and macros below:
 @<X11: Create Window@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 int screen_resolution_x, screen_resolution_y; //Screen resolution
-int screen;       // Deafult screen id
 /* Step 0: */
 XInitThreads();
 /* Step 1: */
@@ -385,10 +381,8 @@ if(display == NULL){
   return false; // Couldn't connect
 }
 /* Step 2: */
-screen = DefaultScreen(display);
-/* Step 3: */
 _Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
-/* Step 4: */
+/* Step 3: */
 window = XCreateSimpleWindow(display, // X11 connection
                              DefaultRootWindow(display),// Parent window
                              0, 0, // Window position
