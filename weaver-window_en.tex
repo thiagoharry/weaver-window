@@ -198,6 +198,19 @@ passed as argument. If we have more than one screen, it will return
 data about the main window. In case of error, it returns false and
 stores zero as the resolution.
 
+\iniciocodigo
+@<Window Declarations@>=
+bool _Wget_window_size(int *width, int *height);
+@
+\fimcodigo
+
+This function gets the current window size in pixels and store the
+information in the pointers passed as argument. If we have no window
+or in case of error, it returns false and store 0 in the
+pointers. Otherwise, it returns true and store the correct value in
+the pointers.
+
+
 \secao{2. Creating and Managing the Window}
 
 \subsecao{2.1. Getting Screen Resolution}
@@ -2325,9 +2338,98 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
+\subsecao{2.6. Getting Window Size}
 
+Next we will define the function that stores in pointers passed as
+aguments the size of our current window.
 
+\subsubsecao{2.6.1. Getting Window Size on X}
 
+In X11, the Xlib API gives us the function \monoespaco{XGetGeometry}
+that gets information about some window or pixmap (image). This
+function returns a lot of information that we are not interested. But
+also returns the window width and height that we need:
+
+\iniciocodigo
+@<API Functions@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wget_window_size(int *width, int *height){
+  Window root_window;
+  int x, y;
+  unsigned int border, depth;
+  if(!already_have_window || display == NULL){
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+  XGetGeometry(display, window, &root_window, &x, &y,
+               (unsigned int *) width, (unsigned int *) height, &border, &depth);
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+\subsubsecao{2.6.2. Getting Window Size on Web Assembly}
+
+In a web browser, we do not have a window, but a canvas. By
+convention, the canvas that we use as a window have the ID
+``canvas''. If we want to know its size, we need to use Javascript to
+get the canvas and obtain its width and height.
+
+\iniciocodigo
+@<API Functions@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wget_window_size(int *width, int *height){
+  if(!already_have_window){
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+  *width = EM_ASM_INT({
+    return document.getElementById("canvas").clientWidth;
+  });
+  *height = EM_ASM_INT({
+    return document.getElementById("canvas").clientHeight;
+  });
+  if(*width > 0 && *height > 0)
+    return true;
+  else{
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+}
+#endif
+@
+\fimcodigo
+
+\subsubsecao{2.6.3. Getting Window Size on Windows}
+
+On Windows we use a call to \monoespaco{GetWindowRect} to obtain the
+window size. Which is stored in a \monoespaco{RECT} structure:
+
+\iniciocodigo
+@<API Functions@>+=
+#if defined(_WIN32)
+bool _Wget_window_size(int *width, int *height){
+  BOOL ret;
+  RECT rectangle;
+  ret = GetWindowRect(window, &rectangle);
+  if(ret){
+    *width = rectangle.right - rectangle.left;
+    *height = rectangle.bottom - rectangle.top;
+    return true;
+  }
+  else{
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+}
+#endif
+@
+\fimcodigo
 
 
 \subsecao{X. Final File Sctructure}

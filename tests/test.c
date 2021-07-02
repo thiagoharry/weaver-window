@@ -79,11 +79,17 @@ void test_create_destroy_window(void){
 
 void test_resolution(void){
   int res_x, res_y;
+  int size_x, size_y;
   bool ret;
   char message[128];
   ret = _Wget_screen_resolution(&res_x, &res_y);
   snprintf(message, 128, "Getting screen resolution: %dx%d", res_x, res_y);
   assert(message, ret && (res_x > 0) && (res_y > 0));
+  _Wcreate_window();
+  _Wget_window_size(&size_x, &size_y);
+  assert("Fullscreen window have same size than screen", size_x == res_x &&
+	 size_y == res_y);
+  _Wdestroy_window();
 }
 
 void test_opengl_simple(void){

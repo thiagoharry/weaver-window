@@ -215,6 +215,17 @@ passados. Se houver mais de uma, retornará aquela que o sistema
 identifica como sendo a principal. Se um erro ocorrer, ela retornará
 falso e a resolução será armazenada como zero.
 
+\iniciocodigo
+@<Declarações de Janela@>=
+bool _Wget_window_size(int *width, int *height);
+@
+\fimcodigo
+
+Esta função obtém o tamanho em pixels da janela atual e armazena a
+informação nos ponteiros passados como argumento. Se nós não temos
+nenhuma janela, ou em caso de erro, a função retorna falso e armazena
+zero nos ponteiros. Já em caso de sucesso, ela retorna verdadeiro e
+armazena o resultado correto nos ponteiros.
 
 \secao{2. Criando e Gerenciando a Janela}
 
@@ -2346,6 +2357,103 @@ bool _Wrender_window(void){
 #endif
 @
 \fimcodigo
+
+\subsecao{2.6. Obtendo o Tamanho da Janela}
+
+Agora iremos definir a função que armazena nos ponteirso passados como
+argumento o tamanho em pixels da nossa janela.
+
+\subsubsecao{2.6.1. Obtendo o Tamanho da Janela no X}
+
+No X11, a API do Xlib nos fornece a função \monoespaco{XGetGeometry}
+que fornece informação sobre uma janela ou pixmap (imagem). A função
+retorna uma grande quantidade de informação em diferentes
+ponteiros. Mas a informação que importa para nós é apenas a altura e
+largura da janela:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wget_window_size(int *width, int *height){
+  Window root_window;
+  int x, y;
+  unsigned int border, depth;
+  if(!already_have_window || display == NULL){
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+  XGetGeometry(display, window, &root_window, &x, &y,
+               (unsigned int *) width, (unsigned int *) height, &border, &depth);
+  return true;
+}
+#endif
+@
+\fimcodigo
+
+\subsubsecao{2.6.1. Obtendo o Tamanho da Janela no Web Assembly}
+
+Em um navegador web, nós não temos uma janela, mas um ``canvas''
+HTML. Por convenção, o canvas que usamos como janela tem o ID
+``cancas''. Se queremos saber o seu tamanho, precisamos usar
+Javascript para obter o elemento e em seguida ler sua altura e
+largura.
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wrender_window(void){
+  if(!already_have_window){
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+  *width = EM_ASM_INT({
+    return document.getElementById("canvas").clientWidth;
+  });
+  *height = EM_ASM_INT({
+    return document.getElementById("canvas").clientHeight;
+  });
+  if(*width > 0 && *height > 0)
+    return true;
+  else{
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+}
+#endif
+@
+\fimcodigo
+
+\subsubsecao{2.6.3. Obtendo o Tamanho da Janela no WIndows}
+
+No Windows nós usamos uma chamada a \monoespaco{GetWindowRect} para
+obter o tamanho da janela. o qual é armazenado em uma
+estrutura \monoespaco{RECT}:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(_WIN32)
+bool _Wget_window_size(int *width, int *height){
+  BOOL ret;
+  RECT rectangle;
+  ret = GetWindowRect(window, &rectangle);
+  if(ret){
+    *width = rectangle.right - rectangle.left;
+    *height = rectangle.bottom - rectangle.top;
+    return true;
+  }
+  else{
+    *width = 0;
+    *height = 0;
+    return false;
+  }
+}
+#endif
+@
+\fimcodigo
+
 
 \secao{X. Estrutura Final do Arquivo}
 
