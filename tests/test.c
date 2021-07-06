@@ -108,8 +108,8 @@ void test_opengl_simple(void){
   memcpy(message, "Getting Renderer: ", 19);
   memcpy(&(message[18]), renderer, strlen((const char *) renderer) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
-  memcpy(message, "Shading Language Version: ", 35);
-  memcpy(&(message[34]), shading, strlen((const char *) shading) + 1);
+  memcpy(message, "Shading Language Version: ", 27);
+  memcpy(&(message[26]), shading, strlen((const char *) shading) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
   memcpy(message, "Getting OpenGL Vendor: ", 24);
   memcpy(&(message[23]), vendor, strlen((const char *) vendor) + 1);
@@ -128,7 +128,7 @@ void test_opengl_simple(void){
 }
 
 void test_opengl_shader(void){
-  GLint shader_program, pos;
+  GLint shader_program, pos = 0;
   _Wcreate_window();
   {
     GLint vertex_shader, fragment_shader;
@@ -205,7 +205,7 @@ void test_opengl_shader(void){
       0.5f, -0.5f, 0.0f,
       -0.5f, -0.5f, 0.0f
     };
-    pos = glGetAttribLocation(shader_program, "position");
+    //pos = glGetAttribLocation(shader_program, "position");
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glViewport(0, 0, 1366, 768);
     //glGenBuffers(1, &vbo);

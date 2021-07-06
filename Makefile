@@ -20,10 +20,10 @@ test_en:
 	./test_window
 test_web:
 	ctangle weaver-window.tex
-	emcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -s ASYNCIFY=1 -Wall -O2 tests/test.c src/window.c  -o docs/test_window.html
+	emcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -s FULL_ES2=1 -s ASYNCIFY=1 -Wall -O2 tests/test.c src/window.c  -o docs/test_window.html
 test_web_en:
 	ctangle weaver-window_en.tex
-	emcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -s ASYNCIFY=1 -Wall -O2 tests/test.c src/window.c  -o docs/test_window.html
+	emcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -s FULL_ES2=1 -s ASYNCIFY=1 -Wall -O2 tests/test.c src/window.c  -o docs/test_window.html
 clean:
 	rm -f *~ *.core *.scn *.dvi *.idx *.log tests/*~ test_window
 distclean: clean
