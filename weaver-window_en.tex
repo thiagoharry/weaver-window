@@ -210,6 +210,17 @@ or in case of error, it returns false and store 0 in the
 pointers. Otherwise, it returns true and store the correct value in
 the pointers.
 
+\iniciocodigo
+@<Window Declarations@>=
+void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
+                        struct _Wmouse *mouse);
+@
+\fimcodigo
+
+This is the function that shall be called periodically to update the
+keyboard and mouse state. The first argument is the current time
+measured in some unit of time. The next arguments are structs that
+represent keyboard and mouse and that shall be updated.
 
 \secao{2. Creating and Managing the Window}
 
@@ -2422,6 +2433,79 @@ bool _Wget_window_size(int *width, int *height){
   }
 }
 #endif
+@
+\fimcodigo
+
+\secao{3. Managing Input}
+
+In this section we will deal with input detection. As when the user
+presses a key or moves the mouse.
+
+\subsecao{3.1. Defining the Keyboard and Mouse}
+
+When we have a window, we can detect inputs made by the user when that
+window has focus. We can detect events made by the keyboard and mouse.
+
+For us the keyboard will be the following struct:
+
+\iniciocodigo
+@<Window Declarations@>+=
+struct _Wkeyboard{
+  long key[W_KEYBOARD_SIZE];
+};
+@
+\fimcodigo
+
+In the key aray above, we will have one position for each keyboard
+key. The meaning of the number stored in each position depends on the
+value. The options are:
+
+1) If we store zero, this means that the key is not being pressed.
+
+2) If we store 1, this means that the key started to being pressed now.
+
+3) If the number is positive and greater than 1, this means that the
+key is being pressed and still was not released. The number represents
+for how long the key is being pressed in some unit of time.
+
+4) If the number is negative, this means that the key was released
+now. And the opposite of such number means for how long the key was
+pressed before being released in some unit of time.
+
+The number of keys depends on the operating system and environment. We
+will define it later.
+
+The mouse will be represented by the following struct:
+
+\iniciocodigo
+@<Window Declarations@>+=
+struct _Wmouse{
+  long buttons[W_MOUSE_SIZE];
+  int x, y, dx, dy, ddx, ddy;
+};
+@
+\fimcodigo
+
+The buttons follow the same convention than the keys in a keyboars. We
+can detect if a button is pressed, for how long it is being pressed,
+if the button was released and for how long the button was pressed
+before being released.
+
+The variables \monoespaco{x} and \monoespaco{y} represent the pointer
+position in pixels from our window. The variables \monoespaco{dx}
+and \monoespaco{dy} represent the pointer speed in pixels per unit of
+time. The variables \monoespaco{ddx} and \monoespaco{ddy} represent
+the pointer acceleration in pixels per unit of time squared.
+
+Given these structs, we need to periodically call the following
+function to update them:
+
+\iniciocodigo
+@<API Functions@>+=
+void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
+                        struct _Wmouse *mouse){
+  @<Get Window Input@>
+}
 @
 \fimcodigo
 

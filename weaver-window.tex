@@ -227,6 +227,18 @@ nenhuma janela, ou em caso de erro, a função retorna falso e armazena
 zero nos ponteiros. Já em caso de sucesso, ela retorna verdadeiro e
 armazena o resultado correto nos ponteiros.
 
+\iniciocodigo
+@<Declarações de Janela@>=
+void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
+                        struct _Wmouse *mouse);
+@
+\fimcodigo
+
+Esta função periodicamente deve ser chamada para atualizar o estado do
+teclado e mouse. O primeiro argumento é o tempo atual medido em alguma
+unidade de tempo. Os próximos argumentos são estruturas que
+representam teclado e mouse a serem atualizadas.
+
 \secao{2. Criando e Gerenciando a Janela}
 
 \subsecao{2.1. Obtendo a Resolução da Tela}
@@ -2445,6 +2457,84 @@ bool _Wget_window_size(int *width, int *height){
   }
 }
 #endif
+@
+\fimcodigo
+
+\secao{3. Gerenciando Entrada}
+
+Nesta seção trataremos a detecção de eventos de entrada de um
+usuário. Como quando ele pressiona uma tecla ou move o mouse.
+
+\subsecao{3.1. Definindo o Teclado e Mouse}
+
+Quando nós temos uma janela, podemos detectar entrada gerada pelo
+usuário quando tal janela tem foco. Podemos como entrada detectar
+eventos feitos pelo mouse e teclado.
+
+Para nós, um teclado será representado pela seguinte estrutura:
+
+\iniciocodigo
+@<Declaração de Janela@>+=
+struct _Wkeyboard{
+  long key[W_KEYBOARD_SIZE];
+};
+@
+\fimcodigo
+
+No vetor de teclas acima, nós reservamos uma posição para cada tecla
+diferente. O significado do número armazenado em cada posição depende
+de seu valor. As opções são:
+
+1) Se armazenamos zero, isso significa que a tecla específica
+associada à tal posição não está sendo pressionada.
+
+2) Se armazenamos 1, isso significa que a tecla começou a ser
+pressionada agora.
+
+3) Se armazenamos um número positivo maior que 1, isso significa que a
+tecla está sendo pressionada, ainda não foi solta e o número
+representa a quantas unidades de tempo essa tecla está sendo
+pressionada.
+
+4) Se armazenamos um número negativo, isso significa que a tecla foi
+solta agora. O oposto do número armazenado representa por quantas
+unidades de tempo a tecla foi pressionada antes de ser solta.
+
+O número de teclas acompanhadas depende do sistema operacional e
+ambiente. Iremos definir isso mais tarde.
+
+O mouse será representado pela seguinte estrutura:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+struct _Wmouse{
+  long buttons[W_MOUSE_SIZE];
+  int x, y, dx, dy, ddx, ddy;
+};
+@
+\fimcodigo
+
+Os botões do mouse seguem as mesmas convenções das teclas de um
+teclado. Nós podemos detectar se elas estão sendo pressionadas, por
+quanto tempo, se elas são soltas e por quanto tempo foram pressionadas
+antes de serem soltas.
+
+As variáveis \monoespaco{x} e \monoespaco{y} representam a posição do
+ponteiro do mouse em pixels de nossa janela. As
+variáveis \monoespaco{dx} e \monoespaco{dy} representam a velocidade
+do ponteiro em pixels por unidade de tempo. As
+variáveis \monoespaco{ddx} e \monoespaco{ddy} representam a aceleração
+do ponteiro em pixels por unidade de tempo ao quadrado.
+
+Dadas estas estruturas, precisamos chamar a seguinte função
+periodicamente para atualizá-las:
+
+\iniciocodigo
+@<Funções da API@>+=
+void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
+                        struct _Wmouse *mouse){
+  @<Obter Entrada da Janela@>
+}
 @
 \fimcodigo
 
