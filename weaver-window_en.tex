@@ -675,6 +675,14 @@ when we execute the function to close the window).
   );
   window = SDL_SetVideoMode(size_x, size_y, 0,
                             SDL_OPENGL | fullscreen_flag);
+  if(fullscreen_flag){
+    EM_ASM(// Activating fullscreen on Javascript
+      var el = document.getElementById("canvas");
+      if(el.requestFullscreen){
+        el.requestFullscreen();
+      }
+    );
+
   if(window == NULL)
     return false;
 }
@@ -2063,7 +2071,7 @@ extern void (__stdcall *glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean,
 extern void (__stdcall *glEnableVertexAttribArray)(GLuint);
 extern void (__stdcall *glDisableVertexAttribArray)(GLuint);
 #endif
-@
+
 \fimcodigo
 
 These pointers are positioned as global variables:
@@ -2102,7 +2110,7 @@ glVertexAttrib3f = (void (__stdcall *)(GLuint, GLfloat, GLfloat, GLfloat))
 if(glVertexAttrib3f == NULL) return false;
 glVertexAttrib4f = (void (__stdcall *)(GLuint, GLfloat, GLfloat, GLfloat,
                                        GLfloat))
-                      load_function("glVertexAttrib4f");
+                    load_function("glVertexAttrib4f");
 if(glVertexAttrib4f == NULL) return false;
 glVertexAttrib1fv = (void (__stdcall *)(GLuint, GLfloat *))
                        load_function("glVertexAttrib1fv");
@@ -2133,9 +2141,107 @@ And besides the types that are already defined, we also need to define
 the following type for vertex attributes:
 
 \iniciocodigo
-@<Define Macros@>+=
+@<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_FIXED          0x140C
+#endif
+@
+\fimcodigo
+
+Now we will define the pointers for functions related to buffer
+objects. The pointers are:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
+extern void (__stdcall *glDeleteBuffers)(GLsizei, const GLuint *);
+extern void (__stdcall *glBindBuffer)(GLenum, GLuint);
+extern void (__stdcall *glBufferData)(GLenum, GLsizeiptr, const void *, GLenum);
+extern void (__stdcall *glBufferSubData)(GLenum, GLintptr, GLsizeiptr,
+                                         const void *);
+extern void (__stdcall *glIsBuffer)(GLuint);
+extern void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
+#endif
+@
+\fimcodigo
+
+And the declarations:
+
+\iniciocodigo
+@<Global Variables@>+=
+#if defined(_WIN32)
+void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
+void (__stdcall *glDeleteBuffers)(GLsizei, const GLuint *);
+void (__stdcall *glBindBuffer)(GLenum, GLuint);
+void (__stdcall *glBufferData)(GLenum, GLsizeiptr, const void *, GLenum);
+void (__stdcall *glBufferSubData)(GLenum, GLintptr, GLsizeiptr, const void *);
+void (__stdcall *glIsBuffer)(GLuint);
+void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
+#endif
+@
+\fimcodigo
+
+And the initialization:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glGenBuffers = (void (__stdcall *)(GLsizei, GLuint *))
+                 load_function("glGenBuffers");
+if(glGenBuffers == NULL) return false;
+glDeleteBuffers = (void (__stdcall *)(GLsizei, const GLuint *))
+                    load_function("glDeleteBuffers");
+if(glDeleteBuffers == NULL) return false;
+glBindBuffer = (void (__stdcall *)(GLenum, GLuint))load_function("glBindBuffer");
+if(glBindBuffer == NULL) return false;
+glBufferData = (void (__stdcall *)(GLenum, GLsizeiptr, const void *, GLenum))
+                 load_function("glBufferData");
+if(glBufferData == NULL) return false;
+glBufferSubData = (void (__stdcall *)(GLenum, GLintptr, GLsizeiptr, const void *))
+                    load_function("glBufferSubData");
+if(glBufferSubData == NULL) return false;
+glIsBuffer = (void (__stdcall *)(GLuint)) load_function("glIsBuffer");
+if(glIsBuffer == NULL) return false;
+glGetBufferParameteriv = (void (__stdcall *)(GLenum, GLenum, GLint *))
+                           load_function("glGetBufferParameteriv");
+if(glGetBufferParameteriv == NULL) return false;
+@
+\fimcodigo
+
+When we bind a buffer with \monoespaco{glBindBuffer}, it can have one
+of the following types:
+
+\iniciocodigo
+@<Macro Definition@>+=
+#if defined(_WIN32)
+#define GL_ARRAY_BUFFER         0x8892
+#define GL_ELEMENT_ARRAY_BUFFER 0x8893
+#endif
+@
+\fimcodigo
+
+When we pass data to a buffer with \monoespaco{glBufferData}, we can
+choose between the following usages for the data:
+
+\iniciocodigo
+@<Macro Definition@>+=
+#if defined(_WIN32)
+#define GL_STATIC_DRAW  0x88E4
+#define GL_STREAM_DRAW  0x88E0
+#define GL_DYNAMIC_DRAW 0x88E8
+#endif
+@
+\fimcodigo
+
+When we ask information about a buffer
+with \monoespaco{glGetBufferParameteriv}, we can ask for the following
+data:
+
+\iniciocodigo
+@<Macro Definition@>+=
+#if defined(_WIN32)
+#define GL_BUFFER_SIZE  0x8764
+#define GL_BUFFER_USAGE 0x8765
 #endif
 @
 \fimcodigo
@@ -2249,6 +2355,7 @@ bool _Wdestroy_window(void){
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "none";
+    document.exitFullscreen();
   );
   already_have_window = false;
   return true;
@@ -2508,6 +2615,13 @@ void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
 }
 @
 \fimcodigo
+
+\subsecao{3.2. Reading the Keyboard}
+
+Here we define how we monitor the keyboard on different environments
+to update the keyboard structure.
+
+\subsubsecao{3.2.1. Reading the Keyboard on X}
 
 
 \subsecao{X. Final File Sctructure}

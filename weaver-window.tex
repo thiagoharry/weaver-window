@@ -696,6 +696,14 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
   );
   window = SDL_SetVideoMode(size_x, size_y, 0,
                             SDL_OPENGL | fullscreen_flag);
+  if(fullscreen_flag){
+    EM_ASM(// Ativando tela-cheia no Javascript
+      var el = document.getElementById("canvas");
+      if(el.requestFullscreen){
+        el.requestFullscreen();
+      }
+    );
+  }
   if(window == NULL)
     return false;
 }
@@ -2167,6 +2175,103 @@ também:
 @
 \fimcodigo
 
+Agora definiremos os ponteiros para as funções relacionadas a objetos
+do tipo buffer. Os ponteiros são:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
+extern void (__stdcall *glDeleteBuffers)(GLsizei, const GLuint *);
+extern void (__stdcall *glBindBuffer)(GLenum, GLuint);
+extern void (__stdcall *glBufferData)(GLenum, GLsizeiptr, const void *, GLenum);
+extern void (__stdcall *glBufferSubData)(GLenum, GLintptr, GLsizeiptr,
+                                         const void *);
+extern void (__stdcall *glIsBuffer)(GLuint);
+extern void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
+#endif
+@
+\fimcodigo
+
+E a declaração:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
+void (__stdcall *glDeleteBuffers)(GLsizei, const GLuint *);
+void (__stdcall *glBindBuffer)(GLenum, GLuint);
+void (__stdcall *glBufferData)(GLenum, GLsizeiptr, const void *, GLenum);
+void (__stdcall *glBufferSubData)(GLenum, GLintptr, GLsizeiptr, const void *);
+void (__stdcall *glIsBuffer)(GLuint);
+void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
+#endif
+@
+\fimcodigo
+
+A inicialização:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glGenBuffers = (void (__stdcall *)(GLsizei, GLuint *))
+                 load_function("glGenBuffers");
+if(glGenBuffers == NULL) return false;
+glDeleteBuffers = (void (__stdcall *)(GLsizei, const GLuint *))
+                    load_function("glDeleteBuffers");
+if(glDeleteBuffers == NULL) return false;
+glBindBuffer = (void (__stdcall *)(GLenum, GLuint))load_function("glBindBuffer");
+if(glBindBuffer == NULL) return false;
+glBufferData = (void (__stdcall *)(GLenum, GLsizeiptr, const void *, GLenum))
+                 load_function("glBufferData");
+if(glBufferData == NULL) return false;
+glBufferSubData = (void (__stdcall *)(GLenum, GLintptr, GLsizeiptr, const void *))
+                    load_function("glBufferSubData");
+if(glBufferSubData == NULL) return false;
+glIsBuffer = (void (__stdcall *)(GLuint)) load_function("glIsBuffer");
+if(glIsBuffer == NULL) return false;
+glGetBufferParameteriv = (void (__stdcall *)(GLenum, GLenum, GLint *))
+                           load_function("glGetBufferParameteriv");
+if(glGetBufferParameteriv == NULL) return false;
+@
+\fimcodigo
+
+Quando escolhemos ativar um buffer com \monoespaco{glBindBuffer}, ele
+pode ser dos seguintes tipos:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_ARRAY_BUFFER         0x8892
+#define GL_ELEMENT_ARRAY_BUFFER 0x8893
+#endif
+@
+\fimcodigo
+
+Quando passamos dados em um buffer com \monoespaco{glBufferData},
+podemos escolher dentre os seguintes modos de uso para os dados:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_STATIC_DRAW  0x88E4
+#define GL_STREAM_DRAW  0x88E0
+#define GL_DYNAMIC_DRAW 0x88E8
+#endif
+@
+\fimcodigo
+
+Quando escolhemos pedir informações sobre um buffer
+com \monoespaco{glGetBufferParameteriv}, a informação pedida pode ser:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_BUFFER_SIZE  0x8764
+#define GL_BUFFER_USAGE 0x8765
+#endif
+@
+\fimcodigo
+
 \subsubsecao{2.3.4. Escolhendo a Versão do OpenGL}
 
 No código definido antes, em todos os ambientes, nós escolhemos como
@@ -2266,6 +2371,7 @@ bool _Wdestroy_window(void){
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "none";
+    document.exitFullscreen();
   );
   already_have_window = false;
   return true;
@@ -2538,6 +2644,12 @@ void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
 @
 \fimcodigo
 
+\subsecao{3.2. Lendo o Teclado}
+
+Aqui definiremos como iremos monitorar o teclado em diferentes
+ambientes para atualizar a estrutura de teclado que definimos.
+
+\subsecao{3.2.1. Lendo o Teclado no X}
 
 \secao{X. Estrutura Final do Arquivo}
 
