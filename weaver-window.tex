@@ -938,6 +938,7 @@ bool _Wcreate_window(void){
   @<X11: Criar Janela@>
   @<Web Assembly: Criar Janela@>
   @<Windows: Criar Janela@>
+  @<Inicialização de Teclado ao Criar Janela@>
   already_have_window = true;
   return true;
 }
@@ -2639,15 +2640,91 @@ periodicamente para atualizá-las:
 @<Funções da API@>+=
 void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
                         struct _Wmouse *mouse){
-  @<Obter Entrada da Janela@>
+  if(already_have_window == false)
+    return;
+  @<Obter Eventos da Janela@>
 }
 @
 \fimcodigo
+
+A função basicamente entra em um laço para ler todos os eventos que a
+janela recebe. Dependendo do evento, ela atualiza de maneira adequada
+o estado das estruturas da janela e mouse. Por exemplo, no X11, a
+leitura de eventos acontece assim:
+
+\iniciocodigo
+@<Obter Eventos da Janela@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+XEvent event;
+while(XPending(display)){
+  XNextEvent(display, &event);
+  @<X11: Tratar Eventos@>
+}
+#endif
+@
+\fimcodigo
+
+Se estamos em ambiente Web Assembly, usamos a API SDL para ler os
+eventos:
+
+\iniciocodigo
+@<Obter Eventos da Janela@>+=
+#if defined(__EMSCRIPTEN__)
+SDL_Event event;
+while(SDL_PollEvent(&event)){
+  @<Web Assembly: Tratar Eventos@>
+}
+#endif
+@
+\fimcodigo
+
+No Windows, os eventos são chamados de ``mensagens''. E a forma de ler
+eles é dada abaixo:
+
+\iniciocodigo
+@<Obter Eventos da Janela@>+=
+#if defined(_WIN32)
+MSG event;
+while(PeekMessage(&event, window, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE)){
+  @<Windows: Tratar Eventos de Teclado@>
+}
+while(PeekMessage(&event, window, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)){
+  @<Windows: Tratar Eventos de Mouse@>
+}
+#endif
+@
+\fimcodigo
+
+No caso do Windows, nós podemos filtrar o tipo de evento que queremos
+tratar. Então separamos os eventos relacionados ao mouse e teclado,
+tratando eles exclusivamente.
 
 \subsecao{3.2. Lendo o Teclado}
 
 Aqui definiremos como iremos monitorar o teclado em diferentes
 ambientes para atualizar a estrutura de teclado que definimos.
+
+Os eventos, em todos os ambientes, vao nos avisar se uma tecla é
+pressionada ou solta. Mas eles não vao nos passar qualquer informação
+sobre o tempo que elas ficaram pressionadas. Nós temos que armazenar e
+cuidar desta informação. Para isso, usaremos um vetor que armamazena
+teclas e o tempo no qual recebemos a informação de que elas foram
+pressionadas ou soltas. No laço em que lemos os eventos, é esse vetor
+de teclas que iremos atualizar:
+
+\iniciocodigo
+@<Variáveis Locais@>=
+static struct{
+  unsigned keycode;
+  long time;
+} pressed_keys[32];
+static struct{
+  unsigned keycode;
+  long time;
+} released_keys[32];
+@
+\fimcodigo
+
 
 \subsecao{3.2.1. Lendo o Teclado no X}
 

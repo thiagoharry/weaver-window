@@ -911,6 +911,7 @@ bool _Wcreate_window(void){
   @<X11: Create Window@>
   @<Web Assembly: Create Window@>
   @<Windows: Create Window@>
+  @<Keyboard Initialization in Window Creation@>
   already_have_window = true;
   return true;
 }
@@ -2611,15 +2612,87 @@ function to update them:
 @<API Functions@>+=
 void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
                         struct _Wmouse *mouse){
-  @<Get Window Input@>
+  if(already_have_window == false)
+    return;
+  @<Get Window Events@>
 }
 @
 \fimcodigo
+
+This function works reading in a loop the list of events received by
+the window and then updating the mouse and keyboard structs. For
+example, on X11, the reading of events is done this way:
+
+\iniciocodigo
+@<Get Window Events@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+XEvent event;
+while(XPending(display)){
+  XNextEvent(display, &event);
+  @<X11: Manage Events@>
+}
+#endif
+@
+\fimcodigo
+
+If we are in a Web Assembly environment, we use SDL API to read the
+events:
+
+\iniciocodigo
+@<Get Window Events@>+=
+#if defined(__EMSCRIPTEN__)
+SDL_Event event;
+while(SDL_PollEvent(&event)){
+  @<Web Assembly: Manage Events@>
+}
+#endif
+@
+\fimcodigo
+
+On Windows the events are called ``messages''. And we read them in the
+following way:
+
+\iniciocodigo
+@<Get Window Events@>+=
+#if defined(_WIN32)
+MSG event;
+while(PeekMessage(&event, window, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE)){
+  @<Windows: Tratar Eventos de Teclado@>
+}
+while(PeekMessage(&event, window, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)){
+  @<Windows: Tratar Eventos de Mouse@>
+}
+#endif
+@
+\fimcodigo
+
+In the Windows case we can filter the events and then we can treat
+separatelly the mouse and keyboard events, ignoring all others.
 
 \subsecao{3.2. Reading the Keyboard}
 
 Here we define how we monitor the keyboard on different environments
 to update the keyboard structure.
+
+The events in all environments will warn when a key is pressed or
+released. But they will not say nothing about for how long they were
+pressed. We need to store and deduce this information. For this, we
+will need an array of keys being pressed and released at the present
+time. In the event loop we just update this array:
+
+\iniciocodigo
+@<Local Variables@>=
+static struct{
+  unsigned keycode;
+  long time;
+} pressed_keys[32];
+static struct{
+  unsigned keycode;
+  long time;
+} released_keys[32];
+@
+\fimcodigo
+
 
 \subsubsecao{3.2.1. Reading the Keyboard on X}
 
