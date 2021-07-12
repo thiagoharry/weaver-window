@@ -239,6 +239,19 @@ teclado e mouse. O primeiro argumento é o tempo atual medido em alguma
 unidade de tempo. Os próximos argumentos são estruturas que
 representam teclado e mouse a serem atualizadas.
 
+\iniciocodigo
+@<Declarações de Janela@>=
+void _Wflush_window_input(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
+@
+\fimcodigo
+
+Esta função limpa o estado de nosso teclado e mouse. Ela deve ser
+chamada toda vez que pararmos de ler periodicamente o mouse e teclado
+com chamadas a \monoespaco{\_Wget\_window\_input}. O resultado de
+chamar esta função é que reiniciamos o estado de nosso mouse e
+teclado, parando de considerar qualquer tecla como pressionada ou
+solta.
+
 \secao{2. Criando e Gerenciando a Janela}
 
 \subsecao{2.1. Obtendo a Resolução da Tela}
@@ -938,7 +951,7 @@ bool _Wcreate_window(void){
   @<X11: Criar Janela@>
   @<Web Assembly: Criar Janela@>
   @<Windows: Criar Janela@>
-  @<Inicialização de Teclado ao Criar Janela@>
+  @<Inicialização de Teclado@>
   already_have_window = true;
   return true;
 }
@@ -2718,15 +2731,106 @@ static struct{
   unsigned keycode;
   long time;
 } pressed_keys[32];
-static struct{
-  unsigned keycode;
-  long time;
-} released_keys[32];
+unsigned released_keys[32];
 @
 \fimcodigo
 
+Como parte da inicialização de nosso teclado, e também para reiniciar
+o estado dele, devemos chamar sempre o seguinte código que torna vazia
+nossa lista de teclas pressionadas e soltas:
+
+\iniciocodigo
+@<Inicialização de Teclado@>=
+{
+  int i;
+  for(i = 0; i < 32; i ++){
+    pressed_keys[i].keycode = 0;
+    released_keys[i] = 0;
+  }
+}
+@
+\fimcodigo
 
 \subsecao{3.2.1. Lendo o Teclado no X}
+
+No X11, cada tecla de teclado diferente possui um códico único entre 8
+e 255. Esse código representa a tecla física pressionada, mas não tem
+relação com o símbolo específico associado à tal tecla. O símbolo
+depende do mapeamento de teclado configurado. Para obter o símbolo
+associado à tecla pressionada, é necessário traduzir o código para um
+símbolo (\monoespaco{keycode} para \monoespaco{keysym}). De qualquer
+forma, isso significa que teremos que acompanhar um número potencial
+de quase 256 teclas diferentes:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#define W_KEYBOARD_SIZE 256
+#endif
+@
+\fimcodigo
+
+No momento em que detectamos uma tecla sendo pressionada, armazenamos
+ela, a identificando pelo seu código de tecla. Fazemos isso somente se
+a tecla já não estava sendo pressionada:
+
+\iniciocodigo
+@<X11: Tratar Eventos@>=
+if(event.type == KeyPress){
+  int i;
+  for(i = 0; i < 36; i ++){
+    if(pressed_keys[i].keycode == event.xkey.keycode) // Já tava pressionada
+      break;
+    if(pressed_keys[i].keycode == 0){ // Começou a ser pressionada agora
+      pressed_keys[i].keycode = event.xkey.keycode;
+      pressed_keys[i].time = current_time;
+      // Atualizando teclado:
+      keyboad.key[event.xkey.keycode] = 1;
+      break;
+    }
+  }
+  if(i == 36) continue; // Ignoring: too many keypresses
+}
+@
+\fimcodigo
+
+Quando detectamos uma tecla sendo solta, a removemos da lista de
+teclas sendo pressionadas e a adicionamos à lista de teclas soltas:
+
+\iniciocodigo
+@<X11: Tratar Eventos@>+=
+if(event.type == KeyRelease){
+  int i;
+  long stored_time = -1;
+  for(i = 0; i < 36; i ++){ // Removendo da lista de tecas pressionadas
+    if(pressed_keys[i].keycode == event.xkey.keycode){
+      int j;
+      stored_time = pressed_keys[j].time;
+      for(j = i; j < 35; j ++){
+        pressed_keys[j].keycode = pressed_keys[j + 1].keycode;
+        pressed_keys[j].time = pressed_keys[j + 1].time;
+        if(pressed_keys[j].keycode == 0)
+          break;
+      }
+      pressed_keys[35].keycode = 0;
+      break;
+    }
+  }
+  for(i = 0; i < 36; i ++){ // Adicionando à lista de teclas soltas:
+    if(released_keys[i] == 0)
+      released_keys[i] = event.xkey.keycode;
+  }
+  if(i == 36) // Muitas teclas soltas: ignorando e limpando teclado:
+    keyboard.key[event.xkey.keycode] = 0;
+  else{
+    // Atualizando teclado:
+    keyboard.key[event.xkey.keycode] = - (long) (current_time - stored_time);
+    if(keyboard[event.xkey.keycode] == 0)
+      keyboard.key[event.xkey.keycode] = -1; // Pressionou/soltou no mesmo frame
+  }
+}
+@
+\fimcodigo
 
 \secao{X. Estrutura Final do Arquivo}
 

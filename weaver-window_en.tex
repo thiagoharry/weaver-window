@@ -222,6 +222,18 @@ keyboard and mouse state. The first argument is the current time
 measured in some unit of time. The next arguments are structs that
 represent keyboard and mouse and that shall be updated.
 
+\iniciocodigo
+@<Window Declarations@>=
+void _Wflush_window_input(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
+@
+\fimcodigo
+
+This function cleans the state for keyboard and mouse structs. It
+should be called each time we interrupt our periodic invocation
+of \monoespaco{\_Wget\_window\_input}. Calling these functions the
+structs are reset to the initial state. And we stop to consider as
+pressed or released any key or button.
+
 \secao{2. Creating and Managing the Window}
 
 \subsecao{2.1. Getting Screen Resolution}
@@ -911,7 +923,7 @@ bool _Wcreate_window(void){
   @<X11: Create Window@>
   @<Web Assembly: Create Window@>
   @<Windows: Create Window@>
-  @<Keyboard Initialization in Window Creation@>
+  @<Keyboard Initialization@>
   already_have_window = true;
   return true;
 }
@@ -2686,15 +2698,106 @@ static struct{
   unsigned keycode;
   long time;
 } pressed_keys[32];
-static struct{
-  unsigned keycode;
-  long time;
-} released_keys[32];
+unsigned released_keys[32];
 @
 \fimcodigo
 
+As a part of the keyboard initialization, and also to reset its
+status, we should call the following code that sets to empty our list
+of pressed and released keys:
+
+\iniciocodigo
+@<Keyboard Initialization@>=
+{
+  int i;
+  for(i = 0; i < 32; i ++){
+    pressed_keys[i].keycode = 0;
+    released_keys[i] = 0;
+  }
+}
+@
+\fimcodigo
 
 \subsubsecao{3.2.1. Reading the Keyboard on X}
+
+In X11, each key in the keyboard have a different and unique code
+between8 and 255. This code represents the phisical pressed key, but
+have no relation with an specific symbol associated to the key. The
+symbol depends on the key mapping. To obtain the symbol associated
+with the key, we need to translate the code to a symbol
+(\monoespaco{keycode} to \monoespaco{keysym}). Anyway, this means that
+we need to store information about a potential number of almost 256
+keys:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#define W_KEYBOARD_SIZE 256
+#endif
+@
+\fimcodigo
+
+The moment we detect a new key pressing, we store in the list that the
+key with a given keycode is being pressed. We do this only if the key
+is not already being pressed:
+
+\iniciocodigo
+@<X11: Manage Events@>=
+if(event.type == KeyPress){
+  int i;
+  for(i = 0; i < 36; i ++){
+    if(pressed_keys[i].keycode == event.xkey.keycode) // Already being pressed
+      break;
+    if(pressed_keys[i].keycode == 0){ // The pressing is beginning now
+      pressed_keys[i].keycode = event.xkey.keycode;
+      pressed_keys[i].time = current_time;
+      // Update keyboard:
+      keyboad.key[event.xkey.keycode] = 1;
+      break;
+    }
+  }
+  if(i == 36) continue; // Ignoring: too many keypresses
+}
+@
+\fimcodigo
+
+When we detect a key release, we remove the key from the list of
+pressed keys and add it to the key of released keys:
+
+\iniciocodigo
+@<X11: Manage Events@>+=
+if(event.type == KeyRelease){
+  int i;
+  long stored_time = -1;
+  for(i = 0; i < 36; i ++){ // Removing from pressed keys
+    if(pressed_keys[i].keycode == event.xkey.keycode){
+      int j;
+      stored_time = pressed_keys[j].time;
+      for(j = i; j < 35; j ++){
+        pressed_keys[j].keycode = pressed_keys[j + 1].keycode;
+        pressed_keys[j].time = pressed_keys[j + 1].time;
+        if(pressed_keys[j].keycode == 0)
+          break;
+      }
+      pressed_keys[35].keycode = 0;
+      break;
+    }
+  }
+  for(i = 0; i < 36; i ++){ // Adding to released keys:
+    if(released_keys[i] == 0)
+      released_keys[i] = event.xkey.keycode;
+  }
+  if(i == 36) // Too many key releases, ignore and clean keyboard
+    keyboard.key[event.xkey.keycode] = 0;
+  else{
+    // Updating keyboard struct:
+    keyboard.key[event.xkey.keycode] = - (long) (current_time - stored_time);
+    if(keyboard[event.xkey.keycode] == 0)
+      keyboard.key[event.xkey.keycode] = -1; // Press/release in the same frame
+  }
+}
+@
+\fimcodigo
 
 
 \subsecao{X. Final File Sctructure}
