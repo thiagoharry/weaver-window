@@ -2707,7 +2707,7 @@ status, we should call the following code that sets to empty our list
 of pressed and released keys:
 
 \iniciocodigo
-@<Keyboard Initialization@>=
+@<Flushing List of Pressed and Released Keys@>=
 {
   int i;
   for(i = 0; i < 32; i ++){
@@ -2796,6 +2796,117 @@ if(event.type == KeyRelease){
       keyboard.key[event.xkey.keycode] = -1; // Press/release in the same frame
   }
 }
+@
+\fimcodigo
+
+While the above code manages correctly the keycodes, the user also
+needs to know what these keycodes represent. Knowing that the key
+0xff0d was pressed means very little. Knowing that the key ``Enter''
+was pressed is much more meaningful. The user should be able to check
+the content of \monoespaco{keyboard.key[W\_ENTER]} without needing to
+know the keycde for the key. For this, during the kwyboard
+initialization, we should discover all the symbols supported by our
+keyboard, giving to them correct names. The code to initialize the
+keyboard becames:
+
+\iniciocodigo
+@<Keyboard Initialization@>=
+@<Flushing List of Pressed and Released Keys@>
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+{
+  int i;
+  for(i = 8; i < 256; i ++){
+    unsigned long value = XkbKeycodeToKeysym(display, i, 0, 0);
+    switch(value){
+    case 0: break;
+    case XK_BackSpace: W_BACKSPACE = i; break;
+    case XK_Tab: W_TAB = i; break;
+    case XK_Return: W_ENTER = i; break;
+    case XK_Up:   W_UP   = i; break; case XK_Down:  W_DOWN =  i; break;
+    case XK_Left: W_LEFT = i; break; case XK_RIGHT: W_RIGHT = i; break;
+    case XK_0: W_0 = i; break;     case XK_1: W_1 = i; break;
+    case XK_2: W_2 = i; break;     case XK_3: W_3 = i; break;
+    case XK_4: W_4 = i; break;     case XK_5: W_5 = i; break;
+    case XK_6: W_6 = i; break;     case XK_7: W_7 = i; break;
+    case XK_8: W_8 = i; break;     case XK_9: W_9 = i; break;
+    case XK_minus: W_MINUS = i; break;    case XK_plus: W_PLUS = i;
+    case XK_F1: W_F1 = i; break;   case XK_F2: W_F2 = i; break;
+    case XK_F3: W_F3 = i; break;   case XK_F4: W_F4 = i; break;
+    case XK_F5: W_F5 = i; break;   case XK_F6: W_F6 = i; break;
+    case XK_F7: W_F7 = i; break;   case XK_F8: W_F8 = i; break;
+    case XK_F9: W_F9 = i; break;   case XK_F10: W_F10 = i; break;
+    case XK_F11: W_F11 = i; break; case XK_F12: W_F12 = i; break;
+    case XK_Shift_L: W_LEFT_SHIFT = i; break;
+    case XK_Shift_R: W_RIGHT_SHIFT = i; break;
+    case XK_Control_L: W_LEFT_CTRL = i; break;
+    case XK_Control_R: W_RIGHT_CTRL = i; break;
+    case XK_Alt_L: W_LEFT_ALT = i; break;
+    case XK_Alt_R: W_RIGHT_ALT = i; break;
+    case XK_Super_L: W_LEFT_SUPER = i; break;
+    case XK_Super_R: W_RIGHT_SUPER = i; break;
+    case XK_space: W_SPACE = i; break;
+    case XK_A: W_A = i; break;   case XK_b: W_B = i; break;
+    case XK_c: W_C = i; break;   case XK_d: W_D = i; break;
+    case XK_e: W_E = i; break;   case XK_f: W_F = i; break;
+    case XK_g: W_G = i; break;   case XK_h: W_H = i; break;
+    case XK_i: W_I = i; break;   case XK_j: W_J = i; break;
+    case XK_k: W_K = i; break;   case XK_l: W_L = i; break;
+    case XK_m: W_M = i; break;   case XK_n: W_N = i; break;
+    case XK_o: W_O = i; break;   case XK_p: W_P = i; break;
+    case XK_q: W_Q = i; break;   case XK_r: W_R = i; break;
+    case XK_s: W_S = i; break;   case XK_t: W_T = i; break;
+    case XK_u: W_U = i; break;   case XK_v: W_V = i; break;
+    case XK_w: W_W = i; break;   case XK_x: W_X = i; break;
+    case XK_y: W_Y = i; break;   case XK_z: W_Z = i; break;
+    case XK_Insert: W_INSERT = i; break;
+    case XK_Home: W_HOME = i; break;
+    case XK_Page_Up: W_PAGE_UP = i; break;
+    case XK_Delete: W_DELETE = i; break;
+    case XK_End: W_END = i; break;
+    case XK_Pade_Down: W_PAGE_DOWN = i; break;
+    default: break;
+    }
+  }
+}
+#endif
+@
+\fimcodigo
+
+All these variables that represent positions in our array of keys need
+to be declared:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
+           W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
+           W_F3, W_F4, W_F5, W_F6, W_F7, W_F8, W_F9, W_F10, W_F11, W_F12,
+           W_LEFT_SHIFT, W_RIGHT_SHIFT, W_LEFT_ALT, W_RIGHT_ALT, W_LEFT_CTRL,
+           W_RIGHT_CTRL, W_LEFT_SUPER, W_RIGHT_SUPER, W_SPACE, W_A, W_B, W_C,
+           W_D, W_E, W_F, W_G, W_H, W_I, W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q,
+           W_R, W_S, W_T, W_U, W_V, W_W, X_X, W_Y, W_Z, W_INSERT, W_HOME,
+           W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN;
+#endif
+@
+\fimcodigo
+
+
+And we should initialize them with zero. This value represents a
+non-assigned key that never will be pressed or released. Only after
+the keyboard initialization we assign them correct values:
+
+\iniciocodigo
+@<Global Variables@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
+    W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
+    W_F3, W_F4, W_F5, W_F6, W_F7, W_F8, W_F9, W_F10, W_F11, W_F12,
+    W_LEFT_SHIFT, W_RIGHT_SHIFT, W_LEFT_ALT, W_RIGHT_ALT, W_LEFT_CTRL,
+    W_RIGHT_CTRL, W_LEFT_SUPER, W_RIGHT_SUPER, W_SPACE, W_A, W_B, W_C,
+    W_D, W_E, W_F, W_G, W_H, W_I, W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q,
+    W_R, W_S, W_T, W_U, W_V, W_W, X_X, W_Y, W_Z, W_INSERT, W_HOME,
+    W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN;
+#endif
 @
 \fimcodigo
 

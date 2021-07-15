@@ -2740,7 +2740,7 @@ o estado dele, devemos chamar sempre o seguinte código que torna vazia
 nossa lista de teclas pressionadas e soltas:
 
 \iniciocodigo
-@<Inicialização de Teclado@>=
+@<Limpando Lista de Teclas Pressionadas e Soltas@>=
 {
   int i;
   for(i = 0; i < 32; i ++){
@@ -2831,6 +2831,262 @@ if(event.type == KeyRelease){
 }
 @
 \fimcodigo
+
+Embora o cóigo acima trate corretamente os códigos de teclas, um
+usuário também deve saber o que os códigos representam. Ser informado
+que a tecla de código 0xff0d foi pressionada significa muito
+pouco. Saber que a tecla ``Enter'' foi pressionada nos dá muito mais
+informação. O usuário deve ser capaz de checar o conteúdo
+de \monoespaco{keyboard[W\_ENTER]} sem ter que saber qual o código
+para a tecla no teclado que está sendo usado. Para isso, na
+inicialização de teclado, devemos descobrir todos os símbolos que
+suportamos no teclado para assim darmos a eles nomes adequados. O
+código para inicializar o teclado fica sendo então:
+
+\iniciocodigo
+@<Inicialização de Teclado@>=
+@<Limpando Lista de Teclas Pressionadas e Soltas@>
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+{
+  int i;
+  for(i = 8; i < 256; i ++){
+    unsigned long value = XkbKeycodeToKeysym(display, i, 0, 0);
+    switch(value){
+    case 0: break;
+    case XK_BackSpace: W_BACKSPACE = i; break;
+    case XK_Tab: W_TAB = i; break;
+    case XK_Return: W_ENTER = i; break;
+    case XK_Up:   W_UP   = i; break; case XK_Down:  W_DOWN =  i; break;
+    case XK_Left: W_LEFT = i; break; case XK_RIGHT: W_RIGHT = i; break;
+    case XK_0: W_0 = i; break;     case XK_1: W_1 = i; break;
+    case XK_2: W_2 = i; break;     case XK_3: W_3 = i; break;
+    case XK_4: W_4 = i; break;     case XK_5: W_5 = i; break;
+    case XK_6: W_6 = i; break;     case XK_7: W_7 = i; break;
+    case XK_8: W_8 = i; break;     case XK_9: W_9 = i; break;
+    case XK_minus: W_MINUS = i; break;    case XK_plus: W_PLUS = i;
+    case XK_F1: W_F1 = i; break;   case XK_F2: W_F2 = i; break;
+    case XK_F3: W_F3 = i; break;   case XK_F4: W_F4 = i; break;
+    case XK_F5: W_F5 = i; break;   case XK_F6: W_F6 = i; break;
+    case XK_F7: W_F7 = i; break;   case XK_F8: W_F8 = i; break;
+    case XK_F9: W_F9 = i; break;   case XK_F10: W_F10 = i; break;
+    case XK_F11: W_F11 = i; break; case XK_F12: W_F12 = i; break;
+    case XK_Shift_L: W_LEFT_SHIFT = i; break;
+    case XK_Shift_R: W_RIGHT_SHIFT = i; break;
+    case XK_Control_L: W_LEFT_CTRL = i; break;
+    case XK_Control_R: W_RIGHT_CTRL = i; break;
+    case XK_Alt_L: W_LEFT_ALT = i; break;
+    case XK_Alt_R: W_RIGHT_ALT = i; break;
+    case XK_space: W_SPACE = i; break;
+    case XK_a: W_A = i; break;   case XK_b: W_B = i; break;
+    case XK_c: W_C = i; break;   case XK_d: W_D = i; break;
+    case XK_e: W_E = i; break;   case XK_f: W_F = i; break;
+    case XK_g: W_G = i; break;   case XK_h: W_H = i; break;
+    case XK_i: W_I = i; break;   case XK_j: W_J = i; break;
+    case XK_k: W_K = i; break;   case XK_l: W_L = i; break;
+    case XK_m: W_M = i; break;   case XK_n: W_N = i; break;
+    case XK_o: W_O = i; break;   case XK_p: W_P = i; break;
+    case XK_q: W_Q = i; break;   case XK_r: W_R = i; break;
+    case XK_s: W_S = i; break;   case XK_t: W_T = i; break;
+    case XK_u: W_U = i; break;   case XK_v: W_V = i; break;
+    case XK_w: W_W = i; break;   case XK_x: W_X = i; break;
+    case XK_y: W_Y = i; break;   case XK_z: W_Z = i; break;
+    case XK_Insert: W_INSERT = i; break;
+    case XK_Home: W_HOME = i; break;
+    case XK_Page_Up: W_PAGE_UP = i; break;
+    case XK_Delete: W_DELETE = i; break;
+    case XK_End: W_END = i; break;
+    case XK_Page_Down: W_PAGE_DOWN = i; break;
+    default: break;
+    }
+  }
+}
+#endif
+@
+\fimcodigo
+
+Todas estas variáveis que representam posições no nosso vetor de
+teclas de teclado precisam ser declaradas:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
+           W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
+           W_F3, W_F4, W_F5, W_F6, W_F7, W_F8, W_F9, W_F10, W_F11, W_F12,
+           W_LEFT_SHIFT, W_RIGHT_SHIFT, W_LEFT_ALT, W_RIGHT_ALT, W_LEFT_CTRL,
+           W_RIGHT_CTRL, W_SPACE, W_A, W_B, W_C, W_D, W_E, W_F, W_G, W_H, W_I,
+           W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W,
+           X_X, W_Y, W_Z, W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END,
+           W_PAGE_DOWN;
+#endif
+@
+\fimcodigo
+
+E elas são inicializadas como sendo o valor zero. Que por padrão
+representa um local do vetor de teclas do teclado que sempre será nulo
+e nunca será pressionada ou solta. Só depois da inicialização podemos
+saber qual posição corresponde a qual tecla ajustando o valor de tais
+variáveis:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
+    W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
+    W_F3, W_F4, W_F5, W_F6, W_F7, W_F8, W_F9, W_F10, W_F11, W_F12,
+    W_LEFT_SHIFT, W_RIGHT_SHIFT, W_LEFT_ALT, W_RIGHT_ALT, W_LEFT_CTRL,
+    W_RIGHT_CTRL, W_SPACE, W_A, W_B, W_C, W_D, W_E, W_F, W_G, W_H, W_I, W_J, W_K,
+    W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W, X_X, W_Y, W_Z,
+    W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN;
+#endif
+@
+\fimcodigo
+
+\subsecao{3.2.2. Lendo o Teclado no Web Assembly}
+
+O Emscripten fornece para nós a API do SDL para interagir com o
+teclado. Nesta API, o número de teclas suportadas é definida pela
+macro \monoespaco{SDL\_NUM\_SCANCODES}, que na épóca de escrita deste
+texto corresponde a 512 teclas diferentes. Provavelmente o valor não
+mudará.
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(__EMSCRIPTEN__)
+#define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
+#endif
+@
+\fimcodigo
+
+Assim como no X a tecla física era chamada de \monoespaco{Keycode} e o
+símbolo associado à ela era o \monoespaco{Keysym}, no SDL as
+estruturas são chamadas respectivamente de \monoespaco{SDL\_Scancode}
+e \monoespaco{SDL\_Keycode}. Para detectarmos se uma tecla foi
+prssionada, usamos o seguinte código que lê
+o \monoespaco{SDL\_Scancode} (tecla física):
+
+\iniciocodigo
+@<Web Assembly: Tratar Eventos@>=
+if(event.type == SDL_KEYDOWN){
+  int i;
+  for(i = 0; i < 36; i ++){
+    if(pressed_keys[i].keycode == event.key.keysym.scancode) // Já pressionada
+      break;
+    if(pressed_keys[i].keycode == 0){ // Começou a ser pressionada agora
+      pressed_keys[i].keycode = event.key.keysym.scancode;
+      pressed_keys[i].time = current_time;
+      // Atualizando teclado:
+      keyboad.key[event.key.keysym.scancode] = 1;
+      break;
+    }
+  }
+  if(i == 36) continue; // Ignoring: too many keypresses
+}
+@
+\fimcodigo
+
+Já para tratar o caso de estarmos soltando uma tecla, usamos o código
+abaixo:
+
+\iniciocodigo
+@<Web Assembly: Tratar Eventos@>+=
+if(event.type == SDL_KEYUP){
+  int i;
+  long stored_time = -1;
+  for(i = 0; i < 36; i ++){ // Removendo da lista de teclas pressionadas
+    if(pressed_keys[i].keycode == event.key.keysym.scancode){
+      int j;
+      stored_time = pressed_keys[j].time;
+      for(j = i; j < 35; j ++){
+        pressed_keys[j].keycode = pressed_keys[j + 1].keycode;
+        pressed_keys[j].time = pressed_keys[j + 1].time;
+        if(pressed_keys[j].keycode == 0)
+          break;
+      }
+      pressed_keys[35].keycode = 0;
+      break;
+    }
+  }
+  for(i = 0; i < 36; i ++){ // Adicionando à lista de teclas soltas:
+    if(released_keys[i] == 0)
+      released_keys[i] = event.key.keysym.scancode;
+  }
+  if(i == 36) // Muitas teclas soltas: ignorando e limpando teclado:
+    keyboard.key[event.key.keysym.scancode] = 0;
+  else{
+    // Atualizando teclado:
+    keyboard.key[event.key.keysym.scancode] = -(long)(current_time - stored_time);
+    if(keyboard[event.key.keysym.scancode] == 0)
+      keyboard.key[event.key.keysym.scancode] = -1; // Aperta/solta no mesmo frame
+  }
+}
+@
+\fimcodigo
+
+O código acima é idêntico ao usado no X11, apenas foi necessário mudar
+os nomes de variáveis seguindo a nomenclatura da estrutura do
+SDL. Agora precisamos do código que inicializa corretamente o nome de
+cada uma destas teclas:
+
+@<Inicialização de Teclado@>+=
+#if defined(__EMSCRIPTEN__)
+{
+  int i;
+  for(i = 8; i < W_KEYBOARD_SIZE; i ++){
+    unsigned long value = SDL_GetKeyFromScancode(i);
+    switch(value){
+    case 0: break;
+    case SDLK_BACKSPACE: W_BACKSPACE = i; break;
+    case SDLK_TAB: W_TAB = i; break;
+    case SDLK_RETURN: W_ENTER = i; break;
+    case SDLK_UP:   W_UP   = i; break; case SDLK_DOWN:  W_DOWN =  i; break;
+    case SDLK_LEFT: W_LEFT = i; break; case SDLK_RIGHT: W_RIGHT = i; break;
+    case SDLK_0: W_0 = i; break;     case SDLK_1: W_1 = i; break;
+    case SDLK_2: W_2 = i; break;     case SDLK_3: W_3 = i; break;
+    case SDLK_4: W_4 = i; break;     case SDLK_5: W_5 = i; break;
+    case SDLK_6: W_6 = i; break;     case SDLK_7: W_7 = i; break;
+    case SDLK_8: W_8 = i; break;     case SDLK_9: W_9 = i; break;
+    case SDLK_MINUS: W_MINUS = i; break;    case SDLK_PLUS: W_PLUS = i;
+    case SDLK_F1: W_F1 = i; break;   case SDLK_F2: W_F2 = i; break;
+    case SDLK_F3: W_F3 = i; break;   case SDLK_F4: W_F4 = i; break;
+    case SDLK_F5: W_F5 = i; break;   case SDLK_F6: W_F6 = i; break;
+    case SDLK_F7: W_F7 = i; break;   case SDLK_F8: W_F8 = i; break;
+    case SDLK_F9: W_F9 = i; break;   case SDLK_F10: W_F10 = i; break;
+    case SDLK_F11: W_F11 = i; break; case SDLK_F12: W_F12 = i; break;
+    case SDLK_LSHIFT: W_LEFT_SHIFT = i; break;
+    case SDLK_RSHIFT: W_RIGHT_SHIFT = i; break;
+    case SDLK_LCTRL: W_LEFT_CTRL = i; break;
+    case SDLK_RCTRL: W_RIGHT_CTRL = i; break;
+    case SDLK_LALT: W_LEFT_ALT = i; break;
+    case SDLK_RALT: W_RIGHT_ALT = i; break;
+    case SDLK_SPACE: W_SPACE = i; break;
+    case SDLK_a: W_A = i; break;   case SDLK_b: W_B = i; break;
+    case SDLK_c: W_C = i; break;   case SDLK_d: W_D = i; break;
+    case SDLK_e: W_E = i; break;   case SDLK_f: W_F = i; break;
+    case SDLK_g: W_G = i; break;   case SDLK_h: W_H = i; break;
+    case SDLK_i: W_I = i; break;   case SDLK_j: W_J = i; break;
+    case SDLK_k: W_K = i; break;   case SDLK_l: W_L = i; break;
+    case SDLK_m: W_M = i; break;   case SDLK_n: W_N = i; break;
+    case SDLK_o: W_O = i; break;   case SDLK_p: W_P = i; break;
+    case SDLK_q: W_Q = i; break;   case SDLK_r: W_R = i; break;
+    case SDLK_s: W_S = i; break;   case SDLK_t: W_T = i; break;
+    case SDLK_u: W_U = i; break;   case SDLK_v: W_V = i; break;
+    case SDLK_w: W_W = i; break;   case SDLK_x: W_X = i; break;
+    case SDLK_y: W_Y = i; break;   case SDLK_z: W_Z = i; break;
+    case SDLK_INSERT: W_INSERT = i; break;
+    case SDLK_HOME: W_HOME = i; break;
+    case SDLK_PAGEUP: W_PAGE_UP = i; break;
+    case SDLK_DELETE: W_DELETE = i; break;
+    case SDLK_END: W_END = i; break;
+    case SDLK_PAGEDOWN: W_PAGE_DOWN = i; break;
+    default: break;
+    }
+  }
+}
+#endif
+@
+\fimcodigo
+
 
 \secao{X. Estrutura Final do Arquivo}
 
