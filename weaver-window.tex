@@ -2702,7 +2702,7 @@ while(PeekMessage(&event, window, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE)){
   @<Windows: Tratar Eventos de Teclado@>
 }
 while(PeekMessage(&event, window, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)){
-  @<Windows: Tratar Eventos de Mouse@>
+  //@<Windows: Tratar Eventos de Mouse@>
 }
 #endif
 @
@@ -2728,23 +2728,26 @@ de teclas que iremos atualizar:
 \iniciocodigo
 @<Variáveis Locais@>=
 static struct{
-  unsigned keycode;
-  long time;
+  unsigned key; // Qual tecla foi pressionada?
+  long time;    // Quando foi pressionada?
 } pressed_keys[32];
-unsigned released_keys[32];
+unsigned released_keys[32]; // Que teclas foram soltas?
 @
 \fimcodigo
 
 Como parte da inicialização de nosso teclado, e também para reiniciar
-o estado dele, devemos chamar sempre o seguinte código que torna vazia
-nossa lista de teclas pressionadas e soltas:
+o estado dele, devemos chamar sempre o código abaixo que torna vazia
+nossa lista de teclas pressionadas e soltas. Isso torna a lista vazia
+pelo simples fato de que nesta lista iremos tratar a primeira
+ocorrênciade uma tecla com valor zero como sendo o fim da lista, assim
+como o caractere nulo marca o fim de uma string.
 
 \iniciocodigo
 @<Limpando Lista de Teclas Pressionadas e Soltas@>=
 {
   int i;
   for(i = 0; i < 32; i ++){
-    pressed_keys[i].keycode = 0;
+    pressed_keys[i].key = 0;
     released_keys[i] = 0;
   }
 }
@@ -2760,12 +2763,14 @@ depende do mapeamento de teclado configurado. Para obter o símbolo
 associado à tecla pressionada, é necessário traduzir o código para um
 símbolo (\monoespaco{keycode} para \monoespaco{keysym}). De qualquer
 forma, isso significa que teremos que acompanhar um número potencial
-de quase 256 teclas diferentes:
+de quase 256 teclas diferentes. E na nossa representação de teclado
+colocamos um espaço adicional para representar se uma tecla qualquer
+está sendo pressionada.
 
 \iniciocodigo
 @<Define Macros@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#define W_KEYBOARD_SIZE 256
+#define W_KEYBOARD_SIZE 257
 #endif
 @
 \fimcodigo
@@ -2779,10 +2784,10 @@ a tecla já não estava sendo pressionada:
 if(event.type == KeyPress){
   int i;
   for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].keycode == event.xkey.keycode) // Já tava pressionada
+    if(pressed_keys[i].key == event.xkey.keycode) // Já tava pressionada
       break;
-    if(pressed_keys[i].keycode == 0){ // Começou a ser pressionada agora
-      pressed_keys[i].keycode = event.xkey.keycode;
+    if(pressed_keys[i].key == 0){ // Começou a ser pressionada agora
+      pressed_keys[i].key = event.xkey.keycode;
       pressed_keys[i].time = current_time;
       // Atualizando teclado:
       keyboad.key[event.xkey.keycode] = 1;
@@ -2803,16 +2808,16 @@ if(event.type == KeyRelease){
   int i;
   long stored_time = -1;
   for(i = 0; i < 36; i ++){ // Removendo da lista de tecas pressionadas
-    if(pressed_keys[i].keycode == event.xkey.keycode){
+    if(pressed_keys[i].key == event.xkey.keycode){
       int j;
       stored_time = pressed_keys[j].time;
       for(j = i; j < 35; j ++){
-        pressed_keys[j].keycode = pressed_keys[j + 1].keycode;
+        pressed_keys[j].key = pressed_keys[j + 1].key;
         pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].keycode == 0)
+        if(pressed_keys[j].key == 0)
           break;
       }
-      pressed_keys[35].keycode = 0;
+      pressed_keys[35].key = 0;
       break;
     }
   }
@@ -2846,6 +2851,9 @@ código para inicializar o teclado fica sendo então:
 \iniciocodigo
 @<Inicialização de Teclado@>=
 @<Limpando Lista de Teclas Pressionadas e Soltas@>
+// A última posição de nosso vetor de teclas sempre representa "qualquer tecla":
+W_ANY = W_KEYBOARD_SIZE - 1;
+// Outras posições são definidas pelo ambiente. Mas 0 é "nenhuma tecla":
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
   int i;
@@ -2853,6 +2861,7 @@ código para inicializar o teclado fica sendo então:
     unsigned long value = XkbKeycodeToKeysym(display, i, 0, 0);
     switch(value){
     case 0: break;
+    case XK_Escape: W_ESC = i; break;
     case XK_BackSpace: W_BACKSPACE = i; break;
     case XK_Tab: W_TAB = i; break;
     case XK_Return: W_ENTER = i; break;
@@ -2917,7 +2926,7 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_RIGHT_CTRL, W_SPACE, W_A, W_B, W_C, W_D, W_E, W_F, W_G, W_H, W_I,
            W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W,
            X_X, W_Y, W_Z, W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END,
-           W_PAGE_DOWN;
+           W_PAGE_DOWN, W_ESC;
 #endif
 @
 \fimcodigo
@@ -2937,7 +2946,7 @@ int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
     W_LEFT_SHIFT, W_RIGHT_SHIFT, W_LEFT_ALT, W_RIGHT_ALT, W_LEFT_CTRL,
     W_RIGHT_CTRL, W_SPACE, W_A, W_B, W_C, W_D, W_E, W_F, W_G, W_H, W_I, W_J, W_K,
     W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W, X_X, W_Y, W_Z,
-    W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN;
+    W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN, W_ESC;
 #endif
 @
 \fimcodigo
@@ -2948,39 +2957,42 @@ O Emscripten fornece para nós a API do SDL para interagir com o
 teclado. Nesta API, o número de teclas suportadas é definida pela
 macro \monoespaco{SDL\_NUM\_SCANCODES}, que na épóca de escrita deste
 texto corresponde a 512 teclas diferentes. Provavelmente o valor não
-mudará.
+mudará no futuro próximo.
 
 \iniciocodigo
 @<Define Macros@>+=
 #if defined(__EMSCRIPTEN__)
-#define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
+#define W_KEYBOARD_SIZE (SDL_NUM_SCANCODES + 1)
 #endif
 @
 \fimcodigo
 
-Assim como no X a tecla física era chamada de \monoespaco{Keycode} e o
-símbolo associado à ela era o \monoespaco{Keysym}, no SDL as
-estruturas são chamadas respectivamente de \monoespaco{SDL\_Scancode}
-e \monoespaco{SDL\_Keycode}. Para detectarmos se uma tecla foi
-prssionada, usamos o seguinte código que lê
-o \monoespaco{SDL\_Scancode} (tecla física):
+No X11, vimos que há uma diferença entre a tecla física pressionada e
+o síbolo que ela representa. A mesma diferença aparece aqui. A tecla
+física no X é chamada de \monoespaco{Keycode} a aqui no SDL é chamada
+de \monoespaco{Scancode}. O símbolo que ela representa no X era
+chamado de \monoespaco{Keysym} e aqui é chamada
+de \monoespaco{Scancode}. Sim, a nomenclatura é confusa pois
+o \monoespaco{Scancode} significa coisas completamente diferentes nas
+duas APIs.. Usando a nomenclatura do SDL, é assim que detectamos uma
+tecla sendo pressionada:
 
 \iniciocodigo
 @<Web Assembly: Tratar Eventos@>=
 if(event.type == SDL_KEYDOWN){
   int i;
   for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].keycode == event.key.keysym.scancode) // Já pressionada
+    if(pressed_keys[i].key == event.key.keysym.scancode) // Já pressionada
       break;
-    if(pressed_keys[i].keycode == 0){ // Começou a ser pressionada agora
-      pressed_keys[i].keycode = event.key.keysym.scancode;
+    if(pressed_keys[i].key == 0){ // Começou a ser pressionada agora
+      pressed_keys[i].key = event.key.keysym.scancode;
       pressed_keys[i].time = current_time;
       // Atualizando teclado:
       keyboad.key[event.key.keysym.scancode] = 1;
       break;
     }
   }
-  if(i == 36) continue; // Ignoring: too many keypresses
+  if(i == 36) continue; // Ignorando: muitas teclas pressionadas
 }
 @
 \fimcodigo
@@ -2994,16 +3006,16 @@ if(event.type == SDL_KEYUP){
   int i;
   long stored_time = -1;
   for(i = 0; i < 36; i ++){ // Removendo da lista de teclas pressionadas
-    if(pressed_keys[i].keycode == event.key.keysym.scancode){
+    if(pressed_keys[i].key == event.key.keysym.scancode){
       int j;
       stored_time = pressed_keys[j].time;
       for(j = i; j < 35; j ++){
-        pressed_keys[j].keycode = pressed_keys[j + 1].keycode;
+        pressed_keys[j].key = pressed_keys[j + 1].key;
         pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].keycode == 0)
+        if(pressed_keys[j].key == 0)
           break;
       }
-      pressed_keys[35].keycode = 0;
+      pressed_keys[35].key = 0;
       break;
     }
   }
@@ -3028,14 +3040,16 @@ os nomes de variáveis seguindo a nomenclatura da estrutura do
 SDL. Agora precisamos do código que inicializa corretamente o nome de
 cada uma destas teclas:
 
+\iniciocodigo
 @<Inicialização de Teclado@>+=
 #if defined(__EMSCRIPTEN__)
 {
   int i;
-  for(i = 8; i < W_KEYBOARD_SIZE; i ++){
+  for(i = 0; i < W_KEYBOARD_SIZE - 1; i ++){
     unsigned long value = SDL_GetKeyFromScancode(i);
     switch(value){
     case 0: break;
+    case SDLK_ESCAPE: W_ESC = i; break;
     case SDLK_BACKSPACE: W_BACKSPACE = i; break;
     case SDLK_TAB: W_TAB = i; break;
     case SDLK_RETURN: W_ENTER = i; break;
@@ -3086,6 +3100,153 @@ cada uma destas teclas:
 #endif
 @
 \fimcodigo
+
+\subsecao{3.2.3. Lendo o Teclado no WIndows}
+
+No Windows as teclas físicas são chamadas pelo nome
+de \monoespaco{Scancode} e o símbolo associado a ela é chamado de
+``código de tecla virtural''. O número de diferentes ``scancodes'' é
+sempre 256 e precisamos de uma posiçã a mais para representar ``qualquer
+tecla'':
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define W_KEYBOARD_SIZE 257
+#endif
+@
+\fimcodigo
+
+Detectar teclas sendo pressionadas é feito de maneira idêntica ao
+código que já vimos para o X11 e SDL, apenas com modificações menores
+para abarcar algumas diferenças, e também tendo que mudar o nome das
+coisas, já que o Windows nomeia de maniera diferente as funções e
+estruturas:
+
+\iniciocodigo
+@<Windows: Tratar Eventos de Teclado@>=
+if(event.message == WM_KEYDOWN){
+  int i, scancode = (event.lParam & 00ff0000) >> 16;
+  for(i = 0; i < 36; i ++){
+    if(pressed_keys[i].key == scancode) // Já pressionada
+      break;
+    if(pressed_keys[i].key == 0){ // Sendo pressionada agora
+      pressed_keys[i].key = scancode;
+      pressed_keys[i].time = current_time;
+      // Atualizando teclado:
+      keyboad.key[scancode] = 1;
+      break;
+    }
+  }
+  if(i == 36) continue; // Ignorando: muitas teclas pressionadas
+}
+@
+\fimcodigo
+
+Note que uma das diuferenças aqui é que para extrair o ``scancode'' da
+tecla física, precisamos fazer um pouco de manipulação de bits. Fora
+isso, o código é o mesmo que já foi visto nas subsubseções anteriores
+para X11 e SDL. Já o código que detecta se uma tecla foi solta é:
+
+\iniciocodigo
+@<Windows: Tratar Eventos de Teclado@>+=
+if(event.type == WM_KEYUP){
+  int i, scancode = (event.lParam & 00ff0000) >> 16;
+  long stored_time = -1;
+  for(i = 0; i < 36; i ++){ // Removendo da lista de teclas pressionadas
+    if(pressed_keys[i].key == scancode){
+      int j;
+      stored_time = pressed_keys[j].time;
+      for(j = i; j < 35; j ++){
+        pressed_keys[j].key = pressed_keys[j + 1].key;
+        pressed_keys[j].time = pressed_keys[j + 1].time;
+        if(pressed_keys[j].key == 0)
+          break;
+      }
+      pressed_keys[35].key = 0;
+      break;
+    }
+  }
+  for(i = 0; i < 36; i ++){ // Adicionando à lista de tecas soltas
+    if(released_keys[i] == 0)
+      released_keys[i] = scancode;
+  }
+  if(i == 36) // Too many released keys, ignoring and cleaning keyboard:
+    keyboard.key[scancode] = 0;
+  else{
+    // Updating Keyboard:
+    keyboard.key[scancode] = -(long)(current_time - stored_time);
+    if(keyboard[scancode] == 0)
+      keyboard.key[scancode] = -1; // Pressionou/soltou simultaneamente
+  }
+}
+@
+\fimcodigo
+
+E finalmente, inicializaos aqui os nomes das teclas para que eles
+apontem para a posição correta no nosso vetor de teclas:
+
+\iniciocodigo
+@<Inicialização de Teclado@>+=
+#if defined(_WIN32)
+{
+  int i;
+  for(i = 0; i < W_KEYBOARD_SIZE - 1; i ++){
+    unsigned long value = MapVirtualKey(i, MAPVK_VSK_TO_VSC_EX);
+    switch(value){
+    case 0: break;
+    case VK_ESCAPE: W_ESC = i; break; 
+    case VK_BACK: W_BACKSPACE = i; break;
+    case VK_TAB: W_TAB = i; break;
+    case VK_RETURN: W_ENTER = i; break;
+    case VK_UP:   W_UP   = i; break; case VK_DOWN:  W_DOWN =  i; break;
+    case VK_LEFT: W_LEFT = i; break; case VK_RIGHT: W_RIGHT = i; break;
+    case '0': W_0 = i; break;     case '1': W_1 = i; break;
+    case '2': W_2 = i; break;     case '3': W_3 = i; break;
+    case '4': W_4 = i; break;     case '5': W_5 = i; break;
+    case '6': W_6 = i; break;     case '7': W_7 = i; break;
+    case '8': W_8 = i; break;     case '9': W_9 = i; break;
+    case VK_OEM__MINUS: W_MINUS = i; break;    case VK_OEM__PLUS: W_PLUS = i;
+    case VK_F1: W_F1 = i; break;   case VK_F2: W_F2 = i; break;
+    case VK_F3: W_F3 = i; break;   case VK_F4: W_F4 = i; break;
+    case VK_F5: W_F5 = i; break;   case VK_F6: W_F6 = i; break;
+    case VK_F7: W_F7 = i; break;   case VK_F8: W_F8 = i; break;
+    case VK_F9: W_F9 = i; break;   case VK_F10: W_F10 = i; break;
+    case VK_F11: W_F11 = i; break; case VK_F12: W_F12 = i; break;
+    case VK_LSHIFT: W_LEFT_SHIFT = i; break;
+    case VK_RSHIFT: W_RIGHT_SHIFT = i; break;
+    case VK_LCONTROL: W_LEFT_CTRL = i; break;
+    case VK_RCONTROL: W_RIGHT_CTRL = i; break;
+    case VK_MENU: W_LEFT_ALT = i; break;
+    case VK_RMENU: W_RIGHT_ALT = i; break;
+    case VK_SPACE: W_SPACE = i; break;
+    case 'A': W_A = i; break;   case 'B': W_B = i; break;
+    case 'C': W_C = i; break;   case 'D': W_D = i; break;
+    case 'E': W_E = i; break;   case 'F': W_F = i; break;
+    case 'G': W_G = i; break;   case 'H': W_H = i; break;
+    case 'I': W_I = i; break;   case 'J': W_J = i; break;
+    case 'K': W_K = i; break;   case 'L': W_L = i; break;
+    case 'M': W_M = i; break;   case 'N': W_N = i; break;
+    case 'O': W_O = i; break;   case 'P': W_P = i; break;
+    case 'Q': W_Q = i; break;   case 'R': W_R = i; break;
+    case 'S': W_S = i; break;   case 'T': W_T = i; break;
+    case 'U': W_U = i; break;   case 'V': W_V = i; break;
+    case 'W': W_W = i; break;   case 'X': W_X = i; break;
+    case 'Y': W_Y = i; break;   case 'Z': W_Z = i; break;
+    case VK_INSERT: W_INSERT = i; break;
+    case VK_HOME: W_HOME = i; break;
+    case VK_PRIOR: W_PAGE_UP = i; break;
+    case VK_DELETE: W_DELETE = i; break;
+    case VK_END: W_END = i; break;
+    case VK_NEXT: W_PAGE_DOWN = i; break;
+    default: break;
+    }
+  }
+}
+#endif
+@
+\fimcodigo
+
 
 
 \secao{X. Estrutura Final do Arquivo}
