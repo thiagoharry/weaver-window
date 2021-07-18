@@ -224,7 +224,7 @@ represent keyboard and mouse and that shall be updated.
 
 \iniciocodigo
 @<Window Declarations@>=
-void _Wflush_window_input(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
+void _Wflush_window_input(void);
 @
 \fimcodigo
 
@@ -923,7 +923,7 @@ bool _Wcreate_window(void){
   @<X11: Create Window@>
   @<Web Assembly: Create Window@>
   @<Windows: Create Window@>
-  @<Keyboard Initialization@>
+  _Wflush_window_input();
   already_have_window = true;
   return true;
 }
@@ -2566,18 +2566,19 @@ presses a key or moves the mouse.
 When we have a window, we can detect inputs made by the user when that
 window has focus. We can detect events made by the keyboard and mouse.
 
-For us the keyboard will be the following struct:
+For us the keyboard will be the following global struct variable:
 
 \iniciocodigo
 @<Window Declarations@>+=
-struct _Wkeyboard{
-  long key[W_KEYBOARD_SIZE];
-};
+struct __Wkeyboard{
+  long key[W_KEYBOARD_SIZE]; // Key array: a timer for each key
+} _Wkeyboard;
 @
 \fimcodigo
 
-In the key aray above, we will have one position for each keyboard
-key. The meaning of the number stored in each position depends on the
+In the key aray above, we will have one position for each keyboard key
+where we will store a number to act as a timer for each key. The
+meaning of the number stored in each position depends on the
 value. The options are:
 
 1) If we store zero, this means that the key is not being pressed.
@@ -2595,14 +2596,14 @@ pressed before being released in some unit of time.
 The number of keys depends on the operating system and environment. We
 will define it later.
 
-The mouse will be represented by the following struct:
+The mouse will be represented by the following global struct variable:
 
 \iniciocodigo
 @<Window Declarations@>+=
-struct _Wmouse{
+struct __Wmouse{
   long buttons[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
-};
+} _Wmouse;
 @
 \fimcodigo
 
@@ -2622,11 +2623,12 @@ function to update them:
 
 \iniciocodigo
 @<API Functions@>+=
-void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
-                        struct _Wmouse *mouse){
+void _Wget_window_input(unsigned long current_time){
   if(already_have_window == false)
     return;
+  @<Before Reading Window Events@>
   @<Get Window Events@>
+  @<After Reading Window Events@>
 }
 @
 \fimcodigo
@@ -2672,7 +2674,7 @@ while(PeekMessage(&event, window, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE)){
   @<Windows: Manage Keyboard Events@>
 }
 while(PeekMessage(&event, window, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)){
-  @<Windows: Tratar Eventos de Mouse@>
+  //@<Windows: Manage Mouse Events@>
 }
 #endif
 @
@@ -3208,6 +3210,58 @@ to the right position in our key array:
 @
 \fimcodigo
 
+\subsecao{3.2.4. Additional Code for Keyboard Support}
+
+With the code written above we can detect when a new key is pressed
+and when it is released. Such code is Operating System dependent. But
+we still did not write the code to update in each frame the number
+representing how much time a key is being pressed. For this we need to
+iterate over the list of pressed keys and for each of them, update the
+number stored in the position for such key in our key array. We do
+such thing in the function that reads input checking for new key
+presses. But only after it already updated the list of pressed keys
+with the new key presses from the current frame:
+
+\iiciocodigo
+@<After Reading Window Events@>=
+{
+  int i;
+  // Update the information if any key is being pressed:
+  keyboard[W_ANY] = (pressed_keys[0].key != 0);
+  for(i = 0; i < 32; i ++){
+    if(pressed_keys[i].key == 0)
+      break;
+    if(current_time > pressed_keys[i].key)
+      keyboad.key[pressed_keys[i].key] = (current_time - pressed_keys[i].key);
+  }
+}
+@
+\fimcodigo
+
+Now the timer for pressed keys will keep updating, not remaining
+always with the number 1.
+
+When the key is released, we already written code that turned to
+negative its timer. But we still did not write the code that returns
+the timer for the key to zero in the frame after the release. Before
+reading thew input in each frame we should iterate over the list of
+pressed keys and set their timers to zero, as the keys now are not
+being pressed or released. Doing this we also should remove all keys
+from the list of released keys:
+
+\iniciocodigo
+@<Before Reading Window Events@>=
+{
+  int i;
+  for(i = 0; i < 32; i ++){
+    if(released_keys[i] == 0)
+      break;
+    keyboard[released_keys[i]] = 0;
+    released_keys[i] = 0;
+  }
+}
+@
+\fimcodigo
 
 \subsecao{X. Final File Sctructure}
 

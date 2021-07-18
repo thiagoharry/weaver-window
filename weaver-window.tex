@@ -241,7 +241,7 @@ representam teclado e mouse a serem atualizadas.
 
 \iniciocodigo
 @<Declarações de Janela@>=
-void _Wflush_window_input(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
+void _Wflush_window_input(void);
 @
 \fimcodigo
 
@@ -951,7 +951,7 @@ bool _Wcreate_window(void){
   @<X11: Criar Janela@>
   @<Web Assembly: Criar Janela@>
   @<Windows: Criar Janela@>
-  @<Inicialização de Teclado@>
+  _Wflush_window_input();
   already_have_window = true;
   return true;
 }
@@ -2591,19 +2591,21 @@ Quando nós temos uma janela, podemos detectar entrada gerada pelo
 usuário quando tal janela tem foco. Podemos como entrada detectar
 eventos feitos pelo mouse e teclado.
 
-Para nós, um teclado será representado pela seguinte estrutura:
+Para nós, um teclado será representado pela seguinte variável de
+estrutura global:
 
 \iniciocodigo
 @<Declaração de Janela@>+=
-struct _Wkeyboard{
-  long key[W_KEYBOARD_SIZE];
-};
+struct __Wkeyboard{
+  long key[W_KEYBOARD_SIZE]; // Vetor de teclas: contador de tempo para elas
+} _Wkeyboard;
 @
 \fimcodigo
 
 No vetor de teclas acima, nós reservamos uma posição para cada tecla
-diferente. O significado do número armazenado em cada posição depende
-de seu valor. As opções são:
+diferente com o propósito de contar o tempo que leva para serem
+pressionadas e soltas. O significado do número armazenado em cada
+posição depende de seu valor. As opções são:
 
 1) Se armazenamos zero, isso significa que a tecla específica
 associada à tal posição não está sendo pressionada.
@@ -2623,14 +2625,14 @@ unidades de tempo a tecla foi pressionada antes de ser solta.
 O número de teclas acompanhadas depende do sistema operacional e
 ambiente. Iremos definir isso mais tarde.
 
-O mouse será representado pela seguinte estrutura:
+O mouse será representado pela seguinte variável global de estrutura:
 
 \iniciocodigo
 @<Declarações de Janela@>+=
-struct _Wmouse{
+struct __Wmouse{
   long buttons[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
-};
+} _Wmouse;
 @
 \fimcodigo
 
@@ -2651,11 +2653,12 @@ periodicamente para atualizá-las:
 
 \iniciocodigo
 @<Funções da API@>+=
-void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
-                        struct _Wmouse *mouse){
+void _Wget_window_input(unsigned long current_time){
   if(already_have_window == false)
     return;
+  @<Antes de Obter Eventos da Janela@>
   @<Obter Eventos da Janela@>
+  @<Depois de Obter Eventos da Janela@>
 }
 @
 \fimcodigo
@@ -3247,6 +3250,60 @@ apontem para a posição correta no nosso vetor de teclas:
 @
 \fimcodigo
 
+\subsecao{3.2.4. Cigo Adicional para Suporte de Teclado}
+
+Com o código que foi escrito até agora nós podemos detectar quando uma
+nova tecla é pressionada ou solta. Tal código não é portável, depende
+do Sistema Operacional. Mas nós ainda não escrevemos o código que
+atualiza em cada frame o número representando a quanto tempo cada
+tecla está sendo pressionada. Para isso, precisamos iterar a lista de
+teclas pressionadas e para cada uma delas, atualizar o número
+armazenado na posição do vetor de teclas de nossa estrutura de teclado
+que corresponde a tal tecla pressionada. Nós fazemos isso na mesma
+função que checa por entrada e por novas teclas pressionadas. Mas
+posicionamos tal código somente depois que a lista de teclas
+pressionadas do frame foi atualizada:
+
+\iiciocodigo
+@<Depois de Obter Eventos da Janela@>=
+{
+  int i;
+  // Update the information if any key is being pressed:
+  keyboard[W_ANY] = (pressed_keys[0].key != 0);
+  for(i = 0; i < 32; i ++){
+    if(pressed_keys[i].key == 0)
+      break;
+    if(current_time > pressed_keys[i].key)
+      keyboad.key[pressed_keys[i].key] = (current_time - pressed_keys[i].key);
+  }
+}
+@
+\fimcodigo
+
+Agora o contador de tempo de teclas pressionadas vai atualizar a cada
+frame, nao só ficar sempre no valor de 1.
+
+Para quando a tecla é solta, nós já escrevemos código que torna
+negativo o valor presente no contador de tempo. Mas não escrevemos o
+código que faz o contador voltar a ser zero no frame seguinte a ele
+ser solto. Para isso, antes de lermos a entrada da janela, devemos
+iterar sobre a lista de teclas que foram pressionadas no último frame
+e para cada uma delas ajustar o número de cada tecla para zero e
+esvaziar a lista de teclas soltas:
+
+\iniciocodigo
+@<Antes de Obter Eventos da Janela@>=
+{
+  int i;
+  for(i = 0; i < 32; i ++){
+    if(released_keys[i] == 0)
+      break;
+    keyboard[released_keys[i]] = 0;
+    released_keys[i] = 0;
+  }
+}
+@
+\fimcodigo
 
 
 \secao{X. Estrutura Final do Arquivo}
