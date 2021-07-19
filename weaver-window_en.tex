@@ -212,8 +212,7 @@ the pointers.
 
 \iniciocodigo
 @<Window Declarations@>=
-void _Wget_window_input(unsigned long current_time, struct _Wkeyboard *keyboard,
-                        struct _Wmouse *mouse);
+void _Wget_window_input(unsigned long current_time);
 @
 \fimcodigo
 
@@ -2601,7 +2600,7 @@ The mouse will be represented by the following global struct variable:
 \iniciocodigo
 @<Window Declarations@>+=
 struct __Wmouse{
-  long buttons[W_MOUSE_SIZE];
+  long button[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
 } _Wmouse;
 @
@@ -2705,19 +2704,24 @@ unsigned released_keys[32]; // Which keys were released?
 \fimcodigo
 
 As a part of the keyboard initialization, and also to reset its
-status, we should call the code below that sets to empty our list of
-pressed and released keys. This sets the list as empty because we will
-treat the first occurrence of key zero in such list as the end of the
-list. Exactly as we use the null character to mark the end of a string.
+status, we should always call code to mark all positions in the array
+of pressed and released keys as having the key zero. This empties the
+lists, as we use the null key as the mark for the end of our list,
+like the null character is used to mark the end of a string. We also
+need to set as zero all keys oin the keyboard key array. The code to
+initialize or reinitialize the keyboard is:
 
 \iniciocodigo
-@<Flushing List of Pressed and Released Keys@>=
+@<Initializing or Reinitializing Keyboard@>=
 {
   int i;
   for(i = 0; i < 32; i ++){
     pressed_keys[i].key = 0;
     released_keys[i] = 0;
   }
+  for(i = 0, i < W_KEYBOARD_SIZE; i ++)
+    _Wkeyboard.key[i] = 0;
+
 }
 @
 \fimcodigo
@@ -2757,7 +2761,7 @@ if(event.type == KeyPress){
       pressed_keys[i].key = event.xkey.keycode;
       pressed_keys[i].time = current_time;
       // Update keyboard:
-      keyboad.key[event.xkey.keycode] = 1;
+      _Wkeyboard.key[event.xkey.keycode] = 1;
       break;
     }
   }
@@ -2793,12 +2797,12 @@ if(event.type == KeyRelease){
       released_keys[i] = event.xkey.keycode;
   }
   if(i == 36) // Too many key releases, ignore and clean keyboard
-    keyboard.key[event.xkey.keycode] = 0;
+    _Wkeyboard.key[event.xkey.keycode] = 0;
   else{
     // Updating keyboard struct:
-    keyboard.key[event.xkey.keycode] = - (long) (current_time - stored_time);
-    if(keyboard[event.xkey.keycode] == 0)
-      keyboard.key[event.xkey.keycode] = -1; // Press/release in the same frame
+    _Wkeyboard.key[event.xkey.keycode] = - (long) (current_time - stored_time);
+    if(_Wkeyboard[event.xkey.keycode] == 0)
+      _Wkeyboard.key[event.xkey.keycode] = -1; // Press/release in the same frame
   }
 }
 @
@@ -2956,7 +2960,7 @@ if(event.type == SDL_KEYDOWN){
       pressed_keys[i].key = event.key.keysym.scancode;
       pressed_keys[i].time = current_time;
       // Atualizando teclado:
-      keyboad.key[event.key.keysym.scancode] = 1;
+      _Wkeyboard.key[event.key.keysym.scancode] = 1;
       break;
     }
   }
@@ -2991,12 +2995,13 @@ if(event.type == SDL_KEYUP){
       released_keys[i] = event.key.keysym.scancode;
   }
   if(i == 36) // Too many released keys, ignoring and cleaning keyboard:
-    keyboard.key[event.key.keysym.scancode] = 0;
+    _Wkeyboard.key[event.key.keysym.scancode] = 0;
   else{
     // Updating Keyboard:
-    keyboard.key[event.key.keysym.scancode] = -(long)(current_time - stored_time);
-    if(keyboard[event.key.keysym.scancode] == 0)
-      keyboard.key[event.key.keysym.scancode] = -1; // Simultaneous press/release
+    _Wkeyboard.key[event.key.keysym.scancode] =
+      - (long) (current_time - stored_time);
+    if(_Wkeyboard[event.key.keysym.scancode] == 0)
+      _Wkeyboard.key[event.key.keysym.scancode] = -1; // Press/release: same frame
   }
 }
 @
@@ -3097,7 +3102,7 @@ if(event.message == WM_KEYDOWN){
       pressed_keys[i].key = scancode;
       pressed_keys[i].time = current_time;
       // Atualizando teclado:
-      keyboad.key[scancode] = 1;
+      _Wkeyboard.key[scancode] = 1;
       break;
     }
   }
@@ -3135,12 +3140,12 @@ if(event.type == WM_KEYUP){
       released_keys[i] = scancode;
   }
   if(i == 36) // Too many released keys, ignoring and cleaning keyboard:
-    keyboard.key[scancode] = 0;
+    _Wkeyboard.key[scancode] = 0;
   else{
     // Updating Keyboard:
-    keyboard.key[scancode] = -(long)(current_time - stored_time);
-    if(keyboard[scancode] == 0)
-      keyboard.key[scancode] = -1; // Simultaneous press/release
+    _Wkeyboard.key[scancode] = -(long)(current_time - stored_time);
+    if(_Wkeyboard[scancode] == 0)
+      _Wkeyboard.key[scancode] = -1; // Simultaneous press/release
   }
 }
 @
@@ -3222,17 +3227,17 @@ such thing in the function that reads input checking for new key
 presses. But only after it already updated the list of pressed keys
 with the new key presses from the current frame:
 
-\iiciocodigo
+\iniciocodigo
 @<After Reading Window Events@>=
 {
   int i;
   // Update the information if any key is being pressed:
-  keyboard[W_ANY] = (pressed_keys[0].key != 0);
+  _Wkeyboard[W_ANY] = (pressed_keys[0].key != 0);
   for(i = 0; i < 32; i ++){
     if(pressed_keys[i].key == 0)
       break;
     if(current_time > pressed_keys[i].key)
-      keyboad.key[pressed_keys[i].key] = (current_time - pressed_keys[i].key);
+      _Wkeyboard.key[pressed_keys[i].key] = (current_time - pressed_keys[i].key);
   }
 }
 @
@@ -3256,12 +3261,84 @@ from the list of released keys:
   for(i = 0; i < 32; i ++){
     if(released_keys[i] == 0)
       break;
-    keyboard[released_keys[i]] = 0;
+    _Wkeyboard[released_keys[i]] = 0;
     released_keys[i] = 0;
   }
 }
 @
 \fimcodigo
+
+\subsecao{3.3. Reading the Mouse}
+
+Like for the keyboard keys, we also need to store a list of pressed
+buttons and released buttons. But the number of buttons are much
+smaller. Our list will only store at most 4 buttons. It is unrealistic
+to give meaning for more than 4 button presses in a mouse:
+
+\iniciocodigo
+@<Local Variables@>+=
+static struct{
+  unsigned button; // Which button was pressed?
+  long time;       // When it was pressed?
+} pressed_keys[4];
+static unsigned released_buttons[4]; // Which buttons were released?
+@
+\fimcodigo
+
+But unlike a keyboard, a mouse can move and produce movements in the
+mouse pointer. If we want to know not only the mouse pointer position,
+but also its speed and acceleration, we should store the previous
+speed. We use these variables for this:
+
+\iniciocodigo
+@<Local Variables@>+=
+static int last_mouse_dx = 0, last_mouse_dy = 0;
+@
+\fimcodigo
+
+But when we read or the first time the mouse position, we have no way
+to compute its speed, as we do not have a previous position. It makes
+no sense compute some value for the mouse speed at this
+moment. Likewise, in the frame after the initialization, despite
+knowing a previous position and knowing how to compute the speed, we
+do not have a previous speed, so we cannot compute the
+acceleration. Only in the second frame after the initialization we can
+compute both position, speed and acceleration. Until then, we should
+let thes unknown values as zero. Because of this, we will use a
+variable to store in which stage of mouse initialization we are. The
+value 3 means that it was not initialized and we do not know not even
+the position. The value 2 means that we initialized in this frame and
+we know only the current position. The value 1 means that we now can
+compute speed. And zero means that the initialization is over and we
+know all values. We store this in the following variable:
+
+\iniciocodigo
+@<Local Variables@>+=
+static int mouse_initialization = 3,
+@
+\fimcodigo
+
+
+And we initialize the mouse making the list of released and pressed
+buttons empty and also we initialize all buttons, the position, speed
+and acceleration as zero:
+
+\iniciocodigo
+@<Initializing or Reinitializing Mouse@>=
+{
+  int i;
+  for(i = 0; i < 4; i ++){
+    pressed_buttons[i].key = 0;
+    released_buttons[i] = 0;
+  }
+  for(i = 0, i < W_MOUSE_SIZE; i ++)
+    _Wmouse.button[i] = 0;
+  _Wmouse.x = _Wmouse.y = _Wmouse.dx = _Wmouse.dy = _Wmouse.ddx = _Wmouse.ddy = 0;
+  last_mouse_dx = last_mouse_dy = 0;
+}
+@
+\fimcodigo
+
 
 \subsecao{X. Final File Sctructure}
 
