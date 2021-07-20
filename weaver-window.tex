@@ -2596,7 +2596,7 @@ estrutura global:
 \iniciocodigo
 @<Declaração de Janela@>+=
 struct __Wkeyboard{
-  long key[W_KEYBOARD_SIZE]; // Vetor de teclas: contador de tempo para elas
+  long key[W_KEYBOARD_SIZE + 1]; // Vetor de teclas: contador de tempo para elas
 } _Wkeyboard;
 @
 \fimcodigo
@@ -2622,7 +2622,11 @@ solta agora. O oposto do número armazenado representa por quantas
 unidades de tempo a tecla foi pressionada antes de ser solta.
 
 O número de teclas acompanhadas depende do sistema operacional e
-ambiente. Iremos definir isso mais tarde.
+ambiente. A macro \monoespaco{W\_KEYBOARD\_SIZE} representa o número
+de teclas que suportamos. A estrutura do teclado possui também uma
+posição adicional para a qual será mapeada qualquer tecla
+desconhecida. A última posição do vetor nunca armazenará nenhum valor
+diferente de zero.
 
 O mouse será representado pela seguinte variável global de estrutura:
 
@@ -2755,7 +2759,7 @@ reinicialização do teclado é:
     pressed_keys[i].key = 0;
     released_keys[i] = 0;
   }
-  for(i = 0, i < W_KEYBOARD_SIZE; i ++)
+  for(i = 0, i < W_KEYBOARD_SIZE + 1; i ++)
     _Wkeyboard.key[i] = 0;
 }
 @
@@ -2858,8 +2862,8 @@ código para inicializar o teclado fica sendo então:
 \iniciocodigo
 @<Inicialização de Teclado@>=
 @<Limpando Lista de Teclas Pressionadas e Soltas@>
-// A última posição de nosso vetor de teclas sempre representa "qualquer tecla":
-W_ANY = W_KEYBOARD_SIZE - 1;
+// The position zero in our array represents ``any key'':
+W_ANY = 0;
 // Outras posições são definidas pelo ambiente. Mas 0 é "nenhuma tecla":
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
@@ -2938,22 +2942,42 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
 @
 \fimcodigo
 
-E elas são inicializadas como sendo o valor zero. Que por padrão
-representa um local do vetor de teclas do teclado que sempre será nulo
-e nunca será pressionada ou solta. Só depois da inicialização podemos
-saber qual posição corresponde a qual tecla ajustando o valor de tais
-variáveis:
+E elas são inicializadas como sendo o
+valor \monoespaco{W\_KEYBOARD\_SIZE}, reservado para representar
+teclas desconhecidas. Somente depois da inicialização do teclado as
+variáveis que representam teclas reconhecidas são mapeadas para sua
+verdadeira posição.
 
 \iniciocodigo
 @<Variáveis Globais@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
-    W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
-    W_F3, W_F4, W_F5, W_F6, W_F7, W_F8, W_F9, W_F10, W_F11, W_F12,
-    W_LEFT_SHIFT, W_RIGHT_SHIFT, W_LEFT_ALT, W_RIGHT_ALT, W_LEFT_CTRL,
-    W_RIGHT_CTRL, W_SPACE, W_A, W_B, W_C, W_D, W_E, W_F, W_G, W_H, W_I, W_J, W_K,
-    W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W, X_X, W_Y, W_Z,
-    W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN, W_ESC;
+int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
+    W_ENTER = W_KEYBOARD_SIZE, W_UP = W_KEYBOARD_SIZE, W_DOWN = W_KEYBOARD_SIZE,
+    W_LEFT = W_KEYBOARD_SIZE, W_RIGHT = W_KEYBOARD_SIZE, W_0 = W_KEYBOARD_SIZE,
+    W_1 = W_KEYBOARD_SIZE, W_2 = W_KEYBOARD_SIZE, W_3 = W_KEYBOARD_SIZE,
+    W_4 = W_KEYBOARD_SIZE, W_5 = W_KEYBOARD_SIZE, W_6 = W_KEYBOARD_SIZE,
+    W_7 = W_KEYBOARD_SIZE, W_8 = W_KEYBOARD_SIZE, W_9 = W_KEYBOARD_SIZE,
+    W_MINUS = W_KEYBOARD_SIZE, W_PLUS = W_KEYBOARD_SIZE, W_F1 = W_KEYBOARD_SIZE,
+    W_F2 = W_KEYBOARD_SIZE, W_F3 = W_KEYBOARD_SIZE, W_F4 = W_KEYBOARD_SIZE,
+    W_F5 = W_KEYBOARD_SIZE, W_F6 = W_KEYBOARD_SIZE, W_F7 = W_KEYBOARD_SIZE,
+    W_F8 = W_KEYBOARD_SIZE, W_F9 = W_KEYBOARD_SIZE, W_F10 = W_KEYBOARD_SIZE,
+    W_F11 = W_KEYBOARD_SIZE, W_F12 = W_KEYBOARD_SIZE,
+    W_LEFT_SHIFT = W_KEYBOARD_SIZE, W_RIGHT_SHIFT = W_KEYBOARD_SIZE,
+    W_LEFT_ALT = W_KEYBOARD_SIZE, W_RIGHT_ALT = W_KEYBOARD_SIZE,
+    W_LEFT_CTRL = W_KEYBOARD_SIZE, W_RIGHT_CTRL = W_KEYBOARD_SIZE,
+    W_SPACE = W_KEYBOARD_SIZE, W_A = W_KEYBOARD_SIZE, W_B = W_KEYBOARD_SIZE,
+    W_C = W_KEYBOARD_SIZE, W_D = W_KEYBOARD_SIZE, W_E = W_KEYBOARD_SIZE,
+    W_F = W_KEYBOARD_SIZE, W_G = W_KEYBOARD_SIZE, W_H = W_KEYBOARD_SIZE,
+    W_I = W_KEYBOARD_SIZE, W_J = W_KEYBOARD_SIZE, W_K = W_KEYBOARD_SIZE,
+    W_L = W_KEYBOARD_SIZE, W_M = W_KEYBOARD_SIZE, W_N = W_KEYBOARD_SIZE,
+    W_O = W_KEYBOARD_SIZE, W_P = W_KEYBOARD_SIZE, W_Q = W_KEYBOARD_SIZE,
+    W_R = W_KEYBOARD_SIZE, W_S = W_KEYBOARD_SIZE, W_T = W_KEYBOARD_SIZE,
+    W_U = W_KEYBOARD_SIZE, W_V = W_KEYBOARD_SIZE, W_W = W_KEYBOARD_SIZE,
+    X_X = W_KEYBOARD_SIZE, W_Y = W_KEYBOARD_SIZE, W_Z = W_KEYBOARD_SIZE,
+    W_INSERT = W_KEYBOARD_SIZE, W_HOME = W_KEYBOARD_SIZE,
+    W_PAGE_UP = W_KEYBOARD_SIZE, W_DELETE = W_KEYBOARD_SIZE,
+    W_END = W_KEYBOARD_SIZE, W_PAGE_DOWN = W_KEYBOARD_SIZE,
+    W_ESC = W_KEYBOARD_SIZE;
 #endif
 @
 \fimcodigo
@@ -2969,7 +2993,7 @@ mudará no futuro próximo.
 \iniciocodigo
 @<Define Macros@>+=
 #if defined(__EMSCRIPTEN__)
-#define W_KEYBOARD_SIZE (SDL_NUM_SCANCODES + 1)
+#define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
 @
 \fimcodigo
@@ -3053,7 +3077,7 @@ cada uma destas teclas:
 #if defined(__EMSCRIPTEN__)
 {
   int i;
-  for(i = 0; i < W_KEYBOARD_SIZE - 1; i ++){
+  for(i = 0; i < W_KEYBOARD_SIZE; i ++){
     unsigned long value = SDL_GetKeyFromScancode(i);
     switch(value){
     case 0: break;
@@ -3120,7 +3144,7 @@ tecla'':
 \iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
-#define W_KEYBOARD_SIZE 257
+#define W_KEYBOARD_SIZE 256
 #endif
 @
 \fimcodigo
@@ -3199,7 +3223,7 @@ apontem para a posição correta no nosso vetor de teclas:
 #if defined(_WIN32)
 {
   int i;
-  for(i = 0; i < W_KEYBOARD_SIZE - 1; i ++){
+  for(i = 0; i < W_KEYBOARD_SIZE; i ++){
     unsigned long value = MapVirtualKey(i, MAPVK_VSK_TO_VSC_EX);
     switch(value){
     case 0: break;
@@ -3381,6 +3405,30 @@ botões, bem como a posição, velocidade e aceleração.
 }
 @
 \fimcodigo
+
+\subsubsecao{3.3.1. Lendo o Mouse no X}
+
+No X11, o número de botões suportados em um mouse é 5, e eles são
+numerados entre 1 e 5. Iremos associar ao número zero o significado de
+``qualquer botão foi pressionado''. Para um mouse, nós não precisamos
+nos preocupar com a existência de diferentes mapeamentos que dão
+significados diferentes para cada botão. Assim, podemos definir o
+número de botões existentes e suas respectivas posições no vetor de
+botões por meio das seguintes macros:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#define W_MOUSE_SIZE 6
+#define W_MOUSE_LEFT   Button1
+#define W_MOUSE_MIDDLE Button2
+#define W_MOUSE_RIGHT  Button3
+#define W_MOUSE_B1     Button4
+#define W_MOUSE_B2     Button5
+#endif
+@
+\fimcodigo
+
 
 \secao{X. Estrutura Final do Arquivo}
 
