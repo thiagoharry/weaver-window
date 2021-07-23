@@ -2748,64 +2748,25 @@ keys.
 @
 \fimcodigo
 
-The moment we detect a new key pressing, we store in the list that the
-key with a given keycode is being pressed. We do this only if the key
-is not already being pressed:
+To detect if a key was pressed on X11, we use the following code:
 
 \iniciocodigo
 @<X11: Manage Events@>=
 if(event.type == KeyPress){
-  int i;
-  for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].key == event.xkey.keycode) // Already being pressed
-      break;
-    if(pressed_keys[i].key == 0){ // The pressing is beginning now
-      pressed_keys[i].key = event.xkey.keycode;
-      pressed_keys[i].time = current_time;
-      // Update keyboard:
-      _Wkeyboard.key[event.xkey.keycode] = 1;
-      break;
-    }
-  }
-  if(i == 36) continue; // Ignoring: too many keypresses
+  unsigned key = event.xkey.keycode;
+  @<Add 'key' to List of Pressed Keys@>
 }
 @
 \fimcodigo
 
-When we detect a key release, we remove the key from the list of
-pressed keys and add it to the key of released keys:
+To detect a key release before removing the key from list of pressed
+keys and adding it to list of removen keys:
 
 \iniciocodigo
 @<X11: Manage Events@>+=
 if(event.type == KeyRelease){
-  int i;
-  long stored_time = -1;
-  for(i = 0; i < 36; i ++){ // Removing from pressed keys
-    if(pressed_keys[i].key == event.xkey.key){
-      int j;
-      stored_time = pressed_keys[j].time;
-      for(j = i; j < 35; j ++){
-        pressed_keys[j].key = pressed_keys[j + 1].key;
-        pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].key == 0)
-          break;
-      }
-      pressed_keys[35].key = 0;
-      break;
-    }
-  }
-  for(i = 0; i < 36; i ++){ // Adding to released keys:
-    if(released_keys[i] == 0)
-      released_keys[i] = event.xkey.keycode;
-  }
-  if(i == 36) // Too many key releases, ignore and clean keyboard
-    _Wkeyboard.key[event.xkey.keycode] = 0;
-  else{
-    // Updating keyboard struct:
-    _Wkeyboard.key[event.xkey.keycode] = - (long) (current_time - stored_time);
-    if(_Wkeyboard[event.xkey.keycode] == 0)
-      _Wkeyboard.key[event.xkey.keycode] = -1; // Press/release in the same frame
-  }
+  unsigned key = event.xkey.key;
+  @<Remove 'key' from Pressed Keys and Add to Released Keys@>
 }
 @
 \fimcodigo
@@ -2814,15 +2775,16 @@ While the above code manages correctly the keycodes, the user also
 needs to know what these keycodes represent. Knowing that the key
 0xff0d was pressed means very little. Knowing that the key ``Enter''
 was pressed is much more meaningful. The user should be able to check
-the content of \monoespaco{keyboard.key[W\_ENTER]} without needing to
-know the keycde for the key. For this, during the kwyboard
+the content of \monoespaco{\_Wkeyboard.key[W\_ENTER]} without needing
+to know the code for the key. For this, during the keyboard
 initialization, we should discover all the symbols supported by our
-keyboard, giving to them correct names. The code to initialize the
-keyboard becames:
+keyboard, giving to them correct names. As this depends on the
+keyboard mapping, we can discover this only during the program
+execution. The code to discover the position for all supported keys
+are:
 
 \iniciocodigo
 @<Keyboard Initialization@>=
-@<Flushing List of Pressed and Released Keys@>
 // The position zero in our key array always means "any key":
 W_ANY = 0;
 // Other positions are defined by the environment. But 0 always means "no key":
@@ -2892,7 +2854,6 @@ to be declared:
 
 \iniciocodigo
 @<Window Declarations@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
            W_F3, W_F4, W_F5, W_F6, W_F7, W_F8, W_F9, W_F10, W_F11, W_F12,
@@ -2901,7 +2862,6 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_D, W_E, W_F, W_G, W_H, W_I, W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q,
            W_R, W_S, W_T, W_U, W_V, W_W, X_X, W_Y, W_Z, W_INSERT, W_HOME,
            W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN, W_ESC;
-#endif
 @
 \fimcodigo
 
@@ -2913,7 +2873,6 @@ the keyboard initialization we assign them correct values:
 
 \iniciocodigo
 @<Global Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_ENTER = W_KEYBOARD_SIZE, W_UP = W_KEYBOARD_SIZE, W_DOWN = W_KEYBOARD_SIZE,
     W_LEFT = W_KEYBOARD_SIZE, W_RIGHT = W_KEYBOARD_SIZE, W_0 = W_KEYBOARD_SIZE,
@@ -2941,7 +2900,6 @@ int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_PAGE_UP = W_KEYBOARD_SIZE, W_DELETE = W_KEYBOARD_SIZE,
     W_END = W_KEYBOARD_SIZE, W_PAGE_DOWN = W_KEYBOARD_SIZE,
     W_ESC = W_KEYBOARD_SIZE;
-#endif
 @
 \fimcodigo
 
@@ -2974,19 +2932,8 @@ the SDL naming, we detect with the following code if a key was pressed:
 \iniciocodigo
 @<Web Assembly: Manage Events@>=
 if(event.type == SDL_KEYDOWN){
-  int i;
-  for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].key == event.key.keysym.scancode) // Already pressed
-      break;
-    if(pressed_keys[i].key == 0){ // Is being pressed now
-      pressed_keys[i].key = event.key.keysym.scancode;
-      pressed_keys[i].time = current_time;
-      // Atualizando teclado:
-      _Wkeyboard.key[event.key.keysym.scancode] = 1;
-      break;
-    }
-  }
-  if(i == 36) continue; // Ignoring: too many keypresses
+  unsigned key = event.key.keysym.scancode;
+  @<Add 'key' to List of Pressed Keys@>
 }
 @
 \fimcodigo
@@ -2994,37 +2941,10 @@ if(event.type == SDL_KEYDOWN){
 To detect that a key is released, we use the following code:
 
 \iniciocodigo
-@<Web Assembly: Manage Events@>=+=
+@<Web Assembly: Manage Events@>+=
 if(event.type == SDL_KEYUP){
-  int i;
-  long stored_time = -1;
-  for(i = 0; i < 36; i ++){ // Removing from list of pressed keys
-    if(pressed_keys[i].key == event.key.keysym.scancode){
-      int j;
-      stored_time = pressed_keys[j].time;
-      for(j = i; j < 35; j ++){
-        pressed_keys[j].key = pressed_keys[j + 1].key;
-        pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].key == 0)
-          break;
-      }
-      pressed_keys[35].key = 0;
-      break;
-    }
-  }
-  for(i = 0; i < 36; i ++){ // Adding to the list of released keys
-    if(released_keys[i] == 0)
-      released_keys[i] = event.key.keysym.scancode;
-  }
-  if(i == 36) // Too many released keys, ignoring and cleaning keyboard:
-    _Wkeyboard.key[event.key.keysym.scancode] = 0;
-  else{
-    // Updating Keyboard:
-    _Wkeyboard.key[event.key.keysym.scancode] =
-      - (long) (current_time - stored_time);
-    if(_Wkeyboard[event.key.keysym.scancode] == 0)
-      _Wkeyboard.key[event.key.keysym.scancode] = -1; // Press/release: same frame
-  }
+  unsigned key = event.key.keysym.scancode;
+  @<Remove 'key' from Pressed Keys and Add to Released Keys@>
 }
 @
 \fimcodigo
@@ -3115,59 +3035,22 @@ names, as Windows calls differently its functions and structs:
 \iniciocodigo
 @<Windows: Manage Keyboard Events@>=
 if(event.message == WM_KEYDOWN){
-  int i, scancode = (event.lParam & 00ff0000) >> 16;
-  for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].key == scancode) // Already pressed
-      break;
-    if(pressed_keys[i].key == 0){ // Is being pressed now
-      pressed_keys[i].key = scancode;
-      pressed_keys[i].time = current_time;
-      // Atualizando teclado:
-      _Wkeyboard.key[scancode] = 1;
-      break;
-    }
-  }
-  if(i == 36) continue; // Ignoring: too many keypresses
+  unsigned key = (event.lParam & 00ff0000) >> 16;
+  @<Add 'key' to List of Pressed Keys@>
 }
 @
 \fimcodigo
 
-Note that on Windows, t get the scancode of a given key, we need to
+Note that on Windows, to get the scancode of a given key, we need to
 use some bit manipulation. Other than this, the code is the same than
 what was already presented for X11 and SDL. The code to detect a key
 being released is:
 
 \iniciocodigo
 @<Windows: Manage Keyboard Events@>+=
-if(event.type == WM_KEYUP){
-  int i, scancode = (event.lParam & 00ff0000) >> 16;
-  long stored_time = -1;
-  for(i = 0; i < 36; i ++){ // Removing from list of pressed keys
-    if(pressed_keys[i].key == scancode){
-      int j;
-      stored_time = pressed_keys[j].time;
-      for(j = i; j < 35; j ++){
-        pressed_keys[j].key = pressed_keys[j + 1].key;
-        pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].key == 0)
-          break;
-      }
-      pressed_keys[35].key = 0;
-      break;
-    }
-  }
-  for(i = 0; i < 36; i ++){ // Adding to the list of released keys
-    if(released_keys[i] == 0)
-      released_keys[i] = scancode;
-  }
-  if(i == 36) // Too many released keys, ignoring and cleaning keyboard:
-    _Wkeyboard.key[scancode] = 0;
-  else{
-    // Updating Keyboard:
-    _Wkeyboard.key[scancode] = -(long)(current_time - stored_time);
-    if(_Wkeyboard[scancode] == 0)
-      _Wkeyboard.key[scancode] = -1; // Simultaneous press/release
-  }
+if(event.message == WM_KEYUP){
+  unsigned key = (event.lParam & 00ff0000) >> 16;
+  @<Remove 'key' from Pressed Keys and Add to Released Keys@>
 }
 @
 \fimcodigo
@@ -3240,13 +3123,84 @@ to the right position in our key array:
 
 With the code written above we can detect when a new key is pressed
 and when it is released. Such code is Operating System dependent. But
-we still did not write the code to update in each frame the number
-representing how much time a key is being pressed. For this we need to
-iterate over the list of pressed keys and for each of them, update the
-number stored in the position for such key in our key array. We do
-such thing in the function that reads input checking for new key
-presses. But only after it already updated the list of pressed keys
-with the new key presses from the current frame:
+we still did not write the code to manage our list of pressed and
+released keys and how we use such list to update the keyboard struct.
+
+First of all, lets define how we add a key to the list of pressed
+keys. Remember that at this point, in all Operating System and
+environments, we wrote code to store what key was pressed in the
+variable \monoespaco{key}. And remember that our list of pressed keys
+represent the end of the list as a position where a null key is
+stored. Knowing this, adding a key to the list means iterating in the
+list until finding a null key and replacing it by our new pressed key:
+
+\iniciocodigo
+@<Add 'key' to List of Pressed Keys@>=
+{
+  int i;
+  for(i = 0; i < 36; i ++){
+    if(pressed_keys[i].key == key) // Já tava pressionada
+      break;
+    if(pressed_keys[i].key == 0){ // Começou a ser pressionada agora
+      pressed_keys[i].key = key;
+      pressed_keys[i].time = current_time;
+      // Atualizando teclado:
+      _Wkeyboard.key[key] = 1;
+      break;
+    }
+  }
+  if(i == 36) continue; // Ignoring: too many keypresses
+}
+@
+\fimcodigo
+
+Now to remove a key from the list of pressed keys and add it to the
+list of relesed keys, we first need to iterated over pressed keys
+until find the correct key. Then we move all other keys to the right
+to one position in the left. This erases a key from the list of
+pressed keys, After this, we iterate over the list of released keys
+until we find an empty position, where we put our new released key:
+
+\iniciocodigo
+@<Remove 'key' from Pressed Keys and Add to Released Keys@>=
+{
+  int i;
+  long stored_time = -1;
+  for(i = 0; i < 36; i ++){ // Removing from pressed keys
+    if(pressed_keys[i].key == key){
+      int j;
+      stored_time = pressed_keys[j].time;
+      for(j = i; j < 35; j ++){
+        pressed_keys[j].key = pressed_keys[j + 1].key;
+        pressed_keys[j].time = pressed_keys[j + 1].time;
+        if(pressed_keys[j].key == 0)
+          break;
+      }
+      pressed_keys[35].key = 0;
+      break;
+    }
+  }
+  for(i = 0; i < 36; i ++){ // Adding to released keys:
+    if(released_keys[i] == 0)
+      released_keys[i] = key;
+  }
+  if(i == 36) // Too many key releases, ignore and clean keyboard
+    _Wkeyboard.key[key] = 0;
+  else{
+    // Updating keyboard struct:
+    _Wkeyboard.key[key] = - (long) (current_time - stored_time);
+    if(_Wkeyboard[key] == 0)
+      _Wkeyboard.key[key] = -1; // Press/release in the same frame
+  }
+}
+@
+\fimcodigo
+
+But how should we use the information of our list of pressed and
+released keys to update our keyboard struct? First, in each frame,
+after updating our list of pressed keys, we should iterate over the
+list and for each key, update in the keyboard struct for how much time
+they are being pressed:
 
 \iniciocodigo
 @<After Reading Window Events@>=
@@ -3270,10 +3224,11 @@ always with the number 1.
 When the key is released, we already written code that turned to
 negative its timer. But we still did not write the code that returns
 the timer for the key to zero in the frame after the release. Before
-reading thew input in each frame we should iterate over the list of
-pressed keys and set their timers to zero, as the keys now are not
-being pressed or released. Doing this we also should remove all keys
-from the list of released keys:
+reading thew input in each frame and before updating the list of
+pressed keys, we should iterate over the list of released keys and set
+their timers to zero, as the keys now are not being pressed or
+released. Doing this we also should remove all keys from the list of
+released keys:
 
 \iniciocodigo
 @<Before Reading Window Events@>=
@@ -3301,7 +3256,7 @@ to give meaning for more than 4 button presses in a mouse:
 static struct{
   unsigned button; // Which button was pressed?
   long time;       // When it was pressed?
-} pressed_keys[4];
+} pressed_buttons[4];
 static unsigned released_buttons[4]; // Which buttons were released?
 @
 \fimcodigo
@@ -3383,61 +3338,67 @@ button array with the following macros:
 @
 \fimcodigo
 
-XXX
+About the button presses, to detect them we should search for an event
+called \monoespaco{ButtonPress}. And then we discover the button
+pressed, adding it to our list of pressed buttons:
 
 \iniciocodigo
-@<X11: Manage Events@>=
-if(event.type == KeyPress){
+@<X11: Manage Events@>+=
+if(event.type == ButtonPress){
   int i;
-  for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].key == event.xkey.keycode) // Already being pressed
+  usigned button = event.xbutton.button;
+  for(i = 0; i < 4; i ++){
+    if(pressed_buttons[i].button == button) // Already being pressed
       break;
-    if(pressed_keys[i].key == 0){ // The pressing is beginning now
-      pressed_keys[i].key = event.xkey.keycode;
-      pressed_keys[i].time = current_time;
+    if(pressed_buttons[i].button == 0){ // The pressing is beginning now
+      pressed_buttons[i].button = button;
+      pressed_buttons[i].time = current_time;
       // Update keyboard:
-      _Wkeyboard.key[event.xkey.keycode] = 1;
+      _Wmouse.button[button] = 1;
       break;
     }
   }
-  if(i == 36) continue; // Ignoring: too many keypresses
+  if(i == 4) continue; // Ignoring: too many button presses
 }
 @
 \fimcodigo
 
-When we detect a key release, we remove the key from the list of
-pressed keys and add it to the key of released keys:
+To detect a button being released, we should check for events of
+type \monoespaco{ButtonRelease} and read in the event which button was
+reeased. Then, we remove suchbutton from the list of pressed buttons
+and add it to the list of released buttons:
 
 \iniciocodigo
 @<X11: Manage Events@>+=
-if(event.type == KeyRelease){
+if(event.type == ButonRelease){
   int i;
   long stored_time = -1;
-  for(i = 0; i < 36; i ++){ // Removing from pressed keys
-    if(pressed_keys[i].key == event.xkey.key){
+  unsigned button = event.xbutton.button;
+  for(i = 0; i < 4; i ++){ // Removing from pressed keys
+    if(pressed_buttons[i].button == button){
       int j;
       stored_time = pressed_keys[j].time;
-      for(j = i; j < 35; j ++){
-        pressed_keys[j].key = pressed_keys[j + 1].key;
-        pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].key == 0)
+      for(j = i; j < 3; j ++){
+        pressed_buttons[j].button = pressed_buttons[j + 1].button;
+        pressed_buttons[j].time = pressed_buttons[j + 1].time;
+        if(pressed_buttons[j].key == 0)
           break;
       }
-      pressed_keys[35].key = 0;
+      pressed_buttons[3].button = 0;
       break;
     }
   }
-  for(i = 0; i < 36; i ++){ // Adding to released keys:
-    if(released_keys[i] == 0)
-      released_keys[i] = event.xkey.keycode;
+  for(i = 0; i < 4; i ++){ // Adding to released keys:
+    if(released_buttons[i] == 0)
+      released_buttons[i] = button;
   }
-  if(i == 36) // Too many key releases, ignore and clean keyboard
-    _Wkeyboard.key[event.xkey.keycode] = 0;
+  if(i == 4) // Too many button releases, ignore and clean mouse
+    _Wmouse.button[button] = 0;
   else{
     // Updating keyboard struct:
-    _Wkeyboard.key[event.xkey.keycode] = - (long) (current_time - stored_time);
-    if(_Wkeyboard[event.xkey.keycode] == 0)
-      _Wkeyboard.key[event.xkey.keycode] = -1; // Press/release in the same frame
+    _Wmouse.button[button] = - (long) (current_time - stored_time);
+    if(_Wmouse[button] == 0)
+      _Wmouse.button[button = -1; // Press/release in the same frame
   }
 }
 @

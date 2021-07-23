@@ -2774,78 +2774,38 @@ depende do mapeamento de teclado configurado. Para obter o símbolo
 associado à tecla pressionada, é necessário traduzir o código para um
 símbolo (\monoespaco{keycode} para \monoespaco{keysym}). De qualquer
 forma, isso significa que teremos que acompanhar um número potencial
-de quase 256 teclas diferentes. E na nossa representação de teclado
-colocamos um espaço adicional para representar se uma tecla qualquer
-está sendo pressionada.
+de quase 256 teclas diferentes.
 
 \iniciocodigo
 @<Define Macros@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-#define W_KEYBOARD_SIZE 257
+#define W_KEYBOARD_SIZE 256
 #endif
 @
 \fimcodigo
 
-No momento em que detectamos uma tecla sendo pressionada, armazenamos
-ela, a identificando pelo seu código de tecla. Fazemos isso somente se
-a tecla já não estava sendo pressionada:
+Para detectar se uma tecla foi pressionada, antes de adicioná-la à
+lista de teclas pressionadas, usamos o seguinte código:
 
 \iniciocodigo
 @<X11: Tratar Eventos@>=
 if(event.type == KeyPress){
   int i;
-  for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].key == event.xkey.keycode) // Já tava pressionada
-      break;
-    if(pressed_keys[i].key == 0){ // Começou a ser pressionada agora
-      pressed_keys[i].key = event.xkey.keycode;
-      pressed_keys[i].time = current_time;
-      // Atualizando teclado:
-      _Wkeyboard.key[event.xkey.keycode] = 1;
-      break;
-    }
-  }
-  if(i == 36) continue; // Ignoring: too many keypresses
+  unsigned key = event.xkey.keycode;
+  @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
 @
 \fimcodigo
 
-Quando detectamos uma tecla sendo solta, a removemos da lista de
-teclas sendo pressionadas e a adicionamos à lista de teclas soltas:
+Para detectar se uma tecla foi solta, antes de podermos removê-la da
+lista de teclas pressionadas e adicionar à lista de teclas soltas,
+usamos o código abaixo:
 
 \iniciocodigo
 @<X11: Tratar Eventos@>+=
 if(event.type == KeyRelease){
-  int i;
-  long stored_time = -1;
-  for(i = 0; i < 36; i ++){ // Removendo da lista de tecas pressionadas
-    if(pressed_keys[i].key == event.xkey.keycode){
-      int j;
-      stored_time = pressed_keys[j].time;
-      for(j = i; j < 35; j ++){
-        pressed_keys[j].key = pressed_keys[j + 1].key;
-        pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].key == 0)
-          break;
-      }
-      pressed_keys[35].key = 0;
-      break;
-    }
-  }
-  for(i = 0; i < 36; i ++){ // Adicionando à lista de teclas soltas:
-    if(released_keys[i] == 0)
-      released_keys[i] = event.xkey.keycode;
-  }
-  if(i == 36) // Muitas teclas soltas: ignorando e limpando teclado:
-    _Wkeyboard.key[event.xkey.keycode] = 0;
-  else{
-    // Atualizando teclado:
-    _Wkeyboard.key[event.xkey.keycode] = - (long) (current_time - stored_time);
-    if(_Wkeyboard[event.xkey.keycode] == 0)
-      _Wkeyboard.key[event.xkey.keycode] = -1; // Pressionou/soltou no mesmo frame
-  }
-}
-@
+  unsigned key = event.xkey.key;
+  @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
 \fimcodigo
 
 Embora o cóigo acima trate corretamente os códigos de teclas, um
@@ -2853,15 +2813,17 @@ usuário também deve saber o que os códigos representam. Ser informado
 que a tecla de código 0xff0d foi pressionada significa muito
 pouco. Saber que a tecla ``Enter'' foi pressionada nos dá muito mais
 informação. O usuário deve ser capaz de checar o conteúdo
-de \monoespaco{keyboard[W\_ENTER]} sem ter que saber qual o código
+de \monoespaco{\_Wkeyboard[W\_ENTER]} sem ter que saber qual o código
 para a tecla no teclado que está sendo usado. Para isso, na
 inicialização de teclado, devemos descobrir todos os símbolos que
-suportamos no teclado para assim darmos a eles nomes adequados. O
-código para inicializar o teclado fica sendo então:
+suportamos no teclado para assim darmos a eles nomes adequados. Essa
+informação depende de como o teclado está mapeado, então só podemos
+obtê-la durante a execução de um programa. O código para descobrirmos
+a posição de cada tecla que suportamos é:
+
 
 \iniciocodigo
 @<Inicialização de Teclado@>=
-@<Limpando Lista de Teclas Pressionadas e Soltas@>
 // The position zero in our array represents ``any key'':
 W_ANY = 0;
 // Outras posições são definidas pelo ambiente. Mas 0 é "nenhuma tecla":
@@ -2929,7 +2891,6 @@ teclas de teclado precisam ser declaradas:
 
 \iniciocodigo
 @<Declarações de Janela@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
            W_F3, W_F4, W_F5, W_F6, W_F7, W_F8, W_F9, W_F10, W_F11, W_F12,
@@ -2938,7 +2899,6 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W,
            X_X, W_Y, W_Z, W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END,
            W_PAGE_DOWN, W_ESC;
-#endif
 @
 \fimcodigo
 
@@ -2950,7 +2910,6 @@ verdadeira posição.
 
 \iniciocodigo
 @<Variáveis Globais@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_ENTER = W_KEYBOARD_SIZE, W_UP = W_KEYBOARD_SIZE, W_DOWN = W_KEYBOARD_SIZE,
     W_LEFT = W_KEYBOARD_SIZE, W_RIGHT = W_KEYBOARD_SIZE, W_0 = W_KEYBOARD_SIZE,
@@ -2978,7 +2937,6 @@ int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_PAGE_UP = W_KEYBOARD_SIZE, W_DELETE = W_KEYBOARD_SIZE,
     W_END = W_KEYBOARD_SIZE, W_PAGE_DOWN = W_KEYBOARD_SIZE,
     W_ESC = W_KEYBOARD_SIZE;
-#endif
 @
 \fimcodigo
 
@@ -3005,25 +2963,14 @@ de \monoespaco{Scancode}. O símbolo que ela representa no X era
 chamado de \monoespaco{Keysym} e aqui é chamada
 de \monoespaco{Scancode}. Sim, a nomenclatura é confusa pois
 o \monoespaco{Scancode} significa coisas completamente diferentes nas
-duas APIs.. Usando a nomenclatura do SDL, é assim que detectamos uma
+duas APIs. Usando a nomenclatura do SDL, é assim que detectamos uma
 tecla sendo pressionada:
 
 \iniciocodigo
 @<Web Assembly: Tratar Eventos@>=
 if(event.type == SDL_KEYDOWN){
-  int i;
-  for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].key == event.key.keysym.scancode) // Já pressionada
-      break;
-    if(pressed_keys[i].key == 0){ // Começou a ser pressionada agora
-      pressed_keys[i].key = event.key.keysym.scancode;
-      pressed_keys[i].time = current_time;
-      // Atualizando teclado:
-      _Wkeyboard.key[event.key.keysym.scancode] = 1;
-      break;
-    }
-  }
-  if(i == 36) continue; // Ignorando: muitas teclas pressionadas
+  unsigned key = event.key.keysym.scancode;
+  @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
 @
 \fimcodigo
@@ -3034,35 +2981,8 @@ abaixo:
 \iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_KEYUP){
-  int i;
-  long stored_time = -1;
-  for(i = 0; i < 36; i ++){ // Removendo da lista de teclas pressionadas
-    if(pressed_keys[i].key == event.key.keysym.scancode){
-      int j;
-      stored_time = pressed_keys[j].time;
-      for(j = i; j < 35; j ++){
-        pressed_keys[j].key = pressed_keys[j + 1].key;
-        pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].key == 0)
-          break;
-      }
-      pressed_keys[35].key = 0;
-      break;
-    }
-  }
-  for(i = 0; i < 36; i ++){ // Adicionando à lista de teclas soltas:
-    if(released_keys[i] == 0)
-      released_keys[i] = event.key.keysym.scancode;
-  }
-  if(i == 36) // Muitas teclas soltas: ignorando e limpando teclado:
-    _Wkeyboard.key[event.key.keysym.scancode] = 0;
-  else{
-    // Atualizando teclado:
-    _Wkeyboard.key[event.key.keysym.scancode] =
-      -(long) (current_time - stored_time);
-    if(_Wkeyboard[event.key.keysym.scancode] == 0)
-      _Wkeyboard.key[event.key.keysym.scancode] = -1; // Aperta/solta: mesmo frame
-  }
+  unsigned key = event.key.keysym.scancode;
+  @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
 }
 @
 \fimcodigo
@@ -3158,59 +3078,22 @@ estruturas:
 \iniciocodigo
 @<Windows: Tratar Eventos de Teclado@>=
 if(event.message == WM_KEYDOWN){
-  int i, scancode = (event.lParam & 00ff0000) >> 16;
-  for(i = 0; i < 36; i ++){
-    if(pressed_keys[i].key == scancode) // Já pressionada
-      break;
-    if(pressed_keys[i].key == 0){ // Sendo pressionada agora
-      pressed_keys[i].key = scancode;
-      pressed_keys[i].time = current_time;
-      // Atualizando teclado:
-      _Wkeyboard.key[scancode] = 1;
-      break;
-    }
-  }
-  if(i == 36) continue; // Ignorando: muitas teclas pressionadas
+  unsigned key = (event.lParam & 00ff0000) >> 16;
+  @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
 @
 \fimcodigo
 
-Note que uma das diuferenças aqui é que para extrair o ``scancode'' da
+Note que uma das diferenças aqui é que para extrair o ``scancode'' da
 tecla física, precisamos fazer um pouco de manipulação de bits. Fora
 isso, o código é o mesmo que já foi visto nas subsubseções anteriores
 para X11 e SDL. Já o código que detecta se uma tecla foi solta é:
 
 \iniciocodigo
 @<Windows: Tratar Eventos de Teclado@>+=
-if(event.type == WM_KEYUP){
-  int i, scancode = (event.lParam & 00ff0000) >> 16;
-  long stored_time = -1;
-  for(i = 0; i < 36; i ++){ // Removendo da lista de teclas pressionadas
-    if(pressed_keys[i].key == scancode){
-      int j;
-      stored_time = pressed_keys[j].time;
-      for(j = i; j < 35; j ++){
-        pressed_keys[j].key = pressed_keys[j + 1].key;
-        pressed_keys[j].time = pressed_keys[j + 1].time;
-        if(pressed_keys[j].key == 0)
-          break;
-      }
-      pressed_keys[35].key = 0;
-      break;
-    }
-  }
-  for(i = 0; i < 36; i ++){ // Adicionando à lista de tecas soltas
-    if(released_keys[i] == 0)
-      released_keys[i] = scancode;
-  }
-  if(i == 36) // Too many released keys, ignoring and cleaning keyboard:
-    _Wkeyboard.key[scancode] = 0;
-  else{
-    // Updating Keyboard:
-    _Wkeyboard.key[scancode] = -(long)(current_time - stored_time);
-    if(_Wkeyboard[scancode] == 0)
-      _Wkeyboard.key[scancode] = -1; // Pressionou/soltou simultaneamente
-  }
+if(event.message == WM_KEYUP){
+  unsigned key = (event.lParam & 00ff0000) >> 16;
+  @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
 }
 @
 \fimcodigo
@@ -3279,19 +3162,93 @@ apontem para a posição correta no nosso vetor de teclas:
 @
 \fimcodigo
 
-\subsecao{3.2.4. Cigo Adicional para Suporte de Teclado}
+\subsecao{3.2.4. Código Adicional para Suporte de Teclado}
 
 Com o código que foi escrito até agora nós podemos detectar quando uma
 nova tecla é pressionada ou solta. Tal código não é portável, depende
 do Sistema Operacional. Mas nós ainda não escrevemos o código que
-atualiza em cada frame o número representando a quanto tempo cada
-tecla está sendo pressionada. Para isso, precisamos iterar a lista de
-teclas pressionadas e para cada uma delas, atualizar o número
-armazenado na posição do vetor de teclas de nossa estrutura de teclado
-que corresponde a tal tecla pressionada. Nós fazemos isso na mesma
-função que checa por entrada e por novas teclas pressionadas. Mas
-posicionamos tal código somente depois que a lista de teclas
-pressionadas do frame foi atualizada:
+adiciona tal informação à nossa lista de teclas pressionadas e soltas
+e nem o código que lê informações destas listas para atualizar a
+estrutura de nosso teclado.
+
+Primeiro de tudo, vamos definir como iremos adicionar uma nova tecla à
+lista de teclas pressionadas. Lembre-se que a esta altura, em todos os
+Sistemas Operacionais e ambientes, já escrevemos o código que armazena
+a informação de qual tecla foi pressionada na
+variável \monoespaco{key}. E lembre-se que nossa lista de teclas
+pressionadas representa o fim da lista por uma tecla nula
+armazenada. Sabendo disso, adicionar uma tecla na lista significa
+iterar sobre ela até achar uma teclas nula e fazer a substituição:
+
+\iniciocodigo
+@<Adiciona 'key' à Lista de Teclas Pressionadas@>=
+{
+  int i;
+  for(i = 0; i < 36; i ++){
+    if(pressed_keys[i].key == key) // Já tava pressionada
+      break;
+    if(pressed_keys[i].key == 0){ // Começou a ser pressionada agora
+      pressed_keys[i].key = key;
+      pressed_keys[i].time = current_time;
+      // Atualizando teclado:
+      _Wkeyboard.key[key] = 1;
+      break;
+    }
+  }
+  if(i == 36) continue; // Ignoring: too many keypresses
+}
+@
+\fimcodigo
+
+Agora para removermos uma tecla da lista de teclas pressionadas e
+adicioná-las à lista de teclas soltas, primeiro iteramos sobre s
+teclas pressionadas até acharmos a que queremos remover. Em seguida
+movemos todas as teclas das posições seguintes para uma posição
+anterior, o que efetivamente apaga a tecla desejada da lista. Depois
+disso, iteramos sobre a lista de teclas soltas até achar uma posição
+vaga e inserimos nossa nova tecla ali:
+
+\iniciocodigo
+@<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>=
+{
+  int i;
+  long stored_time = -1;
+  for(i = 0; i < 36; i ++){ // Removing from pressed keys
+    if(pressed_keys[i].key == key){
+      int j;
+      stored_time = pressed_keys[j].time;
+      for(j = i; j < 35; j ++){
+        pressed_keys[j].key = pressed_keys[j + 1].key;
+        pressed_keys[j].time = pressed_keys[j + 1].time;
+        if(pressed_keys[j].key == 0)
+          break;
+      }
+      pressed_keys[35].key = 0;
+      break;
+    }
+  }
+  for(i = 0; i < 36; i ++){ // Adding to released keys:
+    if(released_keys[i] == 0)
+      released_keys[i] = key;
+  }
+  if(i == 36) // Too many key releases, ignore and clean keyboard
+    _Wkeyboard.key[key] = 0;
+  else{
+    // Updating keyboard struct:
+    _Wkeyboard.key[key] = - (long) (current_time - stored_time);
+    if(_Wkeyboard[key] == 0)
+      _Wkeyboard.key[key] = -1; // Press/release in the same frame
+  }
+}
+@
+\fimcodigo
+
+Mas como usar a informação da lista de teclas pressionadas e soltas
+para atualizar nossa estrutura de teclado? Primeiro, a cada frame,
+depois de atualizarmos a lista, devemos iterar sobre nossa lista de
+teclas pressionadas. E para cada uma das teclas, devemos atualizar a
+contagem de tempo que elas estão sendo pressionadas na nossa estrutura
+de teclado:
 
 \iniciocodigo
 @<Depois de Obter Eventos da Janela@>=
@@ -3315,10 +3272,11 @@ frame, nao só ficar sempre no valor de 1.
 Para quando a tecla é solta, nós já escrevemos código que torna
 negativo o valor presente no contador de tempo. Mas não escrevemos o
 código que faz o contador voltar a ser zero no frame seguinte a ele
-ser solto. Para isso, antes de lermos a entrada da janela, devemos
-iterar sobre a lista de teclas que foram pressionadas no último frame
-e para cada uma delas ajustar o número de cada tecla para zero e
-esvaziar a lista de teclas soltas:
+ser solto. Para isso, antes de lermos a entrada da janela e
+atualizarmos a lista de teclas pressionadas, devemos iterar sobre a
+lista de teclas que foram soltas no último frame e para cada uma
+delas ajustar o número de cada tecla para zero e esvaziar a lista de
+teclas soltas:
 
 \iniciocodigo
 @<Antes de Obter Eventos da Janela@>=
@@ -3347,7 +3305,7 @@ pressionar mais do que quatro botões de teclado:
 static struct{
   unsigned button; // Which button was pressed?
   long time;       // When it was pressed?
-} pressed_keys[4];
+} pressed_buttons[4];
 static unsigned released_buttons[4]; // Which buttons were released?
 @
 \fimcodigo
@@ -3426,6 +3384,32 @@ botões por meio das seguintes macros:
 #define W_MOUSE_B1     Button4
 #define W_MOUSE_B2     Button5
 #endif
+@
+\fimcodigo
+
+Sobre o pressionar de botões, para detectá-los devemos detectar
+eventos to tipo \monoespaco{ButtonPress}. E então ler neles a
+informação de qual botão do mouse foi pressionado, adicionando-o para
+nossa lista de botões pressionados:
+
+\iniciocodigo
+@<X11: Tratar Eventos@>+=
+if(event.type == ButtonPress){
+  int i;
+  usigned button = event.xbutton.button;
+  for(i = 0; i < 4; i ++){
+    if(pressed_buttons[i].button == button) // Already being pressed
+      break;
+    if(pressed_buttons[i].button == 0){ // The pressing is beginning now
+      pressed_buttons[i].button = button;
+      pressed_buttons[i].time = current_time;
+      // Update keyboard:
+      _Wmouse.button[button] = 1;
+      break;
+    }
+  }
+  if(i == 4) continue; // Ignoring: too many button presses
+}
 @
 \fimcodigo
 
