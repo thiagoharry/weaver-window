@@ -2708,7 +2708,7 @@ while(PeekMessage(&event, window, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE)){
   @<Windows: Tratar Eventos de Teclado@>
 }
 while(PeekMessage(&event, window, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)){
-  //@<Windows: Tratar Eventos de Mouse@>
+  @<Windows: Tratar Eventos de Mouse@>
 }
 #endif
 @
@@ -2806,6 +2806,7 @@ usamos o código abaixo:
 if(event.type == KeyRelease){
   unsigned key = event.xkey.key;
   @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
+@
 \fimcodigo
 
 Embora o cóigo acima trate corretamente os códigos de teclas, um
@@ -2813,13 +2814,14 @@ usuário também deve saber o que os códigos representam. Ser informado
 que a tecla de código 0xff0d foi pressionada significa muito
 pouco. Saber que a tecla ``Enter'' foi pressionada nos dá muito mais
 informação. O usuário deve ser capaz de checar o conteúdo
-de \monoespaco{\_Wkeyboard[W\_ENTER]} sem ter que saber qual o código
+de \monoespaco{\_Wkeyboard.key[W\_ENTER]} sem ter que saber qual o código
 para a tecla no teclado que está sendo usado. Para isso, na
 inicialização de teclado, devemos descobrir todos os símbolos que
 suportamos no teclado para assim darmos a eles nomes adequados. Essa
 informação depende de como o teclado está mapeado, então só podemos
 obtê-la durante a execução de um programa. O código para descobrirmos
 a posição de cada tecla que suportamos é:
+
 
 
 \iniciocodigo
@@ -3236,7 +3238,7 @@ vaga e inserimos nossa nova tecla ali:
   else{
     // Updating keyboard struct:
     _Wkeyboard.key[key] = - (long) (current_time - stored_time);
-    if(_Wkeyboard[key] == 0)
+    if(_Wkeyboard.key[key] == 0)
       _Wkeyboard.key[key] = -1; // Press/release in the same frame
   }
 }
@@ -3255,7 +3257,7 @@ de teclado:
 {
   int i;
   // Update the information if any key is being pressed:
-  _Wkeyboard[W_ANY] = (pressed_keys[0].key != 0);
+  _Wkeyboard.key[W_ANY] = (pressed_keys[0].key != 0);
   for(i = 0; i < 32; i ++){
     if(pressed_keys[i].key == 0)
       break;
@@ -3285,7 +3287,7 @@ teclas soltas:
   for(i = 0; i < 32; i ++){
     if(released_keys[i] == 0)
       break;
-    _Wkeyboard[released_keys[i]] = 0;
+    _Wkeyboard.key[released_keys[i]] = 0;
     released_keys[i] = 0;
   }
 }
@@ -3381,8 +3383,8 @@ botões por meio das seguintes macros:
 #define W_MOUSE_LEFT   Button1
 #define W_MOUSE_MIDDLE Button2
 #define W_MOUSE_RIGHT  Button3
-#define W_MOUSE_B1     Button4
-#define W_MOUSE_B2     Button5
+#define W_MOUSE_X1     Button4
+#define W_MOUSE_X2     Button5
 #endif
 @
 \fimcodigo
@@ -3397,21 +3399,267 @@ nossa lista de botões pressionados:
 if(event.type == ButtonPress){
   int i;
   usigned button = event.xbutton.button;
+  @<Adiciona 'button' à Lista de Botões Pressionados@>
+}
+@
+\fimcodigo
+
+Para detectar um botão sendo solto, devemos checar por eventos do
+tipo \monoespaco{ButtonRelease} e ler no evento qual dos possíveis
+cinco botões foram soltos. Em seguida, nós removemos tal botão da
+lista de botões pressionados e o colocamos na lista de botões soltos:
+
+\iniciocodigo
+@<X11: Tratar Eventos@>+=
+if(event.type == ButonRelease){
+  unsigned button = event.xbutton.button;
+  @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
+}
+@
+\fimcodigo
+
+E também temos que detectar movimentos do mouse. Para isso devemos
+esperar por eventos de movimento do mouse:
+
+\iniciocodigo
+@<X11: Tratar Eventos@>+=
+if(event.type == MotionNotify){
+  int x, y;
+  x = event.xmotion.x;
+  y = (window_height - 1) - event.xmotion.y;
+  @<Atualiza Posição do Mouse 'x' e 'y'@>
+}
+@
+\fimcodigo
+
+Note que temos que fazer uma transformação na coordenada $y$, pois o
+Xlib considera a posição zero o topo da janela, enquanto aqui tratamos
+como zero a parte inferior da janela.
+
+
+\subsubsecao{3.3.2. Lendo o Mouse no Web Assembly}
+
+Usando a API SDL fornecida pelo Emscripten, também suportamos um total
+de cinco botões no Web Assembly, cada um deles numerado entre 1 e
+5. Também podemos aqui usar a posição zero para representar ``qualquer
+tecla'':
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(__EMSCRIPTEN__)
+#define W_MOUSE_SIZE 6
+#define W_MOUSE_LEFT   SDL_BUTTON_LEFT
+#define W_MOUSE_MIDDLE SDL_BUTTON_MIDDLE
+#define W_MOUSE_RIGHT  SDL_BUTTON_RIGHT
+#define W_MOUSE_X1     SDL_BUTTON_X1
+#define W_MOUSE_X2     SDL_BUTTON_X2
+#endif
+@
+\fimcodigo
+
+Detectamos que um botão do mouse foi pressionado com o código abaixo:
+
+\iniciocodigo
+@<Web Assembly: Tratar Eventos@>+=
+if(event.type == SDL_MOUSEBUTTONDOWN){
+  usigned button = event.obutton.button;
+  @<Adiciona 'button' à Lista de Botões Pressionados@>
+}
+@
+\fimcodigo
+
+Detectamos que o botão foi solto com o código abaixo:
+
+\iniciocodigo
+@<Web Assembly: Tratar Eventos@>+=
+if(event.type == SDL_MOUSEBUTTONUP){
+  usigned button = event.button.button;
+  @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
+}
+@
+\fimcodigo
+
+E detectamos o movimento do mouse abaixo:
+
+\iniciocodigo
+@<Web Assembly: Tratar Eventos@>+=
+if(event.type == SDL_MOUSEMOTION){
+  int x, y;
+  x = event.motion.x;
+  y = (window_height - 1) - event.motion.y;
+  @<Atualiza Posição do Mouse 'x' e 'y'@>
+}
+@
+\fimcodigo
+
+\subsubsecao{3.3.3. Lendo o Mouse no Windows}
+
+No Windows nós não tems números que por padrão são associados a cada
+um dos diferentes botões do mouse. Ao invés disso, cada botão gera um
+evento diferente ao invés de gerar um evento de botão pressionado
+genérico. Mas nós ainda precisamos associar cada botão a um número que
+será sua posição no vetor de botões de nossa estrutura de mouse. Então
+nós criamos nossa própria associação entre botões e números com as
+macros abaixo:
+
+\iniciocodigo
+@<Define Macro@>+=
+#if defined(_WIN32)
+#define W_MOUSE_SIZE 6
+#define W_MOUSE_LEFT   1
+#define W_MOUSE_MIDDLE 2
+#define W_MOUSE_RIGHT  3
+#define W_MOUSE_X1     4
+#define W_MOUSE_X2     5
+#endif
+@
+\fimcodigo
+
+Como o Windows cria eventos de tipos diferentes para cada um dos
+botões, e além disso trata como se fôsse um único botão os botões X1 e
+X2, apenas diferenciando-os por meio de um dos bits da mensagem, temos
+trabalho adicional para tratar os eventos de clique de mouse:
+
+\iniciocodigo
+@<Windows: Tratar Eventos de Mouse@>=
+if(event.message == WM_LBUTTONDOWN){
+  usigned button = W_MOUSE_LEFT;
+  @<Adiciona 'button' à Lista de Botões Pressionados@>
+}
+else if(event.message == WM_MBUTTONDOWN){
+  usigned button = W_MOUSE_MIDDLE;
+  @<Adiciona 'button' à Lista de Botões Pressionados@>
+}
+else if(event.message == WM_RBUTTONDOWN){
+  usigned button = W_MOUSE_RIGHT;
+  @<Adiciona 'button' à Lista de Botões Pressionados@>
+}
+else if(event.message == WM_XBUTTONDOWN){
+  unsigned button = W_MOUSE_X2;
+  if((event.wParam >> 16) & 0x0001){
+    usigned button = W_MOUSE_X1;
+  }
+  @<Adiciona 'button' à Lista de Botões Pressionados@>
+}
+@
+\fimcodigo
+
+Para detectar que um dos botões clicados foi solto, também temos que
+verificar um evento diferente para cada botão tratando os botões X1 e
+X2 de maneira diferente dos demais:
+
+\iniciocodigo
+@<Windows: Manage Mouse Events@>+=
+if(event.message == WM_LBUTTONUP){
+  usigned button = W_MOUSE_LEFT;
+  @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
+}
+else if(event.message == WM_MBUTTONUP){
+  usigned button = W_MOUSE_MIDDLE;
+  @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
+}
+else if(event.message == WM_RBUTTONUP){
+  usigned button = W_MOUSE_RIGHT;
+  @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
+}
+else if(event.message == WM_XBUTTONUP){
+  unsigned button = W_MOUSE_X2;
+  if((event.wParam >> 16) & 0x0001){
+    usigned button = W_MOUSE_X1;
+  }
+  @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
+}
+@
+\fimcodigo
+
+E assim é como detectamos o evento no qual o mmouse se move:
+
+\iniciocodigo
+@<Windows: Manage Mouse Events@>+=
+if(event.type == WM_MOUSEMOVE){
+  int x, y;
+  x = (event.lParam & 0xffff);
+  y = (window_height - 1) - (event.lParam >> 16);
+  @<Atualiza Posição do Mouse 'x' e 'y'@>
+}
+@
+\fimcodigo
+
+Como em todos os outros ambientes,mudamos a coordenada para que ela
+fique relatia ao canto inferior esquerdo da tela, não o canto superior
+esquerdo como é mais comum.
+
+\subsecao{3.3.4. Código Adicional para Suporte de Mouse}
+
+Depois de definirmos nas Subseções anteriores o código específico para
+cada ambiente para detectarmos cliques e movimentos do mouse, agora
+iremos lidar com o código comum a todos os ambientes.
+
+Primeiro, iremos explicitar o código que adiciona um botão do mouse
+pressionado à nossa lista de botões pressionados. Lembre-se que a
+lista é um vetor de até 4 elementos onde marcamos qualquer fim
+prematuro da lista com um botão nulo:
+
+\iniciocodigo
+@<Adiciona 'button' à Lista de Botões Pressionados@>=
+{
+  int i;
   for(i = 0; i < 4; i ++){
-    if(pressed_buttons[i].button == button) // Already being pressed
+    if(pressed_buttons[i].button == button) // Já tava pressionado
       break;
-    if(pressed_buttons[i].button == 0){ // The pressing is beginning now
+    if(pressed_buttons[i].button == 0){ // Começou a ser pressionado agora
       pressed_buttons[i].button = button;
       pressed_buttons[i].time = current_time;
-      // Update keyboard:
+      // Atualizando mouse:
       _Wmouse.button[button] = 1;
       break;
     }
   }
-  if(i == 4) continue; // Ignoring: too many button presses
+  if(i == 4) continue; // Ignorando: muitos botões pressionados
 }
 @
 \fimcodigo
+
+Assim como podemos adicionar botões à esta lista, vamos também
+removê-los com o código abaixo. E ao remover um botão da lista de
+botões pressionados, o adicionamos necessariamente à lista de botões
+soltos:
+
+\iniciocodigo
+@<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>=
+{
+  int i;
+  long stored_time = -1;
+  for(i = 0; i < 4; i ++){ // Removendo da lsta de botões pressionados
+    if(pressed_buttons[i].button == button){
+      int j;
+      stored_time = pressed_buttons[j].time;
+      for(j = i; j < 3; j ++){
+        pressed_buttons[j].button = pressed_buttons[j + 1].button;
+        pressed_buttons[j].time = pressed_buttons[j + 1].time;
+        if(pressed_buttons[j].button == 0)
+          break;
+      }
+      pressed_buttons[4].button = 0;
+      break;
+    }
+  }
+  for(i = 0; i < 4; i ++){ // Adicionando à lista de botões soltos:
+    if(released_buttons[i] == 0)
+      released_buttons[i] = key;
+  }
+  if(i == 4) // Muitos botões soltos, ignore e limpe o mouse:
+    _Wmouse.button[button] = 0;
+  else{
+    // Atualizando estrutura do mouse:
+    _Wmouse.button[button] = - (long) (current_time - stored_time);
+    if(_Wmouse.button[button] == 0)
+      _Wmouse.button[button] = -1; //Apertou/soltou no mesmo frame
+  }
+}
+@
+\fimcodigo
+
 
 
 \secao{X. Estrutura Final do Arquivo}
@@ -3429,6 +3677,7 @@ artigo terá a seguinte forma:
 @<Funções da API@>
 @
 \fimcodigo
+
 
 
 \fim
