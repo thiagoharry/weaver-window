@@ -263,18 +263,19 @@ tela e da janela. Se estivermos iniciando em modo de tela cheia, este
 será o tamanho da nossa janela. Isso é feito de maneira diferente
 dependendo do sistema operacional.
 
-Vamos também criar uma variável estática que irá nos ajudar a
-memorizar qual o tamanho atual da nossa janela (não da tela
-inteira). Essa informação será útil futuramente, pois usá-la é
+Vamos também criar variáveis estáticas que irão nos ajudar a memorizar
+qual o tamanho atual da nossa janela (não da tela inteira) e sua
+resolução. Essa informação será útil futuramente, pois usá-la é
 importante para tratar corretamente as coordenadas de nossa
 janela. Esse valor será apenas usado internamente. Se o usuário
-perguntar por mieo de alguma função da API qual o tamanho da janela,
+perguntar por meio de alguma função da API qual o tamanho da janela,
 ao invés de usar o valor memorizado, iremos verificar o valor atual na
 hora e atualizar com base nisso o valor memorizado:
 
 \iniciocodigo
 @<Variáveis Locais@>=
-static int window_size_x = 0, window_size_y = 0;
+static int window_size_x = 0, window_size_y = 0, window_resolution_x = 0,
+           window_resolution_y = 0;
 @
 \fimcodigo
 
@@ -422,6 +423,8 @@ servidor nos revela várias informações relevantes sobre a tela.
 seja criada. Em princípio criaremos uma janela com o máximo de tamanho
 permitido dada a resolução da tela.
 
+4. Memorizamos os valores iniciais de resolução e tamanho da janela.
+
 Estes passos são implementados por meio das seguintes funções e
 macros:
 
@@ -449,6 +452,9 @@ window = XCreateSimpleWindow(display, // Conexão com o X11
                              screen_resolution_y, // Altura
                              0, 0, // Espessura e cor da borda
                              0); // Cor padrão da janela
+/* Passo 4: */
+window_size_x = window_resolution_x = screen_resolution_x;
+window_size_y = window_resolution_y = screen_resolution_y;
 #endif
 @
 \fimcodigo
@@ -515,7 +521,9 @@ janela. Mas isso só se aplica quando não estamos em tela cheia:
 #else
   window_size_y = screen_resolution_y;
 #endif
-  XResizeWindow(display, window, window_size_x, window_size_y);
+  window_resolution_x = window_size_x;
+  window_resolution_y = window_size_y;
+  XResizeWindow(display, window, window_size_x, window_size_y);  
 }
 #endif
 #endif
@@ -713,6 +721,8 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
   window_size_y = W_Window_Size_Y;
 #endif
 #endif
+  window_resolution_x = window_size_x;
+  window_resolution_y = window_size_y;
   // Ajusta versão do OpenGL
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
                      W_WINDOW_OPENGL_MAJOR_VERSION);
@@ -891,6 +901,8 @@ abaixo:
   window_size_y = W_WINDOW_SIZE_Y;
 #endif
 #endif
+  window_resolution_x = window_size_x;
+  window_resolution_y = window_size_y;
   window = CreateWindowEx(0, class_name,
                           W_WINDOW_NAME,
                           fullscreen_flag | WS_VISIBLE,
@@ -2527,6 +2539,8 @@ bool _Wget_window_size(int *width, int *height){
   }
   XGetGeometry(display, window, &root_window, &x, &y,
                (unsigned int *) width, (unsigned int *) height, &border, &depth);
+  window_size_x = *width;
+  window_size_y = *height;
   return true;
 }
 #endif
@@ -2556,6 +2570,8 @@ bool _Wget_window_size(int *width, int *height){
   *height = EM_ASM_INT({
     return document.getElementById("canvas").clientHeight;
   });
+  window_size_x = *width;
+  window_size_y = *height;
   if(*width > 0 && *height > 0)
     return true;
   else{
@@ -2584,6 +2600,8 @@ bool _Wget_window_size(int *width, int *height){
   if(ret){
     *width = rectangle.right - rectangle.left;
     *height = rectangle.bottom - rectangle.top;
+    window_size_x = *width;
+    window_size_y = *height;
     return true;
   }
   else{
@@ -2611,12 +2629,22 @@ Para nós, um teclado será representado pela seguinte variável de
 estrutura global:
 
 \iniciocodigo
-@<Declaração de Janela@>+=
-struct __Wkeyboard{
+@<Declarações de Janela@>+=
+extern struct __Wkeyboard{
   long key[W_KEYBOARD_SIZE + 1]; // Vetor de teclas: contador de tempo para elas
 } _Wkeyboard;
 @
 \fimcodigo
+
+Emanteremos como variável global uma única estrutura assim para
+representar o teclado do usuário:
+
+\iniciocodigo
+@<Variáveis Globais@>=
+struct __Wkeyboard _Wkeyboard;
+@
+\fimcodigo
+
 
 No vetor de teclas acima, nós reservamos uma posição para cada tecla
 diferente com o propósito de contar o tempo que leva para serem
@@ -2776,7 +2804,7 @@ reinicialização do teclado é:
     pressed_keys[i].key = 0;
     released_keys[i] = 0;
   }
-  for(i = 0, i < W_KEYBOARD_SIZE + 1; i ++)
+  for(i = 0; i < W_KEYBOARD_SIZE + 1; i ++)
     _Wkeyboard.key[i] = 0;
 }
 @
@@ -2807,7 +2835,6 @@ lista de teclas pressionadas, usamos o seguinte código:
 \iniciocodigo
 @<X11: Tratar Eventos@>=
 if(event.type == KeyPress){
-  int i;
   unsigned key = event.xkey.keycode;
   @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
@@ -2821,12 +2848,13 @@ usamos o código abaixo:
 \iniciocodigo
 @<X11: Tratar Eventos@>+=
 if(event.type == KeyRelease){
-  unsigned key = event.xkey.key;
+  unsigned key = event.xkey.keycode;
   @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
+}
 @
 \fimcodigo
 
-Embora o cóigo acima trate corretamente os códigos de teclas, um
+Embora o código acima trate corretamente os códigos de teclas, um
 usuário também deve saber o que os códigos representam. Ser informado
 que a tecla de código 0xff0d foi pressionada significa muito
 pouco. Saber que a tecla ``Enter'' foi pressionada nos dá muito mais
@@ -2843,9 +2871,6 @@ a posição de cada tecla que suportamos é:
 
 \iniciocodigo
 @<Inicialização de Teclado@>=
-// The position zero in our array represents ``any key'':
-W_ANY = 0;
-// Outras posições são definidas pelo ambiente. Mas 0 é "nenhuma tecla":
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
   int i;
@@ -2917,7 +2942,7 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_RIGHT_CTRL, W_SPACE, W_A, W_B, W_C, W_D, W_E, W_F, W_G, W_H, W_I,
            W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W,
            X_X, W_Y, W_Z, W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END,
-           W_PAGE_DOWN, W_ESC;
+           W_PAGE_DOWN, W_ESC, W_ANY;
 @
 \fimcodigo
 
@@ -2955,7 +2980,7 @@ int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_INSERT = W_KEYBOARD_SIZE, W_HOME = W_KEYBOARD_SIZE,
     W_PAGE_UP = W_KEYBOARD_SIZE, W_DELETE = W_KEYBOARD_SIZE,
     W_END = W_KEYBOARD_SIZE, W_PAGE_DOWN = W_KEYBOARD_SIZE,
-    W_ESC = W_KEYBOARD_SIZE;
+    W_ESC = W_KEYBOARD_SIZE, W_ANY = 0;
 @
 \fimcodigo
 
@@ -3235,7 +3260,7 @@ vaga e inserimos nossa nova tecla ali:
   for(i = 0; i < 32; i ++){ // Removing from pressed keys
     if(pressed_keys[i].key == key){
       int j;
-      stored_time = pressed_keys[j].time;
+      stored_time = pressed_keys[i].time;
       for(j = i; j < 31; j ++){
         pressed_keys[j].key = pressed_keys[j + 1].key;
         pressed_keys[j].time = pressed_keys[j + 1].time;
@@ -3367,19 +3392,19 @@ botões pressionados e soltos e também inicializamos como zero todos os
 botões, bem como a posição, velocidade e aceleração.
 
 \iniciocodigo
-@<Initializing or Reinitializing Mouse@>=
+@<Inicializando ou Reinicializando o Mouse@>=
 {
   int i;
   for(i = 0; i < 4; i ++){
-    pressed_buttons[i].key = 0;
+    pressed_buttons[i].button = 0;
     released_buttons[i] = 0;
   }
-  for(i = 0, i < W_MOUSE_SIZE; i ++)
+  for(i = 0; i < W_MOUSE_SIZE; i ++)
     _Wmouse.button[i] = 0;
   _Wmouse.x = _Wmouse.y = _Wmouse.dx = _Wmouse.dy = _Wmouse.ddx = _Wmouse.ddy = 0;
   last_mouse_dx = last_mouse_dy = 0;
+  mouse_initialization = 3;
   @<Obtém Posição do Mouse@>
-  mouse_initialization = 2;
 }
 @
 \fimcodigo
@@ -3415,8 +3440,7 @@ nossa lista de botões pressionados:
 \iniciocodigo
 @<X11: Tratar Eventos@>+=
 if(event.type == ButtonPress){
-  int i;
-  usigned button = event.xbutton.button;
+  unsigned button = event.xbutton.button;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 @
@@ -3429,7 +3453,7 @@ lista de botões pressionados e o colocamos na lista de botões soltos:
 
 \iniciocodigo
 @<X11: Tratar Eventos@>+=
-if(event.type == ButonRelease){
+if(event.type == ButtonRelease){
   unsigned button = event.xbutton.button;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
@@ -3444,7 +3468,7 @@ esperar por eventos de movimento do mouse:
 if(event.type == MotionNotify){
   int x, y;
   x = event.xmotion.x;
-  y = (window_size_x - 1) - event.xmotion.y;
+  y = (window_size_y - 1) - event.xmotion.y;
   @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 @
@@ -3466,15 +3490,16 @@ tais informações, exceto pela posição relativa à nossa janela atual.
 @<Obtém Posição do Mouse@>=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
+  int x, y;
   Window root_return, child_return;
-  int root_x_return, root_y_return, win_x_return, win_y_return;
+  int root_x_return, root_y_return;
   unsigned mask_return;
   bool ret;
   ret = XQueryPointer(display, window, &root_return, &child_return,
-                      &root_x_return, &root_y_return, &(_Wmouse.x),
-                      &(_Wmouse.y), &mask_return);
+                      &root_x_return, &root_y_return, &x, &y, &mask_return);
   // Transformando coordenada 'y':
-  _Wmouse.y = (window_size_x - 1) - _Wmouse.y;
+  y = (window_size_y - 1) - y;
+  @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 #endif
 @
@@ -3505,7 +3530,7 @@ Detectamos que um botão do mouse foi pressionado com o código abaixo:
 \iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_MOUSEBUTTONDOWN){
-  usigned button = event.obutton.button;
+  unsigned button = event.obutton.button;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 @
@@ -3516,7 +3541,7 @@ Detectamos que o botão foi solto com o código abaixo:
 \iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_MOUSEBUTTONUP){
-  usigned button = event.button.button;
+  unsigned button = event.button.button;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
 @
@@ -3529,7 +3554,7 @@ E detectamos o movimento do mouse abaixo:
 if(event.type == SDL_MOUSEMOTION){
   int x, y;
   x = event.motion.x;
-  y = (window_size_x - 1) - event.motion.y;
+  y = (window_size_y - 1) - event.motion.y;
   @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 @
@@ -3542,9 +3567,11 @@ movido, usamos o código abaixo:
 @<Obtém Posição do Mouse@>+=
 #if defined(__EMSCRIPTEN__)
 {
-  SDL_GetMouseState(&(_Wmouse.x), &(_Wmouse.y));
+  int x, y;
+  SDL_GetMouseState(&x, &y);
   // Transformando coordenada 'y':
-  _Wmouse.y = (window_size_x - 1) - _Wmouse.y;
+  y = (window_size_y - 1) - y;
+  @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 #endif
 @
@@ -3581,21 +3608,21 @@ trabalho adicional para tratar os eventos de clique de mouse:
 \iniciocodigo
 @<Windows: Tratar Eventos de Mouse@>=
 if(event.message == WM_LBUTTONDOWN){
-  usigned button = W_MOUSE_LEFT;
+  unsigned button = W_MOUSE_LEFT;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 else if(event.message == WM_MBUTTONDOWN){
-  usigned button = W_MOUSE_MIDDLE;
+  unsigned button = W_MOUSE_MIDDLE;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 else if(event.message == WM_RBUTTONDOWN){
-  usigned button = W_MOUSE_RIGHT;
+  unsigned button = W_MOUSE_RIGHT;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 else if(event.message == WM_XBUTTONDOWN){
   unsigned button = W_MOUSE_X2;
   if((event.wParam >> 16) & 0x0001){
-    usigned button = W_MOUSE_X1;
+    unsigned button = W_MOUSE_X1;
   }
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
@@ -3609,21 +3636,21 @@ X2 de maneira diferente dos demais:
 \iniciocodigo
 @<Windows: Manage Mouse Events@>+=
 if(event.message == WM_LBUTTONUP){
-  usigned button = W_MOUSE_LEFT;
+  unsigned button = W_MOUSE_LEFT;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
 else if(event.message == WM_MBUTTONUP){
-  usigned button = W_MOUSE_MIDDLE;
+  unsigned button = W_MOUSE_MIDDLE;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
 else if(event.message == WM_RBUTTONUP){
-  usigned button = W_MOUSE_RIGHT;
+  unsigned button = W_MOUSE_RIGHT;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
 else if(event.message == WM_XBUTTONUP){
   unsigned button = W_MOUSE_X2;
   if((event.wParam >> 16) & 0x0001){
-    usigned button = W_MOUSE_X1;
+    unsigned button = W_MOUSE_X1;
   }
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
@@ -3637,7 +3664,7 @@ E assim é como detectamos o evento no qual o mmouse se move:
 if(event.type == WM_MOUSEMOVE){
   int x, y;
   x = (event.lParam & 0xffff);
-  y = (window_size_x - 1) - (event.lParam >> 16);
+  y = (window_size_y - 1) - (event.lParam >> 16);
   @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 @
@@ -3654,14 +3681,16 @@ movido, usamos o código:
 @<Obtém Posição do Mouse@>+=
 #if defined(_WIN32)
 {
+  int x, y;
   POINT point;
   // Obtém coordenadas em relação à tela:
   GetCursorPos(&point);
   // Converte para coordenada em relação à janela
   ScreenToClient(window, &point);
-  // Armazena a coordenada no mouse, transformando a coordenada 'y':
-  _Wmouse.x = point.x;
-  _Wmouse.y = (window_size_x - 1) - point.y;
+  // Armazena a coordenada, transformando a coordenada 'y':
+  x = point.x;
+  y = (window_size_y - 1) - point.y;
+  @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 #endif
 @
@@ -3712,20 +3741,20 @@ soltos:
   for(i = 0; i < 4; i ++){ // Removendo da lsta de botões pressionados
     if(pressed_buttons[i].button == button){
       int j;
-      stored_time = pressed_buttons[j].time;
+      stored_time = pressed_buttons[i].time;
       for(j = i; j < 3; j ++){
         pressed_buttons[j].button = pressed_buttons[j + 1].button;
         pressed_buttons[j].time = pressed_buttons[j + 1].time;
         if(pressed_buttons[j].button == 0)
           break;
       }
-      pressed_buttons[4].button = 0;
+      pressed_buttons[3].button = 0;
       break;
     }
   }
   for(i = 0; i < 4; i ++){ // Adicionando à lista de botões soltos:
     if(released_buttons[i] == 0)
-      released_buttons[i] = key;
+      released_buttons[i] = button;
   }
   if(i == 4) // Muitos botões soltos, ignore e limpe o mouse:
     _Wmouse.button[button] = 0;
@@ -3779,14 +3808,22 @@ boão não está mais sendo pressionado:
 @
 \fimcodigo
 
-E agora mostramos o código para atualizar a psição do mouse, bem como
+E agora mostramos o código para atualizar a posição do mouse, bem como
 sua velocidade e aceleração (a depender do quanto avançamos na
-inicialização do mouse). N rodamos este código ao detectar o movimento
-do mouse e ler aí um novo valor $x$ e $y$:
+inicialização do mouse). Nós rodamos este código ao detectar o
+movimento do mouse e também quando lemos pela primeira vez a posição
+inicial do mouse. Como devemos armazena a posição levando em conta o
+pixel na tela, precismos fazer a transformação adequada na coordenada
+$x$ e $y$ levando em conta que nossa janela pode ter uma resolução
+diferente de seu tamanho. Por exemplo, se estivermos rodando em tela
+cheia, mas com uma resolução reduzida. É por isso que começamos
+fazendo a transformação na coordenada nas duas primeiras linhas:
 
 \iniciocodigo
 @<Atualiza Posição do Mouse 'x' e 'y'@>=
 {
+  x = x / ((float) window_resolution_x / (float) window_size_x);
+  y = y / ((float) window_resolution_y / (float) window_size_y);
   if(mouse_initialization < 3){ // Se sabemos a posição prévia
     _Wmouse.dx = (x - _Wmouse.x);
     _Wmouse.dy = (y - _Wmouse.y);
@@ -3801,6 +3838,29 @@ do mouse e ler aí um novo valor $x$ e $y$:
   last_mouse_dy = _Wmouse.dy;
   if(mouse_initialization > 0)
     mouse_initialization --;
+}
+@
+\fimcodigo
+
+\subsecao{3.4. Funções Adicionais de Entrada}
+
+Tanto quando vamos ler a nossa entrada pela primeira vez, como quando
+algo nos interrompe e ficamos um tempo sem atender a novos eventos de
+entrada, uma grande quantidade de eventos de movimento de mouse e
+teclas pressionadas pode se acumular e vir ao mesmo tempo. Nestes
+casos, o melhor a fazer é só ignorar esse fluxo inicial, já que não
+seremos capazes de tratá-lo corretamente. É para isso que usamos a
+seguinte função:
+
+\iniciocodigo
+@<Funções da API@>+=
+void _Wflush_window_input(void){
+  // Lemos todos os eventos acumulados:
+  _Wget_window_input(~0x0);
+  // Esvaziamos tudo que temos sobre o teclado:
+  @<Iniciando ou Reiniciando Teclado@>
+  // E fazemos o mesmo para o mouse
+  @<Inicializando ou Reinicializando o Mouse@>
 }
 @
 \fimcodigo
