@@ -22,6 +22,7 @@
 #include <GL/gl.h>
 #endif
 
+
 #include "../src/window.h"
 
 int numero_de_testes = 0, acertos = 0, falhas = 0;
@@ -125,6 +126,104 @@ void test_opengl_simple(void){
 #endif
   }
   _Wdestroy_window();
+}
+
+void test_opengl_buffers(void){
+  unsigned int vbo, vertex_shader, fragment_shader, shader_program;
+  time_t initial_time, current_time;
+  int ret;
+  float vertices[] = {
+    -0.5f, -0.5f, 0.0f,
+    0.5f, -0.5f, 0.0f,
+    0.0f, 0.5f, 0.0f};
+  const char *vertex_shader_source =
+      "#version 300 es\n"
+      "layout (location = 0) in vec3 position;\n"
+      "void main() {\n"
+      "  gl_Position = vec4(position, 1.0);\n"
+      "}\n";
+  const char *fragment_shader_source =
+    "#version 300 es\n"
+    "void main() {\n"
+    "  gl_FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
+    "}\n";
+  _Wcreate_window();
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
+  glCompileShader(vertex_shader);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &ret);
+  assert("Compiling shader with explicit attribute layout", ret);  
+  if(!ret){
+    GLint info_len = 0;
+    glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &info_len);
+    if(info_len > 1){
+      char *info_log = (char *) malloc(sizeof(char) * info_len);
+      glGetShaderInfoLog(vertex_shader, info_len, NULL, info_log);
+      fprintf(stderr, "Error compiling vertex shader:\n%s\n", info_log);
+      free(info_log);
+    }
+  }
+  fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
+  glCompileShader(fragment_shader);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &ret);
+  if(!ret){
+    GLint info_len = 0;
+    glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &info_len);
+    if(info_len > 1){
+      char *info_log = (char *) malloc(sizeof(char) * info_len);
+      glGetShaderInfoLog(fragment_shader, info_len, NULL, info_log);
+      fprintf(stderr, "Error compiling fragment shader:\n%s\n", info_log);
+      free(info_log);
+    }
+  }
+  shader_program = glCreateProgram();
+  glAttachShader(shader_program, vertex_shader);
+  glAttachShader(shader_program, fragment_shader);
+  glLinkProgram(shader_program);
+  glGetProgramiv(shader_program, GL_LINK_STATUS, &ret);
+  assert("Linking simple shader program", ret);
+  if(!ret){
+    GLint info_len = 0;
+    glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &info_len);
+    if(info_len > 1){
+      char *info_log = (char *) malloc(sizeof(char) * info_len);
+      glGetProgramInfoLog(shader_program, info_len, NULL, info_log);
+      fprintf(stderr, "Error linking shader:\n%s\n", info_log);
+      free(info_log);
+    }
+  }
+  glUseProgram(shader_program);
+  printf("%x\n", glGetError());
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+  glEnableVertexAttribArray(0);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glViewport(0, 0, 1366, 768);
+  current_time = initial_time = time(NULL);
+  while(current_time < initial_time + 2){
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+			  (void *) 0);
+    glEnableVertexAttribArray(0);
+    glUseProgram(shader_program);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    current_time = time(NULL);
+    _Wrender_window();
+#if defined(__EMSCRIPTEN__)
+    emscripten_sleep(10);
+#endif
+  }
+  glDeleteProgram(shader_program);
+  assert("Rendering program with vertex buffer", glGetError() == GL_NO_ERROR);
+  _Wdestroy_window();
+
 }
 
 void test_opengl_shader(void){
@@ -238,6 +337,7 @@ int main(int argc, char **argv){
   test_resolution();
   test_opengl_simple();
   test_opengl_shader();
+  test_opengl_buffers();
   imprime_resultado();
   return 0;
 }

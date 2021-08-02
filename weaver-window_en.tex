@@ -324,7 +324,6 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
   // If everything is ok, we should return true:
   return true;
 }
-}
 #endif
 @
 \fimcodigo
@@ -2111,7 +2110,7 @@ extern void (__stdcall *glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean,
 extern void (__stdcall *glEnableVertexAttribArray)(GLuint);
 extern void (__stdcall *glDisableVertexAttribArray)(GLuint);
 #endif
-
+@
 \fimcodigo
 
 These pointers are positioned as global variables:
@@ -3185,7 +3184,7 @@ list until finding a null key and replacing it by our new pressed key:
     if(pressed_keys[i].key == 0){ // Começou a ser pressionada agora
       pressed_keys[i].key = key;
       pressed_keys[i].time = current_time;
-      // Atualizando teclado:
+      // Updating keyboard:
       _Wkeyboard.key[key] = 1;
       break;
     }
@@ -3760,7 +3759,7 @@ transformation in the coordinate taking in consideration the window
 size and resolution:
 
 \iniciocodigo
-@<Update Mouse Position 'x' and 'y'@>
+@<Update Mouse Position 'x' and 'y'@>=
 {
   x = x / ((float) window_resolution_x / (float) window_size_x);
   y = y / ((float) window_resolution_y / (float) window_size_y);
