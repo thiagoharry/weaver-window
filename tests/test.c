@@ -144,8 +144,10 @@ void test_opengl_buffers(void){
       "}\n";
   const char *fragment_shader_source =
     "#version 300 es\n"
+    "precision mediump float;\n"
+    "out vec4 fragColor;\n"
     "void main() {\n"
-    "  gl_FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
+    "  fragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
     "}\n";
   _Wcreate_window();
   glGenBuffers(1, &vbo);
@@ -155,8 +157,8 @@ void test_opengl_buffers(void){
   glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
   glCompileShader(vertex_shader);
   glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &ret);
-  assert("Compiling shader with explicit attribute layout", ret);  
-  if(!ret){
+  assert("Compiling shader with explicit attribute layout", ret);
+  {
     GLint info_len = 0;
     glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &info_len);
     if(info_len > 1){
@@ -170,7 +172,7 @@ void test_opengl_buffers(void){
   glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
   glCompileShader(fragment_shader);
   glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &ret);
-  if(!ret){
+  {
     GLint info_len = 0;
     glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &info_len);
     if(info_len > 1){
@@ -197,7 +199,6 @@ void test_opengl_buffers(void){
     }
   }
   glUseProgram(shader_program);
-  printf("%x\n", glGetError());
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
