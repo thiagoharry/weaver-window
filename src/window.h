@@ -373,8 +373,8 @@ extern void(__stdcall*glDisableVertexAttribArray)(GLuint);
 extern void(__stdcall*glGenBuffers)(GLsizei,GLuint*);
 extern void(__stdcall*glDeleteBuffers)(GLsizei,const GLuint*);
 extern void(__stdcall*glBindBuffer)(GLenum,GLuint);
-extern void(__stdcall*glBufferData)(GLenum,GLsizeiptr,const void*,GLenum);
-extern void(__stdcall*glBufferSubData)(GLenum,GLintptr,GLsizeiptr,
+extern void(__stdcall*glBufferData)(GLenum,GLsizei*,const void*,GLenum);
+extern void(__stdcall*glBufferSubData)(GLenum,GLint*,GLsizei*,
 const void*);
 extern void(__stdcall*glIsBuffer)(GLuint);
 extern void(__stdcall*glGetBufferParameteriv)(GLenum,GLenum,GLint*);

@@ -187,8 +187,8 @@ void(__stdcall*glDisableVertexAttribArray)(GLuint);
 void(__stdcall*glGenBuffers)(GLsizei,GLuint*);
 void(__stdcall*glDeleteBuffers)(GLsizei,const GLuint*);
 void(__stdcall*glBindBuffer)(GLenum,GLuint);
-void(__stdcall*glBufferData)(GLenum,GLsizeiptr,const void*,GLenum);
-void(__stdcall*glBufferSubData)(GLenum,GLintptr,GLsizeiptr,const void*);
+void(__stdcall*glBufferData)(GLenum,GLsizei*,const void*,GLenum);
+void(__stdcall*glBufferSubData)(GLenum,GLint*,GLsizei*,const void*);
 void(__stdcall*glIsBuffer)(GLuint);
 void(__stdcall*glGetBufferParameteriv)(GLenum,GLenum,GLint*);
 #endif
@@ -1138,10 +1138,10 @@ load_function("glDeleteBuffers");
 if(glDeleteBuffers==NULL)return false;
 glBindBuffer= (void(__stdcall*)(GLenum,GLuint))load_function("glBindBuffer");
 if(glBindBuffer==NULL)return false;
-glBufferData= (void(__stdcall*)(GLenum,GLsizeiptr,const void*,GLenum))
+glBufferData= (void(__stdcall*)(GLenum,GLsizei*,const void*,GLenum))
 load_function("glBufferData");
 if(glBufferData==NULL)return false;
-glBufferSubData= (void(__stdcall*)(GLenum,GLintptr,GLsizeiptr,const void*))
+glBufferSubData= (void(__stdcall*)(GLenum,GLint*,GLsizei*,const void*))
 load_function("glBufferSubData");
 if(glBufferSubData==NULL)return false;
 glIsBuffer= (void(__stdcall*)(GLuint))load_function("glIsBuffer");
