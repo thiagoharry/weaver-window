@@ -169,26 +169,33 @@ typedef char GLchar;
 #define GL_BUFFER_SIZE  0x8764
 #define GL_BUFFER_USAGE 0x8765
 #endif
-/*:106*//*126:*/
-#line 2825 "weaver-window.tex"
+/*:106*//*107:*/
+#line 2323 "weaver-window.tex"
+
+#if defined(_WIN32)
+typedef size_t GLsizeiptr;
+typedef ssize_t GLintptr;
+#endif
+/*:107*//*127:*/
+#line 2840 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:126*//*132:*/
-#line 2996 "weaver-window.tex"
+/*:127*//*133:*/
+#line 3011 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
-/*:132*//*136:*/
-#line 3109 "weaver-window.tex"
+/*:133*//*137:*/
+#line 3124 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:136*//*148:*/
-#line 3423 "weaver-window.tex"
+/*:137*//*149:*/
+#line 3438 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -198,8 +205,8 @@ typedef char GLchar;
 #define W_MOUSE_X1     Button4
 #define W_MOUSE_X2     Button5
 #endif
-/*:148*//*153:*/
-#line 3516 "weaver-window.tex"
+/*:149*//*154:*/
+#line 3531 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -209,8 +216,8 @@ typedef char GLchar;
 #define W_MOUSE_X1     SDL_BUTTON_X1
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
-/*:153*//*158:*/
-#line 3591 "weaver-window.tex"
+/*:154*//*159:*/
+#line 3606 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -220,7 +227,7 @@ typedef char GLchar;
 #define W_MOUSE_X1     4
 #define W_MOUSE_X2     5
 #endif
-/*:158*/
+/*:159*/
 #line 117 "weaver-window.tex"
 
 /*3:*/
@@ -373,27 +380,27 @@ extern void(__stdcall*glDisableVertexAttribArray)(GLuint);
 extern void(__stdcall*glGenBuffers)(GLsizei,GLuint*);
 extern void(__stdcall*glDeleteBuffers)(GLsizei,const GLuint*);
 extern void(__stdcall*glBindBuffer)(GLenum,GLuint);
-extern void(__stdcall*glBufferData)(GLenum,GLsizei*,const void*,GLenum);
-extern void(__stdcall*glBufferSubData)(GLenum,GLint*,GLsizei*,
+extern void(__stdcall*glBufferData)(GLenum,GLsizeiptr,const void*,GLenum);
+extern void(__stdcall*glBufferSubData)(GLenum,GLintptr,GLsizeiptr,
 const void*);
 extern void(__stdcall*glIsBuffer)(GLuint);
 extern void(__stdcall*glGetBufferParameteriv)(GLenum,GLenum,GLint*);
 #endif
-/*:101*//*117:*/
-#line 2632 "weaver-window.tex"
+/*:101*//*118:*/
+#line 2647 "weaver-window.tex"
 
 extern struct __Wkeyboard{
 long key[W_KEYBOARD_SIZE+1];
 }_Wkeyboard;
-/*:117*//*119:*/
-#line 2679 "weaver-window.tex"
+/*:118*//*120:*/
+#line 2694 "weaver-window.tex"
 
 struct __Wmouse{
 long button[W_MOUSE_SIZE];
 int x,y,dx,dy,ddx,ddy;
 }_Wmouse;
-/*:119*//*130:*/
-#line 2937 "weaver-window.tex"
+/*:120*//*131:*/
+#line 2952 "weaver-window.tex"
 
 extern int W_BACKSPACE,W_TAB,W_ENTER,W_UP,W_DOWN,W_LEFT,W_RIGHT,W_0,W_1,
 W_2,W_3,W_4,W_5,W_6,W_7,W_8,W_9,W_MINUS,W_PLUS,W_F1,W_F2,
@@ -403,7 +410,7 @@ W_RIGHT_CTRL,W_SPACE,W_A,W_B,W_C,W_D,W_E,W_F,W_G,W_H,W_I,
 W_J,W_K,W_L,W_M,W_N,W_O,W_P,W_Q,W_R,W_S,W_T,W_U,W_V,W_W,
 X_X,W_Y,W_Z,W_INSERT,W_HOME,W_PAGE_UP,W_DELETE,W_END,
 W_PAGE_DOWN,W_ESC,W_ANY;
-/*:130*/
+/*:131*/
 #line 118 "weaver-window.tex"
 
 #ifdef __cplusplus
