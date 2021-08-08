@@ -178,26 +178,26 @@ typedef char GLchar;
 typedef size_t GLsizeiptr;
 typedef SSIZE_T GLintptr;
 #endif
-/*:107*//*127:*/
-#line 2842 "weaver-window.tex"
+/*:107*//*128:*/
+#line 2851 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:127*//*133:*/
-#line 3013 "weaver-window.tex"
+/*:128*//*134:*/
+#line 3022 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
-/*:133*//*137:*/
-#line 3126 "weaver-window.tex"
+/*:134*//*138:*/
+#line 3135 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:137*//*149:*/
-#line 3440 "weaver-window.tex"
+/*:138*//*150:*/
+#line 3449 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -207,8 +207,8 @@ typedef SSIZE_T GLintptr;
 #define W_MOUSE_X1     Button4
 #define W_MOUSE_X2     Button5
 #endif
-/*:149*//*154:*/
-#line 3532 "weaver-window.tex"
+/*:150*//*155:*/
+#line 3541 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -218,8 +218,8 @@ typedef SSIZE_T GLintptr;
 #define W_MOUSE_X1     SDL_BUTTON_X1
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
-/*:154*//*159:*/
-#line 3607 "weaver-window.tex"
+/*:155*//*160:*/
+#line 3616 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -229,7 +229,7 @@ typedef SSIZE_T GLintptr;
 #define W_MOUSE_X1     4
 #define W_MOUSE_X2     5
 #endif
-/*:159*/
+/*:160*/
 #line 117 "weaver-window.tex"
 
 /*3:*/
@@ -397,12 +397,12 @@ long key[W_KEYBOARD_SIZE+1];
 /*:118*//*120:*/
 #line 2696 "weaver-window.tex"
 
-struct __Wmouse{
+extern struct __Wmouse{
 long button[W_MOUSE_SIZE];
 int x,y,dx,dy,ddx,ddy;
 }_Wmouse;
-/*:120*//*131:*/
-#line 2954 "weaver-window.tex"
+/*:120*//*132:*/
+#line 2963 "weaver-window.tex"
 
 extern int W_BACKSPACE,W_TAB,W_ENTER,W_UP,W_DOWN,W_LEFT,W_RIGHT,W_0,W_1,
 W_2,W_3,W_4,W_5,W_6,W_7,W_8,W_9,W_MINUS,W_PLUS,W_F1,W_F2,
@@ -412,7 +412,7 @@ W_RIGHT_CTRL,W_SPACE,W_A,W_B,W_C,W_D,W_E,W_F,W_G,W_H,W_I,
 W_J,W_K,W_L,W_M,W_N,W_O,W_P,W_Q,W_R,W_S,W_T,W_U,W_V,W_W,
 X_X,W_Y,W_Z,W_INSERT,W_HOME,W_PAGE_UP,W_DELETE,W_END,
 W_PAGE_DOWN,W_ESC,W_ANY;
-/*:131*/
+/*:132*/
 #line 118 "weaver-window.tex"
 
 #ifdef __cplusplus

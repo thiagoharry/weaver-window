@@ -2657,14 +2657,22 @@ supported keys. We add to the keyboard struct one additional position
 to map unsupported keys. The last position never will store any value
 different than zero.
 
-The mouse will be represented by the following global struct variable:
+The mouse will be represented by the following struct:
 
 \iniciocodigo
 @<Window Declarations@>+=
-struct __Wmouse{
+extern struct __Wmouse{
   long button[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
 } _Wmouse;
+@
+\fimcodigo
+
+And we will use this singleton struct to represent the user mouse:
+
+\iniciocodigo
+@<Global Variables@>+=
+struct __Wmouse _Wmouse;
 @
 \fimcodigo
 
@@ -3490,7 +3498,7 @@ We detect that some mouse button was pressed with the code below:
 \iniciocodigo
 @<Web Assembly: Manage Events@>+=
 if(event.type == SDL_MOUSEBUTTONDOWN){
-  unsigned button = event.obutton.button;
+  unsigned button = event.button.button;
   @<Add 'button' to List of Pressed Buttons@>
 }
 @

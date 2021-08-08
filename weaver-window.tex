@@ -2690,14 +2690,23 @@ posição adicional para a qual será mapeada qualquer tecla
 desconhecida. A última posição do vetor nunca armazenará nenhum valor
 diferente de zero.
 
-O mouse será representado pela seguinte variável global de estrutura:
+O mouse será representado pela seguinte estrutura:
 
 \iniciocodigo
 @<Declarações de Janela@>+=
-struct __Wmouse{
+extern struct __Wmouse{
   long button[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
 } _Wmouse;
+@
+\fimcodigo
+
+E manteremos um único exemplar desta estrutura para representar o
+mouse do usuário:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+struct __Wmouse _Wmouse;
 @
 \fimcodigo
 
@@ -3546,7 +3555,7 @@ Detectamos que um botão do mouse foi pressionado com o código abaixo:
 \iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_MOUSEBUTTONDOWN){
-  unsigned button = event.obutton.button;
+  unsigned button = event.button.button;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 @
