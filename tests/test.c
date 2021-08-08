@@ -137,17 +137,16 @@ void test_opengl_buffers(void){
     0.5f, -0.5f, 0.0f,
     0.0f, 0.5f, 0.0f};
   const char *vertex_shader_source =
-      "#version 300 es\n"
-      "layout (location = 0) in vec3 position;\n"
+      "#version 100\n"
+      "attribute vec3 position;\n"
       "void main() {\n"
       "  gl_Position = vec4(position, 1.0);\n"
       "}\n";
   const char *fragment_shader_source =
-    "#version 300 es\n"
+    "#version 100\n"
     "precision mediump float;\n"
-    "out vec4 fragColor;\n"
     "void main() {\n"
-    "  fragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
+    "  gl_FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
     "}\n";
   _Wcreate_window();
   glGenBuffers(1, &vbo);
@@ -185,10 +184,11 @@ void test_opengl_buffers(void){
   shader_program = glCreateProgram();
   glAttachShader(shader_program, vertex_shader);
   glAttachShader(shader_program, fragment_shader);
+  glBindAttribLocation(shader_program, 0, "position");
   glLinkProgram(shader_program);
   glGetProgramiv(shader_program, GL_LINK_STATUS, &ret);
   assert("Linking simple shader program", ret);
-  if(!ret){
+  {
     GLint info_len = 0;
     glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &info_len);
     if(info_len > 1){
@@ -241,6 +241,7 @@ void test_opengl_shader(void){
       "}\n";
     const char *fragment_shader_source =
       "#version 100\n"
+      "precision mediump float;\n"
       "void main() {\n"
       "  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
       "}\n";
