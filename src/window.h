@@ -208,7 +208,7 @@ typedef SSIZE_T GLintptr;
 #define W_MOUSE_X2     Button5
 #endif
 /*:149*//*154:*/
-#line 3533 "weaver-window.tex"
+#line 3532 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -219,7 +219,7 @@ typedef SSIZE_T GLintptr;
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
 /*:154*//*159:*/
-#line 3608 "weaver-window.tex"
+#line 3607 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6

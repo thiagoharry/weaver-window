@@ -3456,9 +3456,8 @@ information about mouse position relative to our current window.
   Window root_return, child_return;
   int root_x_return, root_y_return;
   unsigned mask_return;
-  bool ret;
-  ret = XQueryPointer(display, window, &root_return, &child_return,
-                      &root_x_return, &root_y_return, &x, &y, &mask_return);
+  XQueryPointer(display, window, &root_return, &child_return,
+                &root_x_return, &root_y_return, &x, &y, &mask_return);
   // Transforming 'y' coordinate:
   y = (window_size_y - 1) - y;
   @<Update Mouse Position 'x' and 'y'@>

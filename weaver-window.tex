@@ -3511,9 +3511,8 @@ tais informações, exceto pela posição relativa à nossa janela atual.
   Window root_return, child_return;
   int root_x_return, root_y_return;
   unsigned mask_return;
-  bool ret;
-  ret = XQueryPointer(display, window, &root_return, &child_return,
-                      &root_x_return, &root_y_return, &x, &y, &mask_return);
+  XQueryPointer(display, window, &root_return, &child_return,
+                &root_x_return, &root_y_return, &x, &y, &mask_return);
   // Transformando coordenada 'y':
   y = (window_size_y - 1) - y;
   @<Atualiza Posição do Mouse 'x' e 'y'@>
