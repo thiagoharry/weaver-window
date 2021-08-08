@@ -2322,8 +2322,10 @@ somente ter ou não ter sinal.
 \iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
+// Isso inclui um signed size_t:
+#include <BaseTsd.h>
 typedef size_t GLsizeiptr;
-typedef ssize_t GLintptr;
+typedef SSIZE_T GLintptr;
 #endif
 @
 \fimcodigo
@@ -3137,7 +3139,7 @@ estruturas:
 \iniciocodigo
 @<Windows: Tratar Eventos de Teclado@>=
 if(event.message == WM_KEYDOWN){
-  unsigned key = (event.lParam & 00ff0000) >> 16;
+  unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
 @
@@ -3151,7 +3153,7 @@ para X11 e SDL. Já o código que detecta se uma tecla foi solta é:
 \iniciocodigo
 @<Windows: Tratar Eventos de Teclado@>+=
 if(event.message == WM_KEYUP){
-  unsigned key = (event.lParam & 00ff0000) >> 16;
+  unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
 }
 @

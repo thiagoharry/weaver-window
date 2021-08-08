@@ -2293,8 +2293,10 @@ other is unsigned:
 \iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
+// This includes a signed size_t definition:
+#include <BaseTsd.h>
 typedef size_t GLsizeiptr;
-typedef ssize_t GLintptr;
+typedef SSIZE_T GLintptr;
 #endif
 @
 \fimcodigo
@@ -3089,7 +3091,7 @@ names, as Windows calls differently its functions and structs:
 \iniciocodigo
 @<Windows: Manage Keyboard Events@>=
 if(event.message == WM_KEYDOWN){
-  unsigned key = (event.lParam & 00ff0000) >> 16;
+  unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Add 'key' to List of Pressed Keys@>
 }
 @
@@ -3103,7 +3105,7 @@ being released is:
 \iniciocodigo
 @<Windows: Manage Keyboard Events@>+=
 if(event.message == WM_KEYUP){
-  unsigned key = (event.lParam & 00ff0000) >> 16;
+  unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Remove 'key' from Pressed Keys and Add to Released Keys@>
 }
 @
