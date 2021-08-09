@@ -2330,6 +2330,99 @@ typedef SSIZE_T GLintptr;
 @
 \fimcodigo
 
+As duas funções da API referentes à janela de exibição (``viewport'')
+e recortte (``clipping'') são:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
+extern void (__stdcall *glViewport)(int, int, GLsizei, GLsizei);
+#endif
+@
+\fimcodigo
+
+Suas declarações:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
+void (__stdcall *glViewport)(int, int, GLsizei, GLsizei);
+#endif
+@
+\fimcodigo
+
+E inicialização:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glDepthRangef = (void (__stdcall *)(GLclampf, GLclampf))
+                   load_function("glDepthRangef");
+if(glDepthRangef == NULL) return false;
+glViewport = (void (__stdcall *)(int, int, GLsizei, GLsizei))
+                load_function("glViewport");
+if(glViewport == NULL) return false;
+@
+\fimcodigo
+
+O tipo \monoespaco{GLclampf} representa um número em ponto flutuante
+que deve estar no intervalo entre 0 e 1. Podemos representá-los como
+números em ponto flutuante mesmo:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+typedef float GLclampf;
+#endif
+@
+\fimcodigo
+
+A função que permite ler o buffer de cores e assim obter o que está
+sendo exibido na tela é:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+                                      void *);
+#endif
+@
+\fimcodigo
+
+Sua declaração:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+                               void *);
+#endif
+@
+\fimcodigo
+
+E inicialização:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glReadPexels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+                               void *)) load_function("glReadPexels");
+if(glReadPexels == NULL) return false;
+@
+\fimcodigo
+
+Também precisamos das seguintes macros que são valores que escolhem o
+formato em que os pixels serão apresentados e o tipo para o qual eles
+serão convertidos:
+
+\iniciocodigo
+@<Define Macros@>+=
+#if defined(_WIN32)
+#define GL_RGBA          0x1908
+#define GL_UNSIGNED_BYTE 0x1401
+#endif
+@
+\fimcodigo
 
 \subsubsecao{2.3.4. Escolhendo a Versão do OpenGL}
 

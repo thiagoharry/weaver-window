@@ -2301,6 +2301,99 @@ typedef SSIZE_T GLintptr;
 @
 \fimcodigo
 
+The two functions about setting the viewport and the clipping are:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
+extern void (__stdcall *glViewport)(int, int, GLsizei, GLsizei);
+#endif
+@
+\fimcodigo
+
+Their declarations:
+
+\iniciocodigo
+@<Global Variables@>+=
+#if defined(_WIN32)
+void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
+void (__stdcall *glViewport)(int, int, GLsizei, GLsizei);
+#endif
+@
+\fimcodigo
+
+And the initialization:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glDepthRangef = (void (__stdcall *)(GLclampf, GLclampf))
+                   load_function("glDepthRangef");
+if(glDepthRangef == NULL) return false;
+glViewport = (void (__stdcall *)(int, int, GLsizei, GLsizei))
+                load_function("glViewport");
+if(glViewport == NULL) return false;
+@
+\fimcodigo
+
+A type \monoespaco{GLclampf} represents a floating point number that
+should be in the range between 0 and 1. We can represent it by a
+regular floating point number.
+
+\iniciocodigo
+@<Macro Definition@>+=
+#if defined(_WIN32)
+typedef float GLclampf;
+#endif
+@
+\fimcodigo
+
+The function that reads pixels in the color buffer in our framebuffer
+and can get screenshots is:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+                                      void *);
+#endif
+@
+\fimcodigo
+
+The function declaration:
+
+\iniciocodigo
+@<Global Variables@>+=
+#if defined(_WIN32)
+void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+                               void *);
+#endif
+@
+\fimcodigo
+
+And its initialization:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glReadPexels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+                               void *)) load_function("glReadPexels");
+if(glReadPexels == NULL) return false;
+@
+\fimcodigo
+
+We also need the following macros to choose the pixel format and how
+it will be represented:
+
+\iniciocodigo
+@<Macro Definition@>+=
+#if defined(_WIN32)
+#define GL_RGBA          0x1908
+#define GL_UNSIGNED_BYTE 0x1401
+#endif
+@
+\fimcodigo
+
+
 \subsubsecao{2.3.4. Choosing OpenGL Version}
 
 In the previously defined code, in all environments. we choosed the
@@ -2312,10 +2405,6 @@ OpenGL version according with the following two macros:
 
 We will now define what these macros values will be if the user did
 not personalized them to some valuye.
-
-
-
-
 
 \subsecao{2.6. Window Creation Function}
 
