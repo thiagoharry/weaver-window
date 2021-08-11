@@ -2393,6 +2393,127 @@ it will be represented:
 @
 \fimcodigo
 
+Now wee will prepare the functions about texturing:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glActiveTexture)(GLenum); // TEXTURE0..TEXTURE1...
+extern void (__stdcall *glTexImage2D)(GLenum, int, int, GLsizei, GLsizei, int,
+                                      GLenum, GLenum, void *);
+extern void (__stdcall *glCopyTexImage2D)(GLenum, int, GLenum, int, int, GLsizei,
+                                          GLsizei, int);
+extern void (__stdcall *glTexSubImage2D)(GLenum, int, int, int, GLsizei, GLsizei,
+                                         GLenum, GLenumn, void *);
+extern void (__stdcall *glCompressedTexImage2D)(GLenum, int, GLenum, GLsizei,
+                                                GLsizei, int, GLsizei, void *);
+extern void (__stdcall *glCompressedTexSubImage2D)(GLenum, int, int, int, GLsizei,
+                                                   GLsizei, GLenum, GLsizei,
+                                                   void *);
+extern void (__stdcall *glTexParameteri)(GLenum, GLenum, int);
+extern void (__stdcall *glTexParameterf)(GLenum, GLenum, float);
+extern void (__stdcall *glTexParameteriv)(GLenum, GLenum, const int *);
+extern void (__stdcall *glTexParameterfv)(GLenum, GLenum, const float *);
+extern void (__stdcall *glGenerateMipmap)(GLenum);
+extern void (__stdcall *glBindTexture)(GLenum, unsigned int);
+extern void (__stdcall *glDeleteTextures)(GLsizei, unsigned int *);
+extern void (__stdcall *glGenTextures)(GLsizei, unsigned int *);
+extern void (__stdcall *glGetTexParameteriv)(GLenum, GLenum, int *);
+extern void (__stdcall *glGetTexParameterfv)(GLenum, GLenum, float *);
+extern bool (__stdcall *glIsTexture)(unsigned int);
+#endif
+@
+\fimcodigo
+
+And we declare these functions in \monoespaco{window.c}:
+
+\iniciocodigo
+@<Global Variables@>+=
+#if defined(_WIN32)
+void (__stdcall *glActiveTexture)(GLenum); // TEXTURE0..TEXTURE1...
+void (__stdcall *glTexImage2D)(GLenum, int, int, GLsizei, GLsizei, int,
+                               GLenum, GLenum, void *);
+void (__stdcall *glCopyTexImage2D)(GLenum, int, GLenum, int, int, GLsizei,
+                                   GLsizei, int);
+void (__stdcall *glTexSubImage2D)(GLenum, int, int, int, GLsizei, GLsizei,
+                                  GLenum, GLenumn, void *);
+void (__stdcall *glCompressedTexImage2D)(GLenum, int, GLenum, GLsizei,
+                                         GLsizei, int, GLsizei, void *);
+void (__stdcall *glCompressedTexSubImage2D)(GLenum, int, int, int, GLsizei,
+                                            GLsizei, GLenum, GLsizei,
+                                            void *);
+void (__stdcall *glTexParameteri)(GLenum, GLenum, int);
+void (__stdcall *glTexParameterf)(GLenum, GLenum, float);
+void (__stdcall *glTexParameteriv)(GLenum, GLenum, const int *);
+void (__stdcall *glTexParameterfv)(GLenum, GLenum, const float *);
+void (__stdcall *glGenerateMipmap)(GLenum);
+void (__stdcall *glBindTexture)(GLenum, unsigned int);
+void (__stdcall *glDeleteTextures)(GLsizei, unsigned int *);
+void (__stdcall *glGenTextures)(GLsizei, unsigned int *);
+void (__stdcall *glGetTexParameteriv)(GLenum, GLenum, int *);
+void (__stdcall *glGetTexParameterfv)(GLenum, GLenum, float *);
+bool (__stdcall *glIsTexture)(unsigned int);
+#endif
+@
+\fimcodigo
+
+Here we initialize these 17 functions making them usable:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glActiveTexture = (void (__stdcall *)(GLenum)) load_function("glActiveTexture");
+if(glActiveTexture == NULL) return false;
+glTexImage2D = (void (__stdcall *)(GLenum, int, int, GLsizei, GLsizei, int,
+                   GLenum, GLenum, void *)) load_function("glTexImage2D");
+if(glTexImage2D == NULL) return false;
+glCopyTexImage2D = (void (__stdcall *)(GLenum, int, GLenum, int, int, GLsizei,
+                     GLsizei, int)) load_function("glCopyTexImage2D");
+if(glCopyTexImage2D == NULL) return false;
+glTexSubImage2D = (void (__stdcall *)(GLenum, int, int, int, GLsizei, GLsizei,
+                      GLenum, GLenumn, void *)) load_function("glTexSubImage2D");
+if(glTexSubImage2D == NULL) return false;
+glCompressedTexImage2D = (void (__stdcall *)(GLenum, int, GLenum, GLsizei,
+                            GLsizei, int, GLsizei, void *))
+                                  load_function("glCompressedTexImage2D");
+if(glCompressedTexImage2D == NULL) return false;
+glCompressedTexSubImage2D = (void (__stdcall *)(GLenum, int, int, int, GLsizei,
+                              GLsizei, GLenum, GLsizei, void *))
+                                   load_function("glCompressedTexSubImage2D");
+if(glCompressedTexSubImage2D == NULL) return false;
+glTexParameteri = (void (__stdcall *)(GLenum, GLenum, int))
+                    load_function("glTexParameteri");
+if(glTexParameteri == NULL) return false;
+glTexParameterf = (void (__stdcall *)(GLenum, GLenum, float))
+                     load_function("glTexParameterf");
+if(glTexParameterf == NULL) return false;
+glTexParameteriv = (void (__stdcall *)(GLenum, GLenum, const int *))
+                     load_function("glTexParameteriv");
+if(glTexParameteriv == NULL) return false;
+glTexParameterfv = (void (__stdcall *)(GLenum, GLenum, const float *))
+                       load_function("glTexParameterfv");
+if(glTexParameterfv == NULL) return false;
+glGenerateMipmap = (void (__stdcall *)(GLenum)) load_function("glGenerateMipmap");
+if(glGenerateMipmap == NULL) return false;
+glBindTexture = (void (__stdcall *)(GLenum, unsigned int))
+                    load_function("glBindTexture");
+if(glBindTexture == NULL) return false;
+glDeleteTextures = (void (__stdcall *)(GLsizei, unsigned int *))
+                     load_function("glDeleteTextures");
+if(glDeleteTextures == NULL) return false;
+glGenTextures = (void (__stdcall *)(GLsizei, unsigned int *))
+                   load_function("glGenTextures");
+if(glGenTextures == NULL) return false;
+glGetTexParameteriv = (void (__stdcall *)(GLenum, GLenum, int *))
+                         load_function("glGetTexParameteriv");
+if(glGetTexParameteriv == NULL) return false;
+glGetTexParameterfv = (void (__stdcall *)(GLenum, GLenum, float *))
+                          load_function("glGetTexParameterfv");
+if(glGetTexParameterfv == NULL) return false;
+glIsTexture = (bool (__stdcall *)(unsigned int)) load_function("glIsTexture");
+if(glIsTexture == NULL) return false;
+@
+\fimcodigo
+
 
 \subsubsecao{2.3.4. Choosing OpenGL Version}
 
