@@ -2373,58 +2373,12 @@ typedef float GLclampf;
 @
 \fimcodigo
 
-A função que permite ler o buffer de cores e assim obter o que está
-sendo exibido na tela é:
+Agora vamos preparar as funções do OpenGL relacionadas à textura:
 
 \iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
-extern void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
-                                      void *);
-#endif
-@
-\fimcodigo
-
-Sua declaração:
-
-\iniciocodigo
-@<Variáveis Globais@>+=
-#if defined(_WIN32)
-void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
-                               void *);
-#endif
-@
-\fimcodigo
-
-E inicialização:
-
-\iniciocodigo
-@<Windows: Configurar OpenGL@>+=
-glReadPixels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
-                               void *)) load_function("glReadPexels");
-if(glReadPexels == NULL) return false;
-@
-\fimcodigo
-
-Também precisamos das seguintes macros que são valores que escolhem o
-formato em que os pixels serão apresentados e o tipo para o qual eles
-serão convertidos:
-
-\iniciocodigo
-@<Define Macros@>+=
-#if defined(_WIN32)
-#define GL_RGBA          0x1908
-#define GL_UNSIGNED_BYTE 0x1401
-#endif
-@
-\fimcodigo
-
-Agora vamos preparar as funções do OpenG relacionadas à textura:
-
-\iniciocodigo
-@<Declarações de Janela@>+=
-#if defined(_WIN32)
-extern void (__stdcall *glActiveTexture)(GLenum); // TEXTURE0..TEXTURE1...
+extern void (__stdcall *glActiveTexture)(GLenum);
 extern void (__stdcall *glCompressedTexImage2D)(GLenum, int, GLenum, GLsizei,
                                                 GLsizei, int, GLsizei, void *);
 extern void (__stdcall *glCompressedTexSubImage2D)(GLenum, int, int, int, GLsizei,
@@ -2477,8 +2431,8 @@ definidas para serem usadas nas enumerações:
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_RGB                              0x1907
+#define GL_RGBA                             0x1908
 #define GL_ALPHA                            0x1906
-#define GL_LUMINANCE                        0x1909
 #define GL_TEXTURE0                         0x84C0
 #define GL_TEXTURE1                         0x84C1
 #define GL_TEXTURE2                         0x84C2
@@ -2511,7 +2465,9 @@ definidas para serem usadas nas enumerações:
 #define GL_TEXTURE29                        0x84DD
 #define GL_TEXTURE30                        0x84DE
 #define GL_TEXTURE31                        0x84DF
+#define GL_LUMINANCE                        0x1909
 #define GL_TEXTURE_2D                       0x0DE1
+#define GL_UNSIGNED_BYTE                    0x1401
 #define GL_TEXTURE_WRAP_S                   0x2802
 #define GL_TEXTURE_WRAP_T                   0x2803
 #define GL_LUMINANCE_ALPHA                  0x190A

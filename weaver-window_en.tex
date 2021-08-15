@@ -2343,51 +2343,6 @@ typedef float GLclampf;
 @
 \fimcodigo
 
-The function that reads pixels in the color buffer in our framebuffer
-and can get screenshots is:
-
-\iniciocodigo
-@<Window Declarations@>+=
-#if defined(_WIN32)
-extern void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
-                                      void *);
-#endif
-@
-\fimcodigo
-
-The function declaration:
-
-\iniciocodigo
-@<Global Variables@>+=
-#if defined(_WIN32)
-void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
-                               void *);
-#endif
-@
-\fimcodigo
-
-And its initialization:
-
-\iniciocodigo
-@<Windows: Configure OpenGL@>+=
-glReadPixels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
-                               void *)) load_function("glReadPixels");
-if(glReadPixels == NULL) return false;
-@
-\fimcodigo
-
-We also need the following macros to choose the pixel format and how
-it will be represented:
-
-\iniciocodigo
-@<Macro Definition@>+=
-#if defined(_WIN32)
-#define GL_RGBA          0x1908
-#define GL_UNSIGNED_BYTE 0x1401
-#endif
-@
-\fimcodigo
-
 Now wee will prepare the functions about texturing:
 
 \iniciocodigo
@@ -2446,8 +2401,8 @@ enumerations:
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_RGB                              0x1907
+#define GL_RGBA                             0x1908
 #define GL_ALPHA                            0x1906
-#define GL_LUMINANCE                        0x1909
 #define GL_TEXTURE0                         0x84C0
 #define GL_TEXTURE1                         0x84C1
 #define GL_TEXTURE2                         0x84C2
@@ -2480,7 +2435,9 @@ enumerations:
 #define GL_TEXTURE29                        0x84DD
 #define GL_TEXTURE30                        0x84DE
 #define GL_TEXTURE31                        0x84DF
+#define GL_LUMINANCE                        0x1909
 #define GL_TEXTURE_2D                       0x0DE1
+#define GL_UNSIGNED_BYTE                    0x1401
 #define GL_TEXTURE_WRAP_S                   0x2802
 #define GL_TEXTURE_WRAP_T                   0x2803
 #define GL_LUMINANCE_ALPHA                  0x190A
