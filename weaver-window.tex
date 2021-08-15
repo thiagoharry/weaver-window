@@ -2524,6 +2524,34 @@ void (__stdcall *glBlendColor)(GLclampf, GLclampf, GLclampf, GLclampf);
 @
 \fimcodigo
 
+E a inicialização:
+
+\iniciocodigo
+@<Windows: Configurar OpenGL@>+=
+glSampleCoverage = (void (__stdcall *)(GLclampf, bool))
+                        load_function("glSampleCoverage");
+if(glSampleCoverage == NULL) return false;
+glStencilFuncSeparate = (void (__stdcall *)(GLenum, GLenum, int, unsigned int))
+                           load_function("glStencilFuncSeparate");
+if(glStencilFuncSeparate == NULL) return false;
+glStencilOpSeparate = (void (__stdcall *)(GLenum, GLenum, GLenum, GLenum))
+                         load_function("glStencilOpSeparate");
+if(glStencilOpSeparate == NULL) return false;
+glBlendEquation = (void (__stdcall *)(GLenum)) load_function("glBlendEquation");
+if(glBlendEquation == NULL) return false;
+glBlendEquationSeparate = (void (__stdcall *)(GLenum, GLenum))
+                            load_function("glBlendEquationSeparate");
+if(glBlendEquationSeparate == NULL) return false;
+glBlendFuncSeparate = (void (__stdcall *)(GLenum, GLenum))
+                        load_function("glBlendFuncSeparate");
+if(glBlendFuncSeparate == NULL) return false;
+glBlendColor = (void (__stdcall *)(GLclampf, GLclampf, GLclampf, GLclampf))
+                   load_function("glBlendColor");
+if(glBlendColor == NULL) return false;
+@
+\fimcodigo
+
+
 O uso das funções acima requer também a definição das seguintes macros
 a serem usadas como enumerações:
 
@@ -2569,6 +2597,30 @@ a serem usadas como enumerações:
 #endif
 @
 \fimcodigo
+
+Com relação à funções que afetam todo o ``framebuffer'', temos que
+preparar estas 2 funções:
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
+extern void (__stdcall *glClearDepthf)(GLclampf);
+#endif
+@
+\fimcodigo
+
+A declaração delas em \monoespaco{window.c}:
+
+\iniciocodigo
+@<Variáveis Globais@>+=
+#if defined(_WIN32)
+void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
+void (__stdcall *glClearDepthf)(GLclampf);
+#endif
+@
+\fimcodigo
+
 
 
 \subsubsecao{2.3.4. Escolhendo a Versão do OpenGL}

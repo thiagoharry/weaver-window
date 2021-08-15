@@ -244,8 +244,8 @@ typedef float GLclampf;
 #define GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS   0x8B4C
 #define GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS 0x8B4D
 #endif
-/*:115*//*118:*/
-#line 2531 "weaver-window.tex"
+/*:115*//*119:*/
+#line 2559 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_ONE                      1
@@ -285,26 +285,26 @@ typedef float GLclampf;
 #define GL_ONE_MINUS_CONSTANT_COLOR 0x8002
 #define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
 #endif
-/*:118*//*139:*/
-#line 3091 "weaver-window.tex"
+/*:119*//*142:*/
+#line 3143 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:139*//*145:*/
-#line 3262 "weaver-window.tex"
+/*:142*//*148:*/
+#line 3314 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
-/*:145*//*149:*/
-#line 3375 "weaver-window.tex"
+/*:148*//*152:*/
+#line 3427 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:149*//*161:*/
-#line 3689 "weaver-window.tex"
+/*:152*//*164:*/
+#line 3741 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -314,8 +314,8 @@ typedef float GLclampf;
 #define W_MOUSE_X1     Button4
 #define W_MOUSE_X2     Button5
 #endif
-/*:161*//*166:*/
-#line 3781 "weaver-window.tex"
+/*:164*//*169:*/
+#line 3833 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -325,8 +325,8 @@ typedef float GLclampf;
 #define W_MOUSE_X1     SDL_BUTTON_X1
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
-/*:166*//*171:*/
-#line 3856 "weaver-window.tex"
+/*:169*//*174:*/
+#line 3908 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -336,7 +336,7 @@ typedef float GLclampf;
 #define W_MOUSE_X1     4
 #define W_MOUSE_X2     5
 #endif
-/*:171*/
+/*:174*/
 #line 117 "weaver-window.tex"
 
 /*3:*/
@@ -525,21 +525,28 @@ extern void(__stdcall*glBlendEquationSeparate)(GLenum,GLenum);
 extern void(__stdcall*glBlendFuncSeparate)(GLenum,GLenum);
 extern void(__stdcall*glBlendColor)(GLclampf,GLclampf,GLclampf,GLclampf);
 #endif
-/*:116*//*129:*/
-#line 2889 "weaver-window.tex"
+/*:116*//*120:*/
+#line 2605 "weaver-window.tex"
+
+#if defined(_WIN32)
+extern void(__stdcall*glStencilMaskSeparate)(GLenum,unsigned int);
+extern void(__stdcall*glClearDepthf)(GLclampf);
+#endif
+/*:120*//*132:*/
+#line 2941 "weaver-window.tex"
 
 extern struct __Wkeyboard{
 long key[W_KEYBOARD_SIZE+1];
 }_Wkeyboard;
-/*:129*//*131:*/
-#line 2936 "weaver-window.tex"
+/*:132*//*134:*/
+#line 2988 "weaver-window.tex"
 
 extern struct __Wmouse{
 long button[W_MOUSE_SIZE];
 int x,y,dx,dy,ddx,ddy;
 }_Wmouse;
-/*:131*//*143:*/
-#line 3203 "weaver-window.tex"
+/*:134*//*146:*/
+#line 3255 "weaver-window.tex"
 
 extern int W_BACKSPACE,W_TAB,W_ENTER,W_UP,W_DOWN,W_LEFT,W_RIGHT,W_0,W_1,
 W_2,W_3,W_4,W_5,W_6,W_7,W_8,W_9,W_MINUS,W_PLUS,W_F1,W_F2,
@@ -549,7 +556,7 @@ W_RIGHT_CTRL,W_SPACE,W_A,W_B,W_C,W_D,W_E,W_F,W_G,W_H,W_I,
 W_J,W_K,W_L,W_M,W_N,W_O,W_P,W_Q,W_R,W_S,W_T,W_U,W_V,W_W,
 X_X,W_Y,W_Z,W_INSERT,W_HOME,W_PAGE_UP,W_DELETE,W_END,
 W_PAGE_DOWN,W_ESC,W_ANY;
-/*:143*/
+/*:146*/
 #line 118 "weaver-window.tex"
 
 #ifdef __cplusplus

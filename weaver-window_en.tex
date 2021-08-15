@@ -2494,6 +2494,34 @@ void (__stdcall *glBlendColor)(GLclampf, GLclampf, GLclampf, GLclampf);
 @
 \fimcodigo
 
+And their initialization:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glSampleCoverage = (void (__stdcall *)(GLclampf, bool))
+                        load_function("glSampleCoverage");
+if(glSampleCoverage == NULL) return false;
+glStencilFuncSeparate = (void (__stdcall *)(GLenum, GLenum, int, unsigned int))
+                           load_function("glStencilFuncSeparate");
+if(glStencilFuncSeparate == NULL) return false;
+glStencilOpSeparate = (void (__stdcall *)(GLenum, GLenum, GLenum, GLenum))
+                         load_function("glStencilOpSeparate");
+if(glStencilOpSeparate == NULL) return false;
+glBlendEquation = (void (__stdcall *)(GLenum)) load_function("glBlendEquation");
+if(glBlendEquation == NULL) return false;
+glBlendEquationSeparate = (void (__stdcall *)(GLenum, GLenum))
+                            load_function("glBlendEquationSeparate");
+if(glBlendEquationSeparate == NULL) return false;
+glBlendFuncSeparate = (void (__stdcall *)(GLenum, GLenum))
+                        load_function("glBlendFuncSeparate");
+if(glBlendFuncSeparate == NULL) return false;
+glBlendColor = (void (__stdcall *)(GLclampf, GLclampf, GLclampf, GLclampf))
+                   load_function("glBlendColor");
+if(glBlendColor == NULL) return false;
+@
+\fimcodigo
+
+
 The use of the above functions require the following macros to be used
 as enumerations:
 
