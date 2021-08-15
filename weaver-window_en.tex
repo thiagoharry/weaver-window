@@ -2349,7 +2349,7 @@ and can get screenshots is:
 \iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
-extern void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+extern void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
                                       void *);
 #endif
 @
@@ -2360,7 +2360,7 @@ The function declaration:
 \iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
-void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
                                void *);
 #endif
 @
@@ -2370,9 +2370,9 @@ And its initialization:
 
 \iniciocodigo
 @<Windows: Configure OpenGL@>+=
-glReadPexels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
-                               void *)) load_function("glReadPexels");
-if(glReadPexels == NULL) return false;
+glReadPixels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+                               void *)) load_function("glReadPixels");
+if(glReadPixels == NULL) return false;
 @
 \fimcodigo
 

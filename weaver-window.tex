@@ -2379,7 +2379,7 @@ sendo exibido na tela é:
 \iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
-extern void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+extern void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
                                       void *);
 #endif
 @
@@ -2390,7 +2390,7 @@ Sua declaração:
 \iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
-void (__stdcall *glReadPexels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+void (__stdcall *glReadPixels)(int, int, GLsizei, GLsizei, GLenum, GLenum,
                                void *);
 #endif
 @
@@ -2400,7 +2400,7 @@ E inicialização:
 
 \iniciocodigo
 @<Windows: Configurar OpenGL@>+=
-glReadPexels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
+glReadPixels = (void (__stdcall *)(int, int, GLsizei, GLsizei, GLenum, GLenum,
                                void *)) load_function("glReadPexels");
 if(glReadPexels == NULL) return false;
 @

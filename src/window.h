@@ -510,7 +510,7 @@ extern void(__stdcall*glDepthRangef)(GLclampf,GLclampf);
 #line 2380 "weaver-window.tex"
 
 #if defined(_WIN32)
-extern void(__stdcall*glReadPexels)(int,int,GLsizei,GLsizei,GLenum,GLenum,
+extern void(__stdcall*glReadPixels)(int,int,GLsizei,GLsizei,GLenum,GLenum,
 void*);
 #endif
 /*:112*//*116:*/

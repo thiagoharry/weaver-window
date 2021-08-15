@@ -202,7 +202,7 @@ void(__stdcall*glDepthRangef)(GLclampf,GLclampf);
 #line 2391 "weaver-window.tex"
 
 #if defined(_WIN32)
-void(__stdcall*glReadPexels)(int,int,GLsizei,GLsizei,GLenum,GLenum,
+void(__stdcall*glReadPixels)(int,int,GLsizei,GLsizei,GLenum,GLenum,
 void*);
 #endif
 /*:113*//*117:*/
@@ -1199,7 +1199,7 @@ if(glDepthRangef==NULL)return false;
 /*:110*//*114:*/
 #line 2402 "weaver-window.tex"
 
-glReadPexels= (void(__stdcall*)(int,int,GLsizei,GLsizei,GLenum,GLenum,
+glReadPixels= (void(__stdcall*)(int,int,GLsizei,GLsizei,GLenum,GLenum,
 void*))load_function("glReadPexels");
 if(glReadPexels==NULL)return false;
 /*:114*//*118:*/
