@@ -195,27 +195,62 @@ typedef float GLclampf;
 #line 2477 "weaver-window.tex"
 
 #if defined(_WIN32)
-#define GL_RGB                         0x1907
-#define GL_ALPHA                       0x1906
-#define GL_LUMINANCE                   0x1909
-#define GL_TEXTURE_2D                  0x0DE1
-#define GL_TEXTURE_WRAP_S              0x2802
-#define GL_TEXTURE_WRAP_T              0x2803
-#define GL_LUMINANCE_ALPHA             0x190A
-#define GL_TEXTURE_MAG_FILTER          0x2800
-#define GL_TEXTURE_MIN_FILTER          0x2801
-#define GL_UNSIGNED_SHORT_5_6_5        0x8363
-#define GL_UNSIGNED_SHORT_4_4_4_4      0x8033
-#define GL_UNSIGNED_SHORT_5_5_5_1      0x8034
-#define GL_TEXTURE_CUBE_MAP_POSITIVE_X 0x8515
-#define GL_TEXTURE_CUBE_MAP_POSITIVE_Y 0x8517
-#define GL_TEXTURE_CUBE_MAP_POSITIVE_Z 0x8519
-#define GL_TEXTURE_CUBE_MAP_NEGATIVE_X 0x8516
-#define GL_TEXTURE_CUBE_MAP_NEGATIVE_Y 0x8518
-#define GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 0x851A
+#define GL_RGB                              0x1907
+#define GL_ALPHA                            0x1906
+#define GL_LUMINANCE                        0x1909
+#define GL_TEXTURE0                         0x84C0
+#define GL_TEXTURE1                         0x84C1
+#define GL_TEXTURE2                         0x84C2
+#define GL_TEXTURE3                         0x84C3
+#define GL_TEXTURE4                         0x84C4
+#define GL_TEXTURE5                         0x84C5
+#define GL_TEXTURE6                         0x84C6
+#define GL_TEXTURE7                         0x84C7
+#define GL_TEXTURE8                         0x84C8
+#define GL_TEXTURE9                         0x84C9
+#define GL_TEXTURE10                        0x84CA
+#define GL_TEXTURE11                        0x84CB
+#define GL_TEXTURE12                        0x84CC
+#define GL_TEXTURE13                        0x84CD
+#define GL_TEXTURE14                        0x84CE
+#define GL_TEXTURE15                        0x84CF
+#define GL_TEXTURE16                        0x84D0
+#define GL_TEXTURE17                        0x84D1
+#define GL_TEXTURE18                        0x84D2
+#define GL_TEXTURE19                        0x84D3
+#define GL_TEXTURE20                        0x84D4
+#define GL_TEXTURE21                        0x84D5
+#define GL_TEXTURE22                        0x84D6
+#define GL_TEXTURE23                        0x84D7
+#define GL_TEXTURE24                        0x84D8
+#define GL_TEXTURE25                        0x84D9
+#define GL_TEXTURE26                        0x84DA
+#define GL_TEXTURE27                        0x84DB
+#define GL_TEXTURE28                        0x84DC
+#define GL_TEXTURE29                        0x84DD
+#define GL_TEXTURE30                        0x84DE
+#define GL_TEXTURE31                        0x84DF
+#define GL_TEXTURE_2D                       0x0DE1
+#define GL_TEXTURE_WRAP_S                   0x2802
+#define GL_TEXTURE_WRAP_T                   0x2803
+#define GL_LUMINANCE_ALPHA                  0x190A
+#define GL_TEXTURE_MAG_FILTER               0x2800
+#define GL_TEXTURE_MIN_FILTER               0x2801
+#define GL_UNSIGNED_SHORT_5_6_5             0x8363
+#define GL_UNSIGNED_SHORT_4_4_4_4           0x8033
+#define GL_UNSIGNED_SHORT_5_5_5_1           0x8034
+#define GL_MAX_TEXTURE_IMAGE_UNITS          16
+#define GL_TEXTURE_CUBE_MAP_POSITIVE_X      0x8515
+#define GL_TEXTURE_CUBE_MAP_POSITIVE_Y      0x8517
+#define GL_TEXTURE_CUBE_MAP_POSITIVE_Z      0x8519
+#define GL_TEXTURE_CUBE_MAP_NEGATIVE_X      0x8516
+#define GL_TEXTURE_CUBE_MAP_NEGATIVE_Y      0x8518
+#define GL_TEXTURE_CUBE_MAP_NEGATIVE_Z      0x851A
+#define GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS   16
+#define GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS 80
 #endif
 /*:119*//*122:*/
-#line 2540 "weaver-window.tex"
+#line 2575 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define GL_ONE                      1
@@ -256,25 +291,25 @@ typedef float GLclampf;
 #define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
 #endif
 /*:122*//*143:*/
-#line 3100 "weaver-window.tex"
+#line 3135 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE 256
 #endif
 /*:143*//*149:*/
-#line 3271 "weaver-window.tex"
+#line 3306 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
 /*:149*//*153:*/
-#line 3384 "weaver-window.tex"
+#line 3419 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
 /*:153*//*165:*/
-#line 3698 "weaver-window.tex"
+#line 3733 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -285,7 +320,7 @@ typedef float GLclampf;
 #define W_MOUSE_X2     Button5
 #endif
 /*:165*//*170:*/
-#line 3790 "weaver-window.tex"
+#line 3825 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -296,7 +331,7 @@ typedef float GLclampf;
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
 /*:170*//*175:*/
-#line 3865 "weaver-window.tex"
+#line 3900 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -491,7 +526,7 @@ void*);
 extern void(__stdcall*glGenerateMipmap)(GLenum);
 #endif
 /*:116*//*120:*/
-#line 2507 "weaver-window.tex"
+#line 2542 "weaver-window.tex"
 
 #if defined(_WIN32)
 extern void(__stdcall*glSampleCoverage)(GLclampf,bool);
@@ -503,20 +538,20 @@ extern void(__stdcall*glBlendFuncSeparate)(GLenum,GLenum);
 extern void(__stdcall*glBlendColor)(GLclampf,GLclampf,GLclampf,GLclampf);
 #endif
 /*:120*//*133:*/
-#line 2898 "weaver-window.tex"
+#line 2933 "weaver-window.tex"
 
 extern struct __Wkeyboard{
 long key[W_KEYBOARD_SIZE+1];
 }_Wkeyboard;
 /*:133*//*135:*/
-#line 2945 "weaver-window.tex"
+#line 2980 "weaver-window.tex"
 
 extern struct __Wmouse{
 long button[W_MOUSE_SIZE];
 int x,y,dx,dy,ddx,ddy;
 }_Wmouse;
 /*:135*//*147:*/
-#line 3212 "weaver-window.tex"
+#line 3247 "weaver-window.tex"
 
 extern int W_BACKSPACE,W_TAB,W_ENTER,W_UP,W_DOWN,W_LEFT,W_RIGHT,W_0,W_1,
 W_2,W_3,W_4,W_5,W_6,W_7,W_8,W_9,W_MINUS,W_PLUS,W_F1,W_F2,

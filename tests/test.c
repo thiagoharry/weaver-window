@@ -115,15 +115,18 @@ void test_opengl_simple(void){
   memcpy(message, "Getting OpenGL Vendor: ", 24);
   memcpy(&(message[23]), vendor, strlen((const char *) vendor) + 1);
   assert(message, glGetError() == GL_NO_ERROR);
-  sprintf(message, "Textures per vertex shader: %d",
-	  GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-  assert(message, true);
-  sprintf(message, "Textures per fragment shader: %d",
-	  GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-  assert(message, true);
-  sprintf(message, "Max active textures: %d",
-	  GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
-  assert(message, true);
+  {
+    int count;
+    glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &count);
+    sprintf(message, "Textures per vertex shader: %d", count);
+    assert(message, glGetError() == GL_NO_ERROR);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &count);
+    sprintf(message, "Textures per fragment shader: %d", count);
+    assert(message, glGetError() == GL_NO_ERROR);
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &count);
+    sprintf(message, "Max active textures: %d", count);
+    assert(message, glGetError() == GL_NO_ERROR);
+  }
   current_time = initial_time = time(NULL);
   while(current_time < initial_time + 2){
     glClearColor(1.0, 0.5, 0.5, 1.0);
