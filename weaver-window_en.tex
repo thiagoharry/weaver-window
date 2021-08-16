@@ -2568,6 +2568,179 @@ as enumerations:
 @
 \fimcodigo
 
+About the functions that affect all the framebuffer, we have 2
+functions to prepare:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
+extern void (__stdcall *glClearDepthf)(GLclampf);
+#endif
+@
+\fimcodigo
+
+And their declarations in \monoespaco{window.c}:
+
+\iniciocodigo
+@<Global Variables@>+=
+#if defined(_WIN32)
+void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
+void (__stdcall *glClearDepthf)(GLclampf);
+#endif
+@
+\fimcodigo
+
+The initialization:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glStencilMaskSeparate = (void (__stdcall *)(GLenum, unsigned int))
+                            load_function("glStencilMaskSeparate");
+if(glStencilMaskSeparate == NULL) return false;
+glClearDepthf = (void (__stdcall *)(GLclampf)) load_function("glClearDepthf");
+if(glClearDepthf == NULL) return false;
+@
+\fimcodigo
+
+The last set of functions that we must prepare are the ones that
+manage framebuffer objects:
+
+\iniciocodigo
+@<Window Declarations@>+=
+#if defined(_WIN32)
+extern void (__stdcall *glBindFramefuffer)(GLenum, unsigned int);
+extern void (__stdcall *glDeleteFramebuffers)(GLsizei, unsigned int *);
+extern void (__stdcall *glGenFramebuffers)(GLsizei, unsigned int *);
+extern void (__stdcall *glBindRenderbuffer)(GLenum, unsigned int);
+extern void (__stdcall *glDeleteRenderbuffers)(GLsizei, const unsigned int *);
+extern void (__stdcall *glGenRenderbuffers)(GLsizei, unsigned int *);
+extern void (__stdcall *glRenderbufferStorage)(GLenum, GLenum, GLsizei, GLsizei);
+extern void (__stdcall *glFramebufferRenderbuffer)(GLenum, GLenum, GLenum,
+                                                   unsigned int);
+extern void (__stdcall *glFramebufferTexture2D)(GLenum, GLenum, GLenum,
+                                                unsigned int, int);
+extern void (__stdcall *glCheckFramebufferStatus)(GLenum);
+extern boolean (__stdcall *glIsFrabuffer)(unsigned int);
+extern void (__stdcall *glGetFramebufferAttachmentParameteriv)(GLenum, GLenum,
+                                                               GLenum, int *);
+extern boolean (__stdcall *glIsRenderbuffer)(unsigned int);
+extern void (__stdcall *glGetRenderbufferParameteriv)(GLenum, GLenum, int *);
+#endif
+@
+\fimcodigo
+
+We declare these 14 functions also in \monoespaco{window.c}:
+
+\iniciocodigo
+@<Global Variables@>+=
+#if defined(_WIN32)
+void (__stdcall *glBindFramefuffer)(GLenum, unsigned int);
+void (__stdcall *glDeleteFramebuffers)(GLsizei, unsigned int *);
+void (__stdcall *glGenFramebuffers)(GLsizei, unsigned int *);
+void (__stdcall *glBindRenderbuffer)(GLenum, unsigned int);
+void (__stdcall *glDeleteRenderbuffers)(GLsizei, const unsigned int *);
+void (__stdcall *glGenRenderbuffers)(GLsizei, unsigned int *);
+void (__stdcall *glRenderbufferStorage)(GLenum, GLenum, GLsizei, GLsizei);
+void (__stdcall *glFramebufferRenderbuffer)(GLenum, GLenum, GLenum,
+                                            unsigned int);
+void (__stdcall *glFramebufferTexture2D)(GLenum, GLenum, GLenum,
+                                         unsigned int, int);
+void (__stdcall *glCheckFramebufferStatus)(GLenum);
+boolean (__stdcall *glIsFrabuffer)(unsigned int);
+void (__stdcall *glGetFramebufferAttachmentParameteriv)(GLenum, GLenum,
+                                                        GLenum, int *);
+boolean (__stdcall *glIsRenderbuffer)(unsigned int);
+void (__stdcall *glGetRenderbufferParameteriv)(GLenum, GLenum, int *);
+#endif
+@
+\fimcodigo
+
+And the initialization:
+
+\iniciocodigo
+@<Windows: Configure OpenGL@>+=
+glBindFramefuffer = (void (__stdcall *)(GLenum, unsigned int))
+                       load_function("glBindFramefuffer");
+if(glBindFramefuffer == NULL) return false;
+glDeleteFramebuffers = (void (__stdcall *)(GLsizei, unsigned int *))
+                           load_function("glDeleteFramebuffers");
+if(glDeleteFramebuffers == NULL) return false;
+glGenFramebuffers = (void (__stdcall *)(GLsizei, unsigned int *))
+                       load_function("glGenFramebuffers");
+if(glGenFramebuffers == NULL) return false;
+glBindRenderbuffer = (void (__stdcall *)(GLenum, unsigned int))
+                         load_function("glBindRenderbuffer");
+if(glBindRenderbuffer == NULL) return false;
+glDeleteRenderbuffers = (void (__stdcall *)(GLsizei, const unsigned int *))
+                           load_function("glDeleteRenderbuffers");
+if(glDeleteRenderbuffers == NULL) return false;
+glGenRenderbuffers = (void (__stdcall *)(GLsizei, unsigned int *))
+                         load_function("glGenRenderbuffers");
+if(glGenRenderbuffers == NULL) return false;
+glRenderbufferStorage = (void (__stdcall *)(GLenum, GLenum, GLsizei, GLsizei))
+                           load_function("glRenderbufferStorage");
+if(glRenderbufferStorage == NULL) return false;
+glFramebufferRenderbuffer = (void (__stdcall *)(GLenum, GLenum, GLenum,
+                                                unsigned int))
+                              load_function("glFramebufferRenderbuffer");
+if(glFramebufferRenderbuffer == NULL) return false;
+glFramebufferTexture2D = (void (__stdcall *)(GLenum, GLenum, GLenum,
+                                             unsigned int, int))
+                            load_function("glFramebufferTexture2D");
+if(glFramebufferTexture2D == NULL) return false;
+glCheckFramebufferStatus = (void (__stdcall *)(GLenum))
+                               load_function("glCheckFramebufferStatus");
+if(glCheckFramebufferStatus == NULL) return false;
+glIsFrabuffer = (boolean (__stdcall *)(unsigned int))
+                   load_function("glIsFrabuffer");
+if(glIsFrabuffer == NULL) return false;
+glGetFramebufferAttachmentParameteriv = (void (__stdcall *)(GLenum, GLenum,
+                                                            GLenum, int *))
+                        load_function("glGetFramebufferAttachmentParameteriv");
+if(glGetFramebufferAttachmentParameteriv == NULL) return false;
+glIsRenderbuffer = (boolean (__stdcall *)(unsigned int))
+                       load_function("glIsRenderbuffer");
+if(glIsRenderbuffer == NULL) return false;
+glGetRenderbufferParameteriv = (void (__stdcall *)(GLenum, GLenum, int *))
+                                  load_function("glGetRenderbufferParameteriv");
+if(glGetRenderbufferParameteriv == NULL) return false;
+@
+\fimcodigo
+
+The necessary macros to use these functions are:
+
+\iniciocodigo
+@<Macro Definition@>+=
+#if defined(_WIN32)
+#define GL_RGBA4                                        0x8056
+#define GL_RGB565                                       0x8D62
+#define GL_RGB5_A1                                      0x8057
+#define GL_FRAMEBUFFER                                  0x8D40
+#define GL_RENDERBUFFER                                 0x8D41
+#define GL_STENCIL_INDEX8                               0x8D48
+#define GL_DEPTH_ATTACHMENT                             0x8D00
+#define GL_DEPTH_COMPONENT16                            0x81A5
+#define GL_COLOR_ATTACHMENT0                            0x8CE0
+#define GL_STENCIL_ATTACHMENT                           0x8D20
+#define GL_RENDERBUFFER_WIDTH                           0x8D42
+#define GL_RENDERBUFFER_HEIGHT                          0x8D43
+#define GL_FRAMEBUFFER_COMPLETE                         0x8CD5
+#define GL_RENDERBUFFER_RED_SIZE                        0x8D50
+#define GL_RENDERBUFFER_BLUE_SIZE                       0x8D52
+#define GL_RENDERBUFFER_GREEN_SIZE                      0x8D51
+#define GL_RENDERBUFFER_ALPHA_SIZE                      0x8D53
+#define GL_RENDERBUFFER_DEPTH_SIZE                      0x8D54
+#define GL_RENDERBUFFER_STENCIL_SIZE                    0x8D55
+#define GL_RENDERBUFFER_INTERNAL_FORMAT                 0x8D44
+#define GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE           0x8CD0
+#define GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME           0x8CD1
+#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL         0x8CD2
+#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE 0x8CD3
+#endif
+@
+\fimcodigo
+
 
 \subsubsecao{2.3.4. Choosing OpenGL Version}
 
