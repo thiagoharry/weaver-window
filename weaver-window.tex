@@ -50,8 +50,8 @@
 \abstract{This article contains the implementation of a portable
   Windowing API, which can be used to create a single window in
   Windows, Linux, BSD, or a canvas in Web Assembly running in a web
-  browser. You can set a fullscreen mode, change the resolution in the
-  window, resize it, use OpenGL commands and get input from mouse and
+  browser. You can set a fullscreen mode, change to windowed mode,
+  resize it, use OpenGL commands and get input from mouse and
   keyboard. All this can be achieved by the portable API defined in
   this work.}
 
@@ -62,7 +62,7 @@
   janelas. Ela pode ser usada para criar uma única janela no Windows,
   Linux, BSD, ou então um ``canvas'' rodando Web Assembly em um
   navegador de Internet. Você pode ativar um modo de tela cheia, mudar
-  a resolução da janela, mudar o tamanho da janela, usar comandos
+  para um modo em janela, mudar o tamanho da janela, usar comandos
   OpenGL e obter entrada do mouse e teclado. Tudo isso pode ser obtido
   pela interface de aplicação portável definida neste trabalho.}
 
@@ -80,11 +80,8 @@ pode desenhar na região.
 
 Além de criar uma janela, é importante que tenhamos a capacidade de
 entrar e sair do modo tela-cheia se estivermos em ambiente que permite
-isso. E também modificar o tamanho em pixels da nossa janela. Fazer
-isso em modo de tela-cheia muda a resolução da tela. Já fora da tela
-cheia, o efeito é o de redimencionar a janela. Isso é importanto, pois
-dependendo dos efeitos visuais usados, pode ser necessário diminuir a
-quantidade de pixels desenhados por questões de performance.
+isso. E se estivermos em modo de janela, mudar o tamanho da
+janela.
 
 \subsecao{1.1. Programação Literária e Notação}
 
@@ -263,19 +260,20 @@ tela e da janela. Se estivermos iniciando em modo de tela cheia, este
 será o tamanho da nossa janela. Isso é feito de maneira diferente
 dependendo do sistema operacional.
 
-Vamos também criar variáveis estáticas que irão nos ajudar a memorizar
-qual o tamanho atual da nossa janela (não da tela inteira) e sua
-resolução. Essa informação será útil futuramente, pois usá-la é
-importante para tratar corretamente as coordenadas de nossa
-janela. Esse valor será apenas usado internamente. Se o usuário
-perguntar por meio de alguma função da API qual o tamanho da janela,
-ao invés de usar o valor memorizado, iremos verificar o valor atual na
-hora e atualizar com base nisso o valor memorizado:
+Vamos também criar uma variável estática que funcionará como um cache
+que memorizará o último tamanho da janela em pixels que
+obtemos. Memorizar o tamanho da janela é importante porque precisamos
+deste valor para depois transformar as coordenadas da posição do mouse
+que iremos medir. Praticamente todos os ambientes informam as
+coordenadas na janela usando como origem o canto superior
+esquerdo. Contudo, a API Weaver prefere usar como origem o canto
+inferior esquerdo para estar mais de acordo com a convenção
+matemática. Para fazer a transformação de coordenada, é importante
+memorizar o tamanho da janela para não termos que medi-la toda hora:
 
 \iniciocodigo
 @<Variáveis Locais@>=
-static int window_size_x = 0, window_size_y = 0, window_resolution_x = 0,
-           window_resolution_y = 0;
+static int window_size_y = 0;
 @
 \fimcodigo
 
@@ -423,7 +421,7 @@ servidor nos revela várias informações relevantes sobre a tela.
 seja criada. Em princípio criaremos uma janela com o máximo de tamanho
 permitido dada a resolução da tela.
 
-4. Memorizamos os valores iniciais de resolução e tamanho da janela.
+4. Memorizamos o valor inicial da altura da janela.
 
 Estes passos são implementados por meio das seguintes funções e
 macros:
@@ -453,8 +451,7 @@ window = XCreateSimpleWindow(display, // Conexão com o X11
                              0, 0, // Espessura e cor da borda
                              0); // Cor padrão da janela
 /* Passo 4: */
-window_size_x = window_resolution_x = screen_resolution_x;
-window_size_y = window_resolution_y = screen_resolution_y;
+window_size_y =  screen_resolution_y;
 #endif
 @
 \fimcodigo
@@ -511,6 +508,7 @@ janela. Mas isso só se aplica quando não estamos em tela cheia:
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_NO_FULLSCREEN)
 {
+  int window_size_x;
 #if W_WINDOW_SIZE_X > 0
   window_size_x = W_WINDOW_SIZE_X;
 #else
@@ -521,8 +519,6 @@ janela. Mas isso só se aplica quando não estamos em tela cheia:
 #else
   window_size_y = screen_resolution_y;
 #endif
-  window_resolution_x = window_size_x;
-  window_resolution_y = window_size_y;
   XResizeWindow(display, window, window_size_x, window_size_y);  
 }
 #endif
@@ -709,8 +705,8 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
 @<Web Assembly: Criar Janela@>+=
 #if defined(__EMSCRIPTEN__)
 {
+  int window_size_x = screen_resolution_x;
   int fullscreen_flag = SDL_WINDOW_FULLSCREEN;
-  window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
   fullscreen_flag = 0;
@@ -721,8 +717,6 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
   window_size_y = W_Window_Size_Y;
 #endif
 #endif
-  window_resolution_x = window_size_x;
-  window_resolution_y = window_size_y;
   // Ajusta versão do OpenGL
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
                      W_WINDOW_OPENGL_MAJOR_VERSION);
@@ -887,7 +881,7 @@ abaixo:
 {
   DWORD fullscreen_flag = WS_POPUP;
   RECT size;
-  window_size_x = screen_resolution_x;
+  int window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
 #if defined(W_WINDOW_NO_FULLSCREEN)
@@ -901,8 +895,6 @@ abaixo:
   window_size_y = W_WINDOW_SIZE_Y;
 #endif
 #endif
-  window_resolution_x = window_size_x;
-  window_resolution_y = window_size_y;
   window = CreateWindowEx(0, class_name,
                           W_WINDOW_NAME,
                           fullscreen_flag | WS_VISIBLE,
@@ -2998,7 +2990,6 @@ bool _Wget_window_size(int *width, int *height){
   }
   XGetGeometry(display, window, &root_window, &x, &y,
                (unsigned int *) width, (unsigned int *) height, &border, &depth);
-  window_size_x = *width;
   window_size_y = *height;
   return true;
 }
@@ -3029,7 +3020,6 @@ bool _Wget_window_size(int *width, int *height){
   *height = EM_ASM_INT({
     return document.getElementById("canvas").clientHeight;
   });
-  window_size_x = *width;
   window_size_y = *height;
   if(*width > 0 && *height > 0)
     return true;
@@ -3059,7 +3049,6 @@ bool _Wget_window_size(int *width, int *height){
   if(ret){
     *width = rectangle.right - rectangle.left;
     *height = rectangle.bottom - rectangle.top;
-    window_size_x = *width;
     window_size_y = *height;
     return true;
   }
@@ -4279,18 +4268,11 @@ E agora mostramos o código para atualizar a posição do mouse, bem como
 sua velocidade e aceleração (a depender do quanto avançamos na
 inicialização do mouse). Nós rodamos este código ao detectar o
 movimento do mouse e também quando lemos pela primeira vez a posição
-inicial do mouse. Como devemos armazena a posição levando em conta o
-pixel na tela, precismos fazer a transformação adequada na coordenada
-$x$ e $y$ levando em conta que nossa janela pode ter uma resolução
-diferente de seu tamanho. Por exemplo, se estivermos rodando em tela
-cheia, mas com uma resolução reduzida. É por isso que começamos
-fazendo a transformação na coordenada nas duas primeiras linhas:
+inicial do mouse.
 
 \iniciocodigo
 @<Atualiza Posição do Mouse 'x' e 'y'@>=
 {
-  x = x / ((float) window_resolution_x / (float) window_size_x);
-  y = y / ((float) window_resolution_y / (float) window_size_y);
   if(mouse_initialization < 3){ // Se sabemos a posição prévia
     _Wmouse.dx = (x - _Wmouse.x);
     _Wmouse.dy = (y - _Wmouse.y);

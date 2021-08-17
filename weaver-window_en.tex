@@ -51,8 +51,8 @@
 \abstract{This article contains the implementation of a portable
   Windowing API, which can be used to create a single window in
   Windows, Linux, BSD, or a canvas in Web Assembly running in a web
-  browser. You can set a fullscreen mode, change the resolution in the
-  window, resize it, use OpenGL commands and get input from mouse and
+  browser. You can set a fullscreen mode, change to a windowed mode,
+  resize it, use OpenGL commands and get input from mouse and
   keyboard. All this can be achieved by the portable API defined in
   this work.}
 
@@ -67,12 +67,10 @@ for the creation of some region called ``window''. There the program
 have control over the content and can draw freely.
 
 Besides creating the window, it is also important to have control if
-we are in full-screen or not if we are in an environment that allows
-this. And also change the size of our window in pixels. If we are in
-fullscreen mode, this means changing the resolution of the
-screen. Otherwise, this means changing the window size. This is
-important because depending on the used visual effects, we could need
-to draw less pixels in the screen for performance reasons.
+we are in fullscreen mode or not if we are in an environment that
+allows this. And if possible, toggle between fullscreen and windowed
+mode. If we are in windowed mode, we also should be able to change
+window size.
 
 \subsecao{1.1. Literary Programming and Notation}
 
@@ -245,19 +243,19 @@ window and screen resolution. If we are running in fullscreen mode,
 this will be our window size. This is accomplished differently
 accordig with the operating system.
 
-We will also create static variables to store our window size (not the
-entire screen size) and resolution. This information will be useful in
-the future to treat correctly data about window coordinates. These
-values will be used only internally. If the user asks what is the
-window size callig a function, we should read again the value, noting
-if the value changed somehow. But for some internal operations, it
-would be cumbersome to recompute this value all the time, when it is
-not expected that such values change frequently.
+We will also create a static variable that will act as a cache that
+memorizes the window height in pixels. Storing this value is useful
+because futurely we will need to transform the mouse position
+coordinates. Practically all environments inform coordinates in a
+window using as origin the upper left corner. However, in Weaver API,
+we prefer to use the more standard convention from mathematics, where
+the origin usually is the lower left corner. To transform coordinates
+according with our convention, it is important to memorize the window
+height, so that we do not need to measure it all the time:
 
 \iniciocodigo
 @<Local Variables@>+=
-static int window_size_x = 0, window_size_y = 0, window_resolution_x = 0,
-           window_resolution_y = 0;
+static int window_size_y = 0;
 @
 \fimcodigo
 
@@ -404,7 +402,7 @@ response a list of relevant information about the screen.
 window. We will do it in the default screen, The window size will be
 the greatest value allowed given the screen resolution.
 
-4. We update the initial values for our window size and resolution
+4. We memorize the initial value for our window height.
 
 The above steps are implemented using the functions and macros below:
 
@@ -433,8 +431,7 @@ window = XCreateSimpleWindow(display, // X11 connection
                              0, 0, // Border width and color
                              0); // Default window color
 /* Step 4: */
-window_size_x = window_resolution_x = screen_resolution_x;
-window_size_y = window_resolution_y = screen_resolution_y;
+window_size_y = screen_resolution_y;
 #endif
 @
 \fimcodigo
@@ -492,6 +489,7 @@ outside fullscreen mode:
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #if defined(W_WINDOW_NO_FULLSCREEN)
 {
+  int window_size_x;
 #if W_WINDOW_SIZE_X > 0
   window_size_x = W_WINDOW_SIZE_X;
 #else
@@ -502,8 +500,6 @@ outside fullscreen mode:
 #else
   window_size_y = screen_resolution_y;
 #endif
-  window_resolution_x = window_size_x;
-  window_resolution_y = window_size_y;
   XResizeWindow(display, window, window_size_x, window_size_y);
 }
 #endif
@@ -686,9 +682,9 @@ when we execute the function to close the window).
 @<Web Assembly: Create Window@>+=
 #if defined(__EMSCRIPTEN__)
 {
+  int window_size_x = screen_resolution;
   int fullscreen_flag = SDL_WINDOW_FULLSCREEN;
-  window_size_x = screen_resolution_x;
-  window_resolution_y = window_size_y = screen_resolution_y;
+  window_size_y = screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
   fullscreen_flag = 0;
 #if defined(W_WINDOW_SIZE_X) && W_Window_Size_X > 0
@@ -698,8 +694,6 @@ when we execute the function to close the window).
   window_size_y = W_Window_Size_Y;
 #endif
 #endif
-  window_resolution_x = window_size_x;
-  window_resolution_y = window_size_y;
   // Ajusta versão do OpenGL
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
                      W_WINDOW_OPENGL_MAJOR_VERSION);
@@ -861,7 +855,7 @@ code below:
 {
   DWORD fullscreen_flag = WS_POPUP;
   RECT size;
-  window_size_x = screen_resolution_x;
+  int window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
 #if defined(W_WINDOW_NO_FULLSCREEN)
@@ -875,8 +869,6 @@ code below:
   window_size_y = W_WINDOW_SIZE_Y;
 #endif
 #endif
-  window_resolution_x = window_size_x;
-  window_resolution_y = window_size_y;
   window = CreateWindowEx(0, class_name,
                           W_WINDOW_NAME,
                           fullscreen_flag | WS_VISIBLE,
@@ -2968,7 +2960,6 @@ bool _Wget_window_size(int *width, int *height){
   }
   XGetGeometry(display, window, &root_window, &x, &y,
                (unsigned int *) width, (unsigned int *) height, &border, &depth);
-  window_size_x = *width;
   window_size_y = *height;
   return true;
 }
@@ -2998,7 +2989,6 @@ bool _Wget_window_size(int *width, int *height){
   *height = EM_ASM_INT({
     return document.getElementById("canvas").clientHeight;
   });
-  window_size_x = *width;
   window_size_y = *height;
   if(*width > 0 && *height > 0)
     return true;
@@ -3027,7 +3017,6 @@ bool _Wget_window_size(int *width, int *height){
   if(ret){
     *width = rectangle.right - rectangle.left;
     *height = rectangle.bottom - rectangle.top;
-    window_size_x = *width;
     window_size_y = *height;
     return true;
   }
@@ -4211,18 +4200,11 @@ Now the code that update the mouse position, velocity and acceleration
 (depending on the state of mouse initialization). We run this code
 after we read a new $x$ and $y$ coordinate for the mouse when we
 detect a movement and also when we get these values for the first time
-during initialization. We represent mouse position in pixels, but we
-take in consideration that the window resolution could be different
-than the window size. Consider a full-screen window running in a
-resolution smaller than the screen. Because of this, we begin making a
-transformation in the coordinate taking in consideration the window
-size and resolution:
+during initialization.
 
 \iniciocodigo
 @<Update Mouse Position 'x' and 'y'@>=
 {
-  x = x / ((float) window_resolution_x / (float) window_size_x);
-  y = y / ((float) window_resolution_y / (float) window_size_y);
   if(mouse_initialization < 3){ // If we know previous position
     _Wmouse.dx = (x - _Wmouse.x);
     _Wmouse.dy = (y - _Wmouse.y);
