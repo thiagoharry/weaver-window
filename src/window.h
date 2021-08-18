@@ -565,7 +565,7 @@ extern void(__stdcall*glClearDepthf)(GLclampf);
 #line 2632 "weaver-window.tex"
 
 #if defined(_WIN32)
-extern void(__stdcall*glBindFramefuffer)(GLenum,unsigned int);
+extern void(__stdcall*glBindFramebuffer)(GLenum,unsigned int);
 extern void(__stdcall*glDeleteFramebuffers)(GLsizei,unsigned int*);
 extern void(__stdcall*glGenFramebuffers)(GLsizei,unsigned int*);
 extern void(__stdcall*glBindRenderbuffer)(GLenum,unsigned int);

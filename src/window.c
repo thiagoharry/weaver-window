@@ -233,7 +233,7 @@ void(__stdcall*glClearDepthf)(GLclampf);
 #line 2658 "weaver-window.tex"
 
 #if defined(_WIN32)
-void(__stdcall*glBindFramefuffer)(GLenum,unsigned int);
+void(__stdcall*glBindFramebuffer)(GLenum,unsigned int);
 void(__stdcall*glDeleteFramebuffers)(GLsizei,unsigned int*);
 void(__stdcall*glGenFramebuffers)(GLsizei,unsigned int*);
 void(__stdcall*glBindRenderbuffer)(GLenum,unsigned int);
@@ -1260,9 +1260,9 @@ if(glClearDepthf==NULL)return false;
 /*:122*//*125:*/
 #line 2684 "weaver-window.tex"
 
-glBindFramefuffer= (void(__stdcall*)(GLenum,unsigned int))
-load_function("glBindFramefuffer");
-if(glBindFramefuffer==NULL)return false;
+glBindFramebuffer= (void(__stdcall*)(GLenum,unsigned int))
+load_function("glBindFramebuffer");
+if(glBindFramebuffer==NULL)return false;
 glDeleteFramebuffers= (void(__stdcall*)(GLsizei,unsigned int*))
 load_function("glDeleteFramebuffers");
 if(glDeleteFramebuffers==NULL)return false;

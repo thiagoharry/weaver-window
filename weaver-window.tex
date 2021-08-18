@@ -2631,7 +2631,7 @@ objetos de framebufer:
 \iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
-extern void (__stdcall *glBindFramefuffer)(GLenum, unsigned int);
+extern void (__stdcall *glBindFramebuffer)(GLenum, unsigned int);
 extern void (__stdcall *glDeleteFramebuffers)(GLsizei, unsigned int *);
 extern void (__stdcall *glGenFramebuffers)(GLsizei, unsigned int *);
 extern void (__stdcall *glBindRenderbuffer)(GLenum, unsigned int);
@@ -2657,7 +2657,7 @@ A declaração destas 14 funções em \monoespaco{window.c}:
 \iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
-void (__stdcall *glBindFramefuffer)(GLenum, unsigned int);
+void (__stdcall *glBindFramebuffer)(GLenum, unsigned int);
 void (__stdcall *glDeleteFramebuffers)(GLsizei, unsigned int *);
 void (__stdcall *glGenFramebuffers)(GLsizei, unsigned int *);
 void (__stdcall *glBindRenderbuffer)(GLenum, unsigned int);
@@ -2682,9 +2682,9 @@ E a inicialização:
 
 \iniciocodigo
 @<Windows: Configurar OpenGL@>+=
-glBindFramefuffer = (void (__stdcall *)(GLenum, unsigned int))
-                       load_function("glBindFramefuffer");
-if(glBindFramefuffer == NULL) return false;
+glBindFramebuffer = (void (__stdcall *)(GLenum, unsigned int))
+                       load_function("glBindFramebuffer");
+if(glBindFramebuffer == NULL) return false;
 glDeleteFramebuffers = (void (__stdcall *)(GLsizei, unsigned int *))
                            load_function("glDeleteFramebuffers");
 if(glDeleteFramebuffers == NULL) return false;
