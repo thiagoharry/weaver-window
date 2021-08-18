@@ -245,7 +245,7 @@ unsigned int);
 void(__stdcall*glFramebufferTexture2D)(GLenum,GLenum,GLenum,
 unsigned int,int);
 void(__stdcall*glCheckFramebufferStatus)(GLenum);
-boolean(__stdcall*glIsFrabuffer)(unsigned int);
+boolean(__stdcall*glIsFramebuffer)(unsigned int);
 void(__stdcall*glGetFramebufferAttachmentParameteriv)(GLenum,GLenum,
 GLenum,int*);
 boolean(__stdcall*glIsRenderbuffer)(unsigned int);
@@ -1292,9 +1292,9 @@ if(glFramebufferTexture2D==NULL)return false;
 glCheckFramebufferStatus= (void(__stdcall*)(GLenum))
 load_function("glCheckFramebufferStatus");
 if(glCheckFramebufferStatus==NULL)return false;
-glIsFrabuffer= (boolean(__stdcall*)(unsigned int))
-load_function("glIsFrabuffer");
-if(glIsFrabuffer==NULL)return false;
+glIsFramebuffer= (boolean(__stdcall*)(unsigned int))
+load_function("glIsFramebuffer");
+if(glIsFramebuffer==NULL)return false;
 glGetFramebufferAttachmentParameteriv= (void(__stdcall*)(GLenum,GLenum,
 GLenum,int*))
 load_function("glGetFramebufferAttachmentParameteriv");

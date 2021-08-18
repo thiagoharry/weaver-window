@@ -2684,9 +2684,9 @@ if(glFramebufferTexture2D == NULL) return false;
 glCheckFramebufferStatus = (void (__stdcall *)(GLenum))
                                load_function("glCheckFramebufferStatus");
 if(glCheckFramebufferStatus == NULL) return false;
-glIsFrabuffer = (boolean (__stdcall *)(unsigned int))
-                   load_function("glIsFrabuffer");
-if(glIsFrabuffer == NULL) return false;
+glIsFramebuffer = (boolean (__stdcall *)(unsigned int))
+                   load_function("glIsFramebuffer");
+if(glIsFramebuffer == NULL) return false;
 glGetFramebufferAttachmentParameteriv = (void (__stdcall *)(GLenum, GLenum,
                                                             GLenum, int *))
                         load_function("glGetFramebufferAttachmentParameteriv");

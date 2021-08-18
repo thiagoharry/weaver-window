@@ -577,7 +577,7 @@ unsigned int);
 extern void(__stdcall*glFramebufferTexture2D)(GLenum,GLenum,GLenum,
 unsigned int,int);
 extern void(__stdcall*glCheckFramebufferStatus)(GLenum);
-extern boolean(__stdcall*glIsFrabuffer)(unsigned int);
+extern boolean(__stdcall*glIsFramebuffer)(unsigned int);
 extern void(__stdcall*glGetFramebufferAttachmentParameteriv)(GLenum,GLenum,
 GLenum,int*);
 extern boolean(__stdcall*glIsRenderbuffer)(unsigned int);
