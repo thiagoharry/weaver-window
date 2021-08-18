@@ -730,11 +730,10 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
   window = SDL_SetVideoMode(window_size_x, window_size_y, 0,
                             SDL_OPENGL | fullscreen_flag);
   if(fullscreen_flag){
-    EM_ASM(// Ativando tela-cheia no Javascript
+    EM_ASM(
       var el = document.getElementById("canvas");
-      if(el.requestFullscreen){
-        el.requestFullscreen();
-      }
+      el.style.top = "0px";
+      el.style.left = "0px";
     );
   }
   if(window == NULL)

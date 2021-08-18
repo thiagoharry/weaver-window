@@ -694,12 +694,12 @@ when we execute the function to close the window).
   window_size_y = W_Window_Size_Y;
 #endif
 #endif
-  // Ajusta versão do OpenGL
+  // Adjust OpenGL version
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
                      W_WINDOW_OPENGL_MAJOR_VERSION);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
                      W_WINDOW_OPENGL_MINOR_VERSION);
-  // Garante que o canvas estará visível
+  // Ebsure that the canvas will be visible
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "initial";
@@ -707,11 +707,10 @@ when we execute the function to close the window).
   window = SDL_SetVideoMode(window_size_x, window_size_y, 0,
                             SDL_OPENGL | fullscreen_flag);
   if(fullscreen_flag){
-    EM_ASM(// Ativando tela-cheia no Javascript
+    EM_ASM(
       var el = document.getElementById("canvas");
-      if(el.requestFullscreen){
-        el.requestFullscreen();
-      }
+      el.style.top = "0px";
+      el.style.left = "0px";
     );
   }
   if(window == NULL)
