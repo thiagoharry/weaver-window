@@ -684,6 +684,9 @@ when we execute the function to close the window).
 {
   int window_size_x = screen_resolution;
   int fullscreen_flag = SDL_WINDOW_FULLSCREEN;
+  double pixel_ratio = EM_ASM_DOUBLE({
+    return window.devicePixelRatio;
+  });
   window_size_y = screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
   fullscreen_flag = 0;
@@ -704,14 +707,16 @@ when we execute the function to close the window).
     var el = document.getElementById("canvas");
     el.style.display = "initial";
   );
-  window = SDL_SetVideoMode(window_size_x, window_size_y, 0,
-                            SDL_OPENGL | fullscreen_flag);
+  window = SDL_SetVideoMode(window_size_x / pixel_ratio,
+                            window_size_y / pixel_ratio, 0, SDL_OPENGL);
   if(fullscreen_flag){
     EM_ASM(
       var el = document.getElementById("canvas");
       el.style.position = "absolute";
       el.style.top = "0px";
       el.style.left = "0px";
+      el.height = window.screen.height * window.devicePixelRatio;
+      el.width = return window.screen.width * window.devicePixelRatio;
     );
   }
   if(window == NULL)
