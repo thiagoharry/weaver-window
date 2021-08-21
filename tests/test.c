@@ -145,9 +145,9 @@ void test_opengl_buffers(void){
   time_t initial_time, current_time;
   int ret;
   float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f, 0.5f, 0.0f};
+    -1.0f, -1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+    -1.0f, 1.0f, 0.0f};
   const char *vertex_shader_source =
       "#version 100\n"
       "attribute vec3 position;\n"
@@ -216,7 +216,6 @@ void test_opengl_buffers(void){
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
   glEnableVertexAttribArray(0);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glViewport(0, 0, 1366, 768);
   current_time = initial_time = time(NULL);
   while(current_time < initial_time + 2){
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -320,7 +319,6 @@ void test_opengl_shader(void){
     };
     //pos = glGetAttribLocation(shader_program, "position");
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glViewport(0, 0, 1366, 768);
     //glGenBuffers(1, &vbo);
     //glBindBuffer(GL_ARRAY_BUFFER, vbo);
     //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
