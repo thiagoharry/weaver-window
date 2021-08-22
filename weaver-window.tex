@@ -236,7 +236,7 @@ unidade de tempo. Os próximos argumentos são estruturas que
 representam teclado e mouse a serem atualizadas.
 
 \iniciocodigo
-@<Declarações de Janela@>=
+@<Declarações de Janela@>+=
 void _Wflush_window_input(void);
 @
 \fimcodigo
@@ -247,6 +247,15 @@ com chamadas a \monoespaco{\_Wget\_window\_input}. O resultado de
 chamar esta função é que reiniciamos o estado de nosso mouse e
 teclado, parando de considerar qualquer tecla como pressionada ou
 solta.
+
+\iniciocodigo
+@<Declarações de Janela@>+=
+bool _Wis_fullscreen(void);
+@
+\fimcodigo
+
+Esta função retorna se estamos em modo de tela-cheia ou não. O
+resultado é indefinido se uma janela não foi criada.
 
 \secao{2. Criando e Gerenciando a Janela}
 
@@ -3080,6 +3089,76 @@ bool _Wget_window_size(int *width, int *height){
 #endif
 @
 \fimcodigo
+
+\subsecao{2.7. Checando o modo de tela cheia}
+
+Aqui iremos definir as funções que verificam se estamos em modo de
+tela cheia ou não.
+
+\subsubsecao{2.7.1. Checando modo de tela cheia no X11}
+
+No X11, criamos uma janela em tela cheia ajustando um atributo para
+que ela seja renderizada ocupando toda a tela ignorando qualquer
+configuração do gerenciador de janelas. Para checarmos se estamos em
+tela cheia, precisamos checar com a
+função \monoespaco{XGetWindowAttributes} se a nossa janela tem tal
+atributo marcado ou não:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wis_fullscreen(void){
+  XWindowAttributes attributes;
+  if(!already_have_window || display == NULL)
+    return false;
+  XGetWindowAttributes(display, window, &attributes);
+  return (attributes.override_redirect == true);
+}
+#endif
+@
+
+\subsubsecao{2.7.2. Checando modo de tela cheia no Web Assembly}
+
+Rodando em um navegador de Internet, precisamos conferir por meio de
+Javascript se estamos rodando em tela cheia ou não. Lembrando que aqui
+nem sempre conseguiremos entrar em tela cheia, já que isso depende das
+configurações do navegador. A fução abaixo então será uma forma de
+verificar se estamos ou não em tal modo de tela cheia.
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wis_fullscreen(void){
+  int full = EM_ASM_INT({
+    if(document.fullscreenElement === null){
+      return 0;
+    } else{
+      return 1;
+    }
+  });
+  return full;
+}
+#endif
+@
+
+\subsubsecao{2.7.3. Checando modo de tela cheia no Windows}
+
+Detectar a tela cheia no Windows envolve usar a
+função \monoespaco{SHQueryUserNotificationState} para obter o estado
+da tela. Se tivermos uma janela em tela-cheia, saberemos disso se
+obtiveros como resultado \monespaco{QUNS\_BUSY}:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(_WIN32)
+bool _Wis_fullscreen(void){
+  QUERY_USER_NOTIFICATION_STATE state;
+  SHQueryUserNotificationState(&state);
+  return (state == QUNS_BUSY);
+}
+#endif
+@
+
 
 \secao{3. Gerenciando Entrada}
 

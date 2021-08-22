@@ -344,9 +344,21 @@ void test_opengl_shader(void){
   _Wdestroy_window();
 }
 
+void test_fullscreen(void){
+  _Wcreate_window();
+  bool full = _Wis_fullscreen();
+  assert("Window begin in fullscreen mode", full);
+  //_Wtoggle_fullscreen();
+  //full = _Wis_fullscreen();
+  //_Wtoggle_fullscreen();
+  //assert("Toggling fullscreen mode", !full && _Wis_fullscreen());
+  _Wdestroy_window();
+}
+
 int main(int argc, char **argv){
   test_create_destroy_window();
   test_resolution();
+  test_fullscreen();
   test_opengl_simple();
   test_opengl_shader();
   test_opengl_buffers();

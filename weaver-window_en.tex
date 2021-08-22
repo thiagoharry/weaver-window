@@ -220,7 +220,7 @@ measured in some unit of time. The next arguments are structs that
 represent keyboard and mouse and that shall be updated.
 
 \iniciocodigo
-@<Window Declarations@>=
+@<Window Declarations@>+=
 void _Wflush_window_input(void);
 @
 \fimcodigo
@@ -230,6 +230,15 @@ should be called each time we interrupt our periodic invocation
 of \monoespaco{\_Wget\_window\_input}. Calling these functions the
 structs are reset to the initial state. And we stop to consider as
 pressed or released any key or button.
+
+\iniciocodigo
+@<Window Declarations@>+=
+bool _Wis_fullscreen(void);
+@
+\fimcodigo
+
+This checks if we are in fullscreen mode or not. The result is
+undefined if a window was not created.
 
 \secao{2. Creating and Managing the Window}
 
@@ -3047,6 +3056,73 @@ bool _Wget_window_size(int *width, int *height){
 #endif
 @
 \fimcodigo
+
+\subsecao{2.7. Checking fullscreen mode}
+
+Here we will define the function that checks if we are in fullscreen
+mode or not.
+
+\subsubsection{2.7.1. Checking Fullscreen Mode on X11}
+
+In X11, we create a fullscreen window adjusting a window attribute to
+make the window override any window manager configuration and occupy
+the whole screen. To check if we are in fullscreen mode, we just check
+if such attribute is marked or not:
+
+\iniciocodigo
+@<API Functions@>=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wis_fullscreen(void){
+  XWindowAttributes attributes;
+  if(!already_have_window || display == NULL)
+    return false;
+  XGetWindowAttributes(display, window, &attributes);
+  return (attributes.override_redirect == true);
+}
+#endif
+@
+
+\subsubsecao{2.7.2. Checking Fullscreen Mode on Web Assembly}
+
+Running in a web browser, we need to use Javascript to check if we are
+running in fullscreen mode or not. Note that here we not always will
+be able to set fullscreen mode, as this depends on the browser
+configuration. The function below will be a way to test if we succeed
+or not in entering fullscreen mode.
+
+\iniciocodigo
+@<API Functions@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wis_fullscreen(void){
+  int full = EM_ASM_INT({
+    if(document.fullscreenElement === null){
+      return 0;
+    } else{
+      return 1;
+    }
+  });
+  return full;
+}
+#endif
+@
+
+\subsubsecao{2.7.3. Checking Fullscreen Mode on Windows}
+
+Detect a fullscreen mode on Windows means using the
+function \monoespaco{SHQueryUserNotificationState} to obtain the state
+of the screen. If we are in a fullscreen window, we will know getting
+as result \monespaco{QUNS\_BUSY}:
+
+\iniciocodigo
+@<API Functions@>+=
+#if defined(_WIN32)
+bool _Wis_fullscreen(void){
+  QUERY_USER_NOTIFICATION_STATE state;
+  SHQueryUserNotificationState(&state);
+  return (state == QUNS_BUSY);
+}
+#endif
+@
 
 \secao{3. Managing Input}
 
