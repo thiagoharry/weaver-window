@@ -878,7 +878,6 @@ code below:
 @<Windows: Create Window@>+=
 #if defined(_WIN32)
 {
-  DWORD fullscreen_flag = WS_POPUP;
   RECT size;
   int window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
@@ -886,7 +885,6 @@ code below:
 #if defined(W_WINDOW_NO_FULLSCREEN)
   window_size_x = size.left - size.right;
   window_size_y = size.bottom - size.top;
-  fullscreen_flag = WS_OVERLAPPED;
 #if defined(W_WINDOW_SIZE_X) && W_WINDOW_SIZE_X > 0
   window_size_x = W_WINDOW_SIZE_X;
 #endif
@@ -896,7 +894,7 @@ code below:
 #endif
   window = CreateWindowEx(0, class_name,
                           W_WINDOW_NAME,
-                          fullscreen_flag | WS_VISIBLE,
+                          WS_OVERLAPPED | WS_VISIBLE,
                           size.left, size.top, window_size_x,
                           window_size_y,
                           NULL, NULL,
@@ -923,6 +921,22 @@ static HWND window;
 #endif
 @
 \fimcodigo
+
+Next we let the window be in fullscreen mode if this is the current
+configuration:
+
+\iniciocodigo
+@<Windows: Create Window@>+=
+#if defined(_WIN32) && !defined(W_WINDOW_NO_FULLSCREEN)
+{
+  DEVMODE device_mode;
+  EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &device_mode);
+  ChangeDisplaySettings(&device_mode, CDS_FULLSCREEN);
+}
+#endif
+@
+\fimcodigo
+
 
 Before showing the window on the screen we configure OpenGL on it:
 
