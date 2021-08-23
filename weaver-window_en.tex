@@ -289,7 +289,7 @@ do not have a X11 server. If we will use X11, we need the following
 header:
 
 \iniciocodigo
-@<Headers@>=
+@<Headers@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xlib.h>
 #endif
@@ -1169,6 +1169,7 @@ OpenGL library:
 @<OpenGL Header@>+=
 #if defined(_WIN32)
 #pragma comment(lib, "Opengl32.lib")
+#pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "Gdi32.lib")
 #include <windows.h>
@@ -3123,6 +3124,17 @@ bool _Wis_fullscreen(void){
 }
 #endif
 @
+
+The above function requires the following header:
+
+\iniciocodigo
+@<Headers@>+=
+#if defined(_WIN32)
+#include <shellapi.h>
+#endif
+@
+\fimcodigo
+
 
 \secao{3. Managing Input}
 

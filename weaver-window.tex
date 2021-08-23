@@ -1198,6 +1198,7 @@ cabeçalho padrão e o do OpenGL:
 @<Cabeçalho OpenGL@>+=
 #if defined(_WIN32)
 #pragma comment(lib, "Opengl32.lib")
+#pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "Gdi32.lib")
 #include <windows.h>
@@ -3159,6 +3160,15 @@ bool _Wis_fullscreen(void){
 #endif
 @
 
+A função acima requer o seguinte cabeçalho:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(_WIN32)
+#include <shellapi.h>
+#endif
+@
+\fimcodigo
 
 \secao{3. Gerenciando Entrada}
 
