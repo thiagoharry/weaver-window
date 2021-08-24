@@ -909,7 +909,9 @@ abaixo:
   int window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
+  DWORD fullscreen_flag = WS_POPUP;
 #if defined(W_WINDOW_NO_FULLSCREEN)
+  fullscreen_flag = WS_OVERLAPPED;
   window_size_x = size.left - size.right;
   window_size_y = size.bottom - size.top;
 #if defined(W_WINDOW_SIZE_X) && W_WINDOW_SIZE_X > 0
@@ -921,7 +923,7 @@ abaixo:
 #endif
   window = CreateWindowEx(0, class_name,
                           W_WINDOW_NAME,
-                          WS_OVERLAPPED | WS_VISIBLE,
+                          fullscreen_flag | WS_VISIBLE,
                           size.left, size.top, window_size_x,
                           window_size_y,
                           NULL, NULL,
@@ -949,21 +951,6 @@ static HWND window;
 #endif
 @
 \fimcodigo
-
-Em seguida, deixamos a janela em tela-cheia se esta for a configuração padrão:
-
-\iniciocodigo
-@<Windows: Criar Janela@>+=
-#if defined(_WIN32) && !defined(W_WINDOW_NO_FULLSCREEN)
-{
-  DEVMODE device_mode;
-  EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &device_mode);
-  ChangeDisplaySettings(&device_mode, CDS_FULLSCREEN);
-}
-#endif
-@
-\fimcodigo
-
 
 Antes de exibir a janela na tela, vamos configurar o OpenGL para
 funcionar nela:
@@ -3166,9 +3153,8 @@ obtiveros como resultado \monespaco{QUNS\_BUSY}:
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wis_fullscreen(void){
-  QUERY_USER_NOTIFICATION_STATE state;
-  SHQueryUserNotificationState(&state);
-  return (state == QUNS_BUSY);
+  DWORD window_style = GetWindowLongA(window, GWL_STYLE);
+  return (window_style & WS_POPUP);
 }
 #endif
 @
