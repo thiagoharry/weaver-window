@@ -3142,6 +3142,44 @@ windowed mode in different environments.
 
 \subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on X11}
 
+Toggling between windowed and fulscreen mode means changing one
+attribute in our window, the attriute that determines if the window
+manager will have control over our window to draw window decoration,
+or if otherwise we should ignore the window manager and control
+entirely the window size and position.
+
+As this means alternating the control over the window to the window
+manager and the X server, after changing this attribute we need to
+withdraw our window, making it disappear momentaneally, and then map
+our window again, making it appear with or without window
+decorators. If we are entering now in fullscreen mode, we must also
+move and resize the window to make it occupy the whole screen again.
+
+\iniciocodigo
+@<API Functions@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+void _Wtoggle_fullscreen(void){
+  bool fullscreen_flag = false;
+  XSetWindowAttributes attributes;
+  if(!_Wis_fullscreen()){
+    attributes.override_redirect = true;
+    fullscreen_flag = true;
+  }
+  else
+    attributes.override_redirect = false;
+  XChangeWindowAttributes(display, window, CWOverrideRedirect,
+                          &attributes);
+  XWithdrawWindow(display, window, 0);
+  XMapWindow(display, window);
+  if(fullscreen_flag){
+    int size_x, size_y;
+    _Wget_screen_resolution(&size_x, &size_y);
+    XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
+  }
+}
+#endif
+@
+
 
 \secao{3. Managing Input}
 

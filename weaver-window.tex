@@ -3177,17 +3177,42 @@ janela nos diferentes ambientes suportados:
 
 \subsubsecao{2.8.1. Alternando entre Tela Cheia e Janela no X11}
 
+Alternar entre a tela cheia no X11 significa mudar um atributo da
+janela o atributo que detrmina se o gerenciador de janelas terá o
+controle dela para poder colocar decorações na janela, ou se pelo
+contrário, nós devemos ignorar o gerenciador de janelas e controlar
+completamente o tamanho e posição da janela, que ficará sem
+decoradores.
+
+Como isso significa alternar o controle da janela entre o gerenciador
+de janelas e o próprio servidor X, após mudar este atributo precisamos
+retirarnossa janela, fazendo-a deixar de existir momentaneamente para
+em seguida mapeá-la novamente. Assim a janela irá ressurgir com ou sem
+os decoradores característicos do gerenciador de janela. Caso
+estejamos entrando na tela cheia, tambem será necessário mover nossa
+janela e ajustar o tamanho dela para o tamanho da tela.
+
 \iniciocodigo
 @<Funções da API@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 void _Wtoggle_fullscreen(void){
+  bool fullscreen_flag = false;
   XSetWindowAttributes attributes;
-  if(!_Wis_fullscreen())
+  if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
+    fullscreen_flag = true;
+  }
   else
     attributes.override_redirect = false;
   XChangeWindowAttributes(display, window, CWOverrideRedirect,
                           &attributes);
+  XWithdrawWindow(display, window, 0);
+  XMapWindow(display, window);
+  if(fullscreen_flag){
+    int size_x, size_y;
+    _Wget_screen_resolution(&size_x, &size_y);
+    XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
+  }
 }
 #endif
 @
