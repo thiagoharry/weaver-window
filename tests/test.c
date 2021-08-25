@@ -348,10 +348,10 @@ void test_fullscreen(void){
   _Wcreate_window();
   bool full = _Wis_fullscreen();
   assert("Window begin in fullscreen mode", full);
-  //_Wtoggle_fullscreen();
-  //full = _Wis_fullscreen();
-  //_Wtoggle_fullscreen();
-  //assert("Toggling fullscreen mode", !full && _Wis_fullscreen());
+  _Wtoggle_fullscreen();
+  full = _Wis_fullscreen();
+  _Wtoggle_fullscreen();
+  assert("Toggling fullscreen mode", !full && _Wis_fullscreen());
   _Wdestroy_window();
 }
 

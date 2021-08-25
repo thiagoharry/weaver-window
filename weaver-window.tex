@@ -257,6 +257,15 @@ bool _Wis_fullscreen(void);
 Esta função retorna se estamos em modo de tela-cheia ou não. O
 resultado é indefinido se uma janela não foi criada.
 
+\iniciocodigo
+@<Declarações de Janela@>+=
+void _Wtoggle_fullscreen(void);
+@
+\fimcodigp
+
+Esta função alterna entre o modo de tela cheia e modo em
+janela. Dependendo do ambiente ela pode falhar.
+
 \secao{2. Criando e Gerenciando a Janela}
 
 Nesta seção definiremos funções e códigos que envolvem criar uma
@@ -751,6 +760,7 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
       el.style.height = window.screen.height + "px";
       el.width = (window.screen.width * window.devicePixelRatio);
       el.height = (window.screen.height * window.devicePixelRatio);
+      el.requestFullscreen();
     );
   }
   if(window == NULL)
@@ -3159,15 +3169,30 @@ bool _Wis_fullscreen(void){
 #endif
 @
 
-A função acima requer o seguinte cabeçalho:
+
+\subsecao{2.8. Alternando entre Tela Cheia e Janela}
+
+Aqui iremos definir a função que alterna entre modo tela-cheia e
+janela nos diferentes ambientes suportados:
+
+\subsubsecao{2.8.1. Alternando entre Tela Cheia e Janela no X11}
 
 \iniciocodigo
-@<Cabeçalhos@>+=
-#if defined(_WIN32)
-#include <shellapi.h>
+@<Funções da API@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+void _Wtoggle_fullscreen(void){
+  XSetWindowAttributes attributes;
+  if(!_Wis_fullscreen())
+    attributes.override_redirect = true;
+  else
+    attributes.override_redirect = false;
+  XChangeWindowAttributes(display, window, CWOverrideRedirect,
+                          &attributes);
+}
 #endif
 @
-\fimcodigo
+
+
 
 \secao{3. Gerenciando Entrada}
 

@@ -240,6 +240,16 @@ bool _Wis_fullscreen(void);
 This checks if we are in fullscreen mode or not. The result is
 undefined if a window was not created.
 
+\iniciocodigo
+@<Window Declarations@>+=
+void _Wtoggle_fullscreen(void);
+@
+\fimcodigo
+
+This function alternates between fullscreen mode and windowed
+mode. Depending on the environment, it could fail.
+
+
 \secao{2. Creating and Managing the Window}
 
 In this Section we will define the functions and core about creating a
@@ -728,6 +738,7 @@ when we execute the function to close the window).
       el.style.height = window.screen.height + "px";
       el.width = (window.screen.width * window.devicePixelRatio);
       el.height = (window.screen.height * window.devicePixelRatio);
+      el.requestFullscreen();
     );
   }
   if(window == NULL)
@@ -882,7 +893,9 @@ code below:
   int window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
+  DWORD fullscreen_flag = WS_POPUP;
 #if defined(W_WINDOW_NO_FULLSCREEN)
+  fullscreen_flag = WS_OVERLAPPED;
   window_size_x = size.left - size.right;
   window_size_y = size.bottom - size.top;
 #if defined(W_WINDOW_SIZE_X) && W_WINDOW_SIZE_X > 0
@@ -894,7 +907,7 @@ code below:
 #endif
   window = CreateWindowEx(0, class_name,
                           W_WINDOW_NAME,
-                          WS_OVERLAPPED | WS_VISIBLE,
+                          fullscreen_flag | WS_VISIBLE,
                           size.left, size.top, window_size_x,
                           window_size_y,
                           NULL, NULL,
@@ -921,22 +934,6 @@ static HWND window;
 #endif
 @
 \fimcodigo
-
-Next we let the window be in fullscreen mode if this is the current
-configuration:
-
-\iniciocodigo
-@<Windows: Create Window@>+=
-#if defined(_WIN32) && !defined(W_WINDOW_NO_FULLSCREEN)
-{
-  DEVMODE device_mode;
-  EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &device_mode);
-  ChangeDisplaySettings(&device_mode, CDS_FULLSCREEN);
-}
-#endif
-@
-\fimcodigo
-
 
 Before showing the window on the screen we configure OpenGL on it:
 
@@ -3132,22 +3129,18 @@ as result \monespaco{QUNS\_BUSY}:
 @<API Functions@>+=
 #if defined(_WIN32)
 bool _Wis_fullscreen(void){
-  QUERY_USER_NOTIFICATION_STATE state;
-  SHQueryUserNotificationState(&state);
-  return (state == QUNS_BUSY);
+  DWORD window_style = GetWindowLongA(window, GWL_STYLE);
+  return (window_style & WS_POPUP);
 }
 #endif
 @
 
-The above function requires the following header:
+\subsecao{2.8. Changing Between Fullscreen and Windowed Mode}
 
-\iniciocodigo
-@<Headers@>+=
-#if defined(_WIN32)
-#include <shellapi.h>
-#endif
-@
-\fimcodigo
+Here we present the functions that toggles between fulllscreen and
+windowed mode in different environments.
+
+\subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on X11}
 
 
 \secao{3. Managing Input}
