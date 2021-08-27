@@ -1,5 +1,5 @@
-/*196:*/
-#line 4481 "weaver-window.tex"
+/*199:*/
+#line 4592 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -14,14 +14,14 @@
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #include <X11/Xlib.h> 
 #endif
-/*:13*//*39:*/
-#line 893 "weaver-window.tex"
+/*:13*//*40:*/
+#line 916 "weaver-window.tex"
 
 #if defined(_WIN32)
 #include <string.h> 
 #endif
-/*:39*//*70:*/
-#line 1546 "weaver-window.tex"
+/*:40*//*71:*/
+#line 1569 "weaver-window.tex"
 
 #define WGL_TYPE_RGBA_ARB                      0x202B
 #define WGL_PIXEL_TYPE_ARB                     0x2013
@@ -37,8 +37,8 @@
 #define WGL_CONTEXT_MAJOR_VERSION_ARB          0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB          0x2092
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
-/*:70*//*129:*/
-#line 2837 "weaver-window.tex"
+/*:71*//*130:*/
+#line 2860 "weaver-window.tex"
 
 #if defined(_WIN32) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 4
@@ -50,11 +50,11 @@
 #define W_WINDOW_OPENGL_MAJOR_VERSION 3
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
-/*:129*/
-#line 4483 "weaver-window.tex"
+/*:130*/
+#line 4594 "weaver-window.tex"
 
-/*63:*/
-#line 1381 "weaver-window.tex"
+/*64:*/
+#line 1404 "weaver-window.tex"
 
 #if defined(_WIN32)
 static void*load_function(const char*name){
@@ -69,19 +69,19 @@ return NULL;
 return ret;
 }
 #endif
-/*:63*/
-#line 4484 "weaver-window.tex"
+/*:64*/
+#line 4595 "weaver-window.tex"
 
-/*65:*/
-#line 1427 "weaver-window.tex"
+/*66:*/
+#line 1450 "weaver-window.tex"
 
 #if defined(_WIN32)
 BOOL(__stdcall*wglChoosePixelFormatARB)(HDC,const int*,const FLOAT*,UINT,
 int*,UINT*);
 HGLRC(*wglCreateContextAttribsARB)(HDC,HGLRC,const int*);
 #endif
-/*:65*//*72:*/
-#line 1587 "weaver-window.tex"
+/*:66*//*73:*/
+#line 1610 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLuint(__stdcall*glCreateShader)(GLenum shaderType);
@@ -91,8 +91,8 @@ void(__stdcall*glCompileShader)(GLuint);
 void(__stdcall*glReleaseShaderCompiler)(void);
 void(__stdcall*glDeleteShader)(GLuint);
 #endif
-/*:72*//*77:*/
-#line 1677 "weaver-window.tex"
+/*:73*//*78:*/
+#line 1700 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLboolean(__stdcall*glIsShader)(GLuint);
@@ -107,8 +107,8 @@ void(__stdcall*glGetVertexAttribPointerv)(GLuint,GLenum,void**);
 void(__stdcall*glGetUniformfv)(GLuint,GLint,GLfloat*);
 void(__stdcall*glGetUniformiv)(GLuint,GLint,GLint*);
 #endif
-/*:77*//*85:*/
-#line 1830 "weaver-window.tex"
+/*:78*//*86:*/
+#line 1853 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLuint(__stdcall*glCreateProgram)(void);
@@ -118,8 +118,8 @@ void(__stdcall*glLinkProgram)(GLuint);
 void(__stdcall*glUseProgram)(GLuint);
 void(__stdcall*glDeleteProgram)(GLuint);
 #endif
-/*:85*//*88:*/
-#line 1882 "weaver-window.tex"
+/*:86*//*89:*/
+#line 1905 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLboolean(__stdcall*glIsProgram)(GLuint);
@@ -127,8 +127,8 @@ void(__stdcall*glGetProgramiv)(GLuint,GLenum,GLint*);
 void(__stdcall*glGetProgramInfoLog)(GLuint,GLsizei,GLsizei*,GLchar*);
 void(__stdcall*glValidadeProgram)(GLuint);
 #endif
-/*:88*//*92:*/
-#line 1947 "weaver-window.tex"
+/*:89*//*93:*/
+#line 1970 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glGetActiveAttrib)(GLuint,GLuint,GLsizei,GLsizei*,GLint*,
@@ -136,8 +136,8 @@ GLenum*,GLchar*);
 GLint(__stdcall*glGetAttribLocation)(GLuint,const GLchar*);
 void(__stdcall*glBindAttribLocation)(GLuint,GLuint,const GLchar*);
 #endif
-/*:92*//*96:*/
-#line 2029 "weaver-window.tex"
+/*:93*//*97:*/
+#line 2052 "weaver-window.tex"
 
 #if defined(_WIN32)
 GLint(__stdcall*glGetUniformLocation)(GLuint,const GLchar*);
@@ -163,8 +163,8 @@ void(__stdcall*glUniformMatrix2fv)(GLint,GLsizei,GLboolean,const GLfloat*);
 void(__stdcall*glUniformMatrix3fv)(GLint,GLsizei,GLboolean,const GLfloat*);
 void(__stdcall*glUniformMatrix4fv)(GLint,GLsizei,GLboolean,const GLfloat*);
 #endif
-/*:96*//*100:*/
-#line 2177 "weaver-window.tex"
+/*:97*//*101:*/
+#line 2200 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glVertexAttrib1f)(GLuint,GLfloat);
@@ -180,8 +180,8 @@ GLsizei,const void*);
 void(__stdcall*glEnableVertexAttribArray)(GLuint);
 void(__stdcall*glDisableVertexAttribArray)(GLuint);
 #endif
-/*:100*//*104:*/
-#line 2270 "weaver-window.tex"
+/*:101*//*105:*/
+#line 2293 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glGenBuffers)(GLsizei,GLuint*);
@@ -192,14 +192,14 @@ void(__stdcall*glBufferSubData)(GLenum,GLintptr,GLsizeiptr,const void*);
 void(__stdcall*glIsBuffer)(GLuint);
 void(__stdcall*glGetBufferParameteriv)(GLenum,GLenum,GLint*);
 #endif
-/*:104*//*111:*/
-#line 2376 "weaver-window.tex"
+/*:105*//*112:*/
+#line 2399 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glDepthRangef)(GLclampf,GLclampf);
 #endif
-/*:111*//*115:*/
-#line 2424 "weaver-window.tex"
+/*:112*//*116:*/
+#line 2447 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glActiveTexture)(GLenum);
@@ -210,8 +210,8 @@ GLsizei,GLenum,GLsizei,
 void*);
 void(__stdcall*glGenerateMipmap)(GLenum);
 #endif
-/*:115*//*119:*/
-#line 2543 "weaver-window.tex"
+/*:116*//*120:*/
+#line 2566 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glSampleCoverage)(GLclampf,bool);
@@ -222,15 +222,15 @@ void(__stdcall*glBlendEquationSeparate)(GLenum,GLenum);
 void(__stdcall*glBlendFuncSeparate)(GLenum,GLenum);
 void(__stdcall*glBlendColor)(GLclampf,GLclampf,GLclampf,GLclampf);
 #endif
-/*:119*//*123:*/
-#line 2645 "weaver-window.tex"
+/*:120*//*124:*/
+#line 2668 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glStencilMaskSeparate)(GLenum,unsigned int);
 void(__stdcall*glClearDepthf)(GLclampf);
 #endif
-/*:123*//*126:*/
-#line 2695 "weaver-window.tex"
+/*:124*//*127:*/
+#line 2718 "weaver-window.tex"
 
 #if defined(_WIN32)
 void(__stdcall*glBindFramebuffer)(GLenum,unsigned int);
@@ -251,16 +251,16 @@ GLenum,int*);
 boolean(__stdcall*glIsRenderbuffer)(unsigned int);
 void(__stdcall*glGetRenderbufferParameteriv)(GLenum,GLenum,int*);
 #endif
-/*:126*//*144:*/
-#line 3248 "weaver-window.tex"
+/*:127*//*147:*/
+#line 3359 "weaver-window.tex"
 
 struct __Wkeyboard _Wkeyboard;
-/*:144*//*146:*/
-#line 3296 "weaver-window.tex"
+/*:147*//*149:*/
+#line 3407 "weaver-window.tex"
 
 struct __Wmouse _Wmouse;
-/*:146*//*158:*/
-#line 3570 "weaver-window.tex"
+/*:149*//*161:*/
+#line 3681 "weaver-window.tex"
 
 int W_BACKSPACE= W_KEYBOARD_SIZE,W_TAB= W_KEYBOARD_SIZE,
 W_ENTER= W_KEYBOARD_SIZE,W_UP= W_KEYBOARD_SIZE,W_DOWN= W_KEYBOARD_SIZE,
@@ -289,8 +289,8 @@ W_INSERT= W_KEYBOARD_SIZE,W_HOME= W_KEYBOARD_SIZE,
 W_PAGE_UP= W_KEYBOARD_SIZE,W_DELETE= W_KEYBOARD_SIZE,
 W_END= W_KEYBOARD_SIZE,W_PAGE_DOWN= W_KEYBOARD_SIZE,
 W_ESC= W_KEYBOARD_SIZE,W_ANY= 0;
-/*:158*/
-#line 4485 "weaver-window.tex"
+/*:161*/
+#line 4596 "weaver-window.tex"
 
 /*12:*/
 #line 293 "weaver-window.tex"
@@ -309,90 +309,106 @@ static Display*display= NULL;
 static Window window;
 #endif
 /*:19*//*33:*/
-#line 786 "weaver-window.tex"
+#line 787 "weaver-window.tex"
+
+#if defined(__EMSCRIPTEN__)
+static bool fullscreen_mode= false;
+#endif
+/*:33*//*34:*/
+#line 809 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 static SDL_Surface*window;
 #endif
-/*:33*//*35:*/
-#line 811 "weaver-window.tex"
+/*:34*//*36:*/
+#line 834 "weaver-window.tex"
 
 #if defined(_WIN32)
 static const char*class_name= "WeaverWindow";
 #endif
-/*:35*//*40:*/
-#line 904 "weaver-window.tex"
+/*:36*//*41:*/
+#line 927 "weaver-window.tex"
 
 #if defined(_WIN32)
 static bool already_created_a_class= false;
 #endif
-/*:40*//*42:*/
-#line 958 "weaver-window.tex"
+/*:41*//*43:*/
+#line 981 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HWND window;
 #endif
-/*:42*//*46:*/
-#line 1021 "weaver-window.tex"
+/*:43*//*47:*/
+#line 1044 "weaver-window.tex"
 
 static bool already_have_window= false;
-/*:46*//*49:*/
-#line 1072 "weaver-window.tex"
+/*:47*//*50:*/
+#line 1095 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLDisplay*egl_display;
 #endif
-/*:49*//*51:*/
-#line 1118 "weaver-window.tex"
+/*:50*//*52:*/
+#line 1141 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 EGLConfig egl_config;
 #endif
-/*:51*//*53:*/
-#line 1147 "weaver-window.tex"
+/*:52*//*54:*/
+#line 1170 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLSurface egl_window;
 #endif
-/*:53*//*55:*/
-#line 1184 "weaver-window.tex"
+/*:54*//*56:*/
+#line 1207 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static EGLContext egl_context;
 #endif
-/*:55*//*58:*/
-#line 1233 "weaver-window.tex"
+/*:56*//*59:*/
+#line 1256 "weaver-window.tex"
 
 #if defined(_WIN32)
 static HGLRC wgl_context;
 static HDC device_context;
 #endif
-/*:58*//*151:*/
-#line 3394 "weaver-window.tex"
+/*:59*//*143:*/
+#line 3212 "weaver-window.tex"
+
+#if defined(W_WINDOW_SIZE_X) && defined(W_WINDOW_SIZE_Y)
+static unsigned last_window_size_x= W_WINDOW_SIZE_X;
+static unsigned last_window_size_y= W_WINDOW_SIZE_Y;
+#else
+static unsigned last_window_size_x= 0;
+static unsigned last_window_size_y= 0;
+#endif
+/*:143*//*154:*/
+#line 3505 "weaver-window.tex"
 
 static struct{
 unsigned key;
 long time;
 }pressed_keys[32];
 static unsigned released_keys[32];
-/*:151*//*171:*/
-#line 3962 "weaver-window.tex"
+/*:154*//*174:*/
+#line 4073 "weaver-window.tex"
 
 static struct{
 unsigned button;
 long time;
 }pressed_buttons[4];
 static unsigned released_buttons[4];
-/*:171*//*172:*/
-#line 3977 "weaver-window.tex"
+/*:174*//*175:*/
+#line 4088 "weaver-window.tex"
 
 static int last_mouse_dx= 0,last_mouse_dy= 0;
-/*:172*//*173:*/
-#line 3999 "weaver-window.tex"
+/*:175*//*176:*/
+#line 4110 "weaver-window.tex"
 
 static int mouse_initialization= 3;
-/*:173*/
-#line 4486 "weaver-window.tex"
+/*:176*/
+#line 4597 "weaver-window.tex"
 
 /*14:*/
 #line 337 "weaver-window.tex"
@@ -447,29 +463,29 @@ bool _Wget_screen_resolution(int*resolution_x,int*resolution_y){
 return true;
 }
 #endif
-/*:17*//*36:*/
-#line 828 "weaver-window.tex"
+/*:17*//*37:*/
+#line 851 "weaver-window.tex"
 
 #if defined(_WIN32)
 LRESULT CALLBACK WindowProc(HWND window,UINT msg,WPARAM param1,LPARAM param2){
 switch(msg){
-/*37:*/
-#line 846 "weaver-window.tex"
+/*38:*/
+#line 869 "weaver-window.tex"
 
 case WM_DESTROY:
 PostQuitMessage(0);
 return 0;
 break;
-/*:37*/
-#line 832 "weaver-window.tex"
+/*:38*/
+#line 855 "weaver-window.tex"
 
 default:
 return DefWindowProc(window,msg,param1,param2);
 }
 }
 #endif
-/*:36*//*45:*/
-#line 1003 "weaver-window.tex"
+/*:37*//*46:*/
+#line 1026 "weaver-window.tex"
 
 bool _Wcreate_window(void){
 if(already_have_window==true)
@@ -574,8 +590,8 @@ XStoreName(display,window,W_WINDOW_NAME);
 #line 632 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
-/*48:*/
-#line 1056 "weaver-window.tex"
+/*49:*/
+#line 1079 "weaver-window.tex"
 
 egl_display= eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR,display,
 NULL);
@@ -586,8 +602,8 @@ fprintf(stderr,"ERROR: Could not create EGL display.\n");
 return false;
 }
 eglInitialize(egl_display,NULL,NULL);
-/*:48*//*50:*/
-#line 1084 "weaver-window.tex"
+/*:49*//*51:*/
+#line 1107 "weaver-window.tex"
 
 {
 bool ret;
@@ -616,8 +632,8 @@ fprintf(stderr,"ERROR: Could not create valid EGL config.\n");
 return false;
 }
 }
-/*:50*//*52:*/
-#line 1132 "weaver-window.tex"
+/*:51*//*53:*/
+#line 1155 "weaver-window.tex"
 
 egl_window= eglCreateWindowSurface(egl_display,egl_config,window,
 NULL);
@@ -627,8 +643,8 @@ fprintf(stderr,"ERROR: Could not create EGL window.\n");
 #endif
 return false;
 }
-/*:52*//*54:*/
-#line 1161 "weaver-window.tex"
+/*:53*//*55:*/
+#line 1184 "weaver-window.tex"
 
 {
 int context_attribs[]= {
@@ -646,7 +662,7 @@ return false;
 }
 eglMakeCurrent(egl_display,egl_window,egl_window,egl_context);
 }
-/*:54*/
+/*:55*/
 #line 634 "weaver-window.tex"
 
 #endif
@@ -663,7 +679,7 @@ XNextEvent(display,&e);
 }
 #endif
 /*:28*/
-#line 1007 "weaver-window.tex"
+#line 1030 "weaver-window.tex"
 
 /*30:*/
 #line 693 "weaver-window.tex"
@@ -684,13 +700,13 @@ SDL_Init(SDL_INIT_VIDEO);
 #if defined(__EMSCRIPTEN__)
 {
 int window_size_x= screen_resolution_x;
-int fullscreen_flag= SDL_WINDOW_FULLSCREEN;
+fullscreen_mode= true;
 double pixel_ratio= EM_ASM_DOUBLE({
 return window.devicePixelRatio;
 });
 window_size_y= screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
-fullscreen_flag= 0;
+fullscreen_mode= false;
 #if defined(W_WINDOW_SIZE_X) && W_Window_Size_X >  0
 window_size_x= W_Window_Size_X;
 #endif
@@ -710,7 +726,7 @@ el.style.display= "initial";
 );
 window= SDL_SetVideoMode(window_size_x/pixel_ratio,
 window_size_y/pixel_ratio,0,SDL_OPENGL);
-if(fullscreen_flag){
+if(fullscreen_mode){
 EM_ASM(
 var el= document.getElementById("canvas");
 el.style.position= "absolute";
@@ -729,17 +745,17 @@ glViewport(0,0,window_size_x,window_size_y);
 }
 #endif
 /*:32*/
-#line 1008 "weaver-window.tex"
+#line 1031 "weaver-window.tex"
 
-/*34:*/
-#line 798 "weaver-window.tex"
+/*35:*/
+#line 821 "weaver-window.tex"
 
 #if defined(_WIN32)
 int screen_resolution_x,screen_resolution_y;
 _Wget_screen_resolution(&screen_resolution_x,&screen_resolution_y);
 #endif
-/*:34*//*38:*/
-#line 863 "weaver-window.tex"
+/*:35*//*39:*/
+#line 886 "weaver-window.tex"
 
 #if defined(_WIN32)
 if(!already_created_a_class){
@@ -761,8 +777,8 @@ return false;
 already_created_a_class= true;
 }
 #endif
-/*:38*//*41:*/
-#line 915 "weaver-window.tex"
+/*:39*//*42:*/
+#line 938 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -799,20 +815,20 @@ return false;
 }
 }
 #endif
-/*:41*//*43:*/
-#line 969 "weaver-window.tex"
+/*:42*//*44:*/
+#line 992 "weaver-window.tex"
 
 #if defined(_WIN32)
-/*57:*/
-#line 1224 "weaver-window.tex"
+/*58:*/
+#line 1247 "weaver-window.tex"
 
 device_context= GetDC(window);
-/*:57*//*59:*/
-#line 1268 "weaver-window.tex"
+/*:58*//*60:*/
+#line 1291 "weaver-window.tex"
 
 {
-/*60:*/
-#line 1283 "weaver-window.tex"
+/*61:*/
+#line 1306 "weaver-window.tex"
 
 HWND dummy_window;
 {
@@ -838,11 +854,11 @@ GetLastError());
 return false;
 }
 }
-/*:60*/
-#line 1270 "weaver-window.tex"
+/*:61*/
+#line 1293 "weaver-window.tex"
 
-/*61:*/
-#line 1316 "weaver-window.tex"
+/*62:*/
+#line 1339 "weaver-window.tex"
 
 HGLRC dummy_context;
 HDC dummy_device_context= GetDC(dummy_window);
@@ -874,8 +890,8 @@ GetLastError());
 return false;
 }
 
-/*:61*//*62:*/
-#line 1354 "weaver-window.tex"
+/*:62*//*63:*/
+#line 1377 "weaver-window.tex"
 
 
 dummy_context= wglCreateContext(dummy_device_context);
@@ -894,11 +910,11 @@ GetLastError());
 return false;
 }
 }
-/*:62*/
-#line 1271 "weaver-window.tex"
+/*:63*/
+#line 1294 "weaver-window.tex"
 
-/*66:*/
-#line 1441 "weaver-window.tex"
+/*67:*/
+#line 1464 "weaver-window.tex"
 
 wglChoosePixelFormatARB= (BOOL(__stdcall*)(HDC,const int*,const FLOAT*,
 UINT,int*,UINT*))
@@ -907,22 +923,22 @@ if(wglChoosePixelFormatARB==NULL)return false;
 wglCreateContextAttribsARB= (HGLRC(*)(HDC,HGLRC,const int*))
 load_function("wglCreateContextAttribsARB");
 if(wglCreateContextAttribsARB==NULL)return false;
-/*:66*/
-#line 1272 "weaver-window.tex"
+/*:67*/
+#line 1295 "weaver-window.tex"
 
-/*67:*/
-#line 1456 "weaver-window.tex"
+/*68:*/
+#line 1479 "weaver-window.tex"
 
 wglMakeCurrent(dummy_device_context,0);
 wglDeleteContext(dummy_context);
 ReleaseDC(dummy_window,dummy_device_context);
 DestroyWindow(dummy_window);
-/*:67*/
-#line 1273 "weaver-window.tex"
+/*:68*/
+#line 1296 "weaver-window.tex"
 
 }
-/*:59*//*68:*/
-#line 1468 "weaver-window.tex"
+/*:60*//*69:*/
+#line 1491 "weaver-window.tex"
 
 {
 PIXELFORMATDESCRIPTOR pixel_format_descriptor;
@@ -963,8 +979,8 @@ fprintf(stderr,"ERROR: 'SetPixelFormat' failed.\n");
 return false;
 }
 }
-/*:68*//*69:*/
-#line 1517 "weaver-window.tex"
+/*:69*//*70:*/
+#line 1540 "weaver-window.tex"
 
 {
 const int opengl_attributes[]= {
@@ -986,8 +1002,8 @@ fprintf(stderr,"ERROR: 'wglMakeCurrent' failed.\n");
 return false;
 }
 }
-/*:69*//*73:*/
-#line 1604 "weaver-window.tex"
+/*:70*//*74:*/
+#line 1627 "weaver-window.tex"
 
 glCreateShader= (GLuint(__stdcall*)(GLenum))load_function("glCreateShader");
 if(glCreateShader==NULL)
@@ -1007,8 +1023,8 @@ return false;
 glDeleteShader= (void(__stdcall*)(GLuint))load_function("glDeleteShader");
 if(glDeleteShader==NULL)
 return false;
-/*:73*//*78:*/
-#line 1698 "weaver-window.tex"
+/*:74*//*79:*/
+#line 1721 "weaver-window.tex"
 
 glIsShader= (GLboolean(__stdcall*)(GLuint))load_function("glIsShader");
 if(glIsShader==NULL)return false;
@@ -1043,8 +1059,8 @@ if(glGetUniformfv==NULL)return false;
 glGetUniformiv= (void(__stdcall*)(GLuint,GLint,GLint*))
 load_function("glGetUniformiv");
 if(glGetUniformiv==NULL)return false;
-/*:78*//*86:*/
-#line 1845 "weaver-window.tex"
+/*:79*//*87:*/
+#line 1868 "weaver-window.tex"
 
 glCreateProgram= (GLuint(__stdcall*)(void))load_function("glCreateProgram");
 if(glCreateProgram==NULL)return false;
@@ -1060,8 +1076,8 @@ glUseProgram= (void(__stdcall*)(GLuint))load_function("glUseProgram");
 if(glUseProgram==NULL)return false;
 glDeleteProgram= (void(__stdcall*)(GLuint))load_function("glDeleteProgram");
 if(glDeleteProgram==NULL)return false;
-/*:86*//*89:*/
-#line 1895 "weaver-window.tex"
+/*:87*//*90:*/
+#line 1918 "weaver-window.tex"
 
 glIsProgram= (GLboolean(__stdcall*)(GLuint))load_function("glIsProgram");
 if(glIsProgram==NULL)return false;
@@ -1074,8 +1090,8 @@ if(glGetProgramInfoLog==NULL)return false;
 glValidadeProgram= (void(__stdcall*)(GLuint))
 load_function("glValidateProgram");
 if(glValidadeProgram==NULL)return false;
-/*:89*//*93:*/
-#line 1960 "weaver-window.tex"
+/*:90*//*94:*/
+#line 1983 "weaver-window.tex"
 
 glGetActiveAttrib= (void(__stdcall*)(GLuint,GLuint,GLsizei,GLsizei*,
 GLint*,GLenum*,GLchar*))
@@ -1087,8 +1103,8 @@ if(glGetAttribLocation==NULL)return false;
 glBindAttribLocation= (void(__stdcall*)(GLuint,GLuint,const GLchar*))
 load_function("glBindAttribLocation");
 if(glBindAttribLocation==NULL)return false;
-/*:93*//*97:*/
-#line 2060 "weaver-window.tex"
+/*:94*//*98:*/
+#line 2083 "weaver-window.tex"
 
 glGetUniformLocation= (GLint(__stdcall*)(GLuint,const GLchar*))
 load_function("glGetUniformLocation");
@@ -1154,8 +1170,8 @@ glUniformMatrix4fv= (void(__stdcall*)(GLint,GLsizei,GLboolean,
 const GLfloat*))
 load_function("glUniformMatrix4fv");
 if(glUniformMatrix4fv==NULL)return false;
-/*:97*//*101:*/
-#line 2198 "weaver-window.tex"
+/*:98*//*102:*/
+#line 2221 "weaver-window.tex"
 
 glVertexAttrib1f= (void(__stdcall*)(GLuint,GLfloat))
 load_function("glVertexAttrib1f");
@@ -1192,8 +1208,8 @@ if(glEnableVertexAttribArray==NULL)return false;
 glDisableVertexAttribArray= (void(__stdcall*)(GLuint))
 load_function("glDisableVertexAttribArray");
 if(glDisableVertexAttribArray==NULL)return false;
-/*:101*//*105:*/
-#line 2286 "weaver-window.tex"
+/*:102*//*106:*/
+#line 2309 "weaver-window.tex"
 
 glGenBuffers= (void(__stdcall*)(GLsizei,GLuint*))
 load_function("glGenBuffers");
@@ -1214,14 +1230,14 @@ if(glIsBuffer==NULL)return false;
 glGetBufferParameteriv= (void(__stdcall*)(GLenum,GLenum,GLint*))
 load_function("glGetBufferParameteriv");
 if(glGetBufferParameteriv==NULL)return false;
-/*:105*//*112:*/
-#line 2386 "weaver-window.tex"
+/*:106*//*113:*/
+#line 2409 "weaver-window.tex"
 
 glDepthRangef= (void(__stdcall*)(GLclampf,GLclampf))
 load_function("glDepthRangef");
 if(glDepthRangef==NULL)return false;
-/*:112*//*116:*/
-#line 2440 "weaver-window.tex"
+/*:113*//*117:*/
+#line 2463 "weaver-window.tex"
 
 glActiveTexture= (void(__stdcall*)(GLenum))load_function("glActiveTexture");
 if(glActiveTexture==NULL)return false;
@@ -1235,8 +1251,8 @@ load_function("glCompressedTexSubImage2D");
 if(glCompressedTexSubImage2D==NULL)return false;
 glGenerateMipmap= (void(__stdcall*)(GLenum))load_function("glGenerateMipmap");
 if(glGenerateMipmap==NULL)return false;
-/*:116*//*120:*/
-#line 2559 "weaver-window.tex"
+/*:117*//*121:*/
+#line 2582 "weaver-window.tex"
 
 glSampleCoverage= (void(__stdcall*)(GLclampf,bool))
 load_function("glSampleCoverage");
@@ -1258,16 +1274,16 @@ if(glBlendFuncSeparate==NULL)return false;
 glBlendColor= (void(__stdcall*)(GLclampf,GLclampf,GLclampf,GLclampf))
 load_function("glBlendColor");
 if(glBlendColor==NULL)return false;
-/*:120*//*124:*/
-#line 2656 "weaver-window.tex"
+/*:121*//*125:*/
+#line 2679 "weaver-window.tex"
 
 glStencilMaskSeparate= (void(__stdcall*)(GLenum,unsigned int))
 load_function("glStencilMaskSeparate");
 if(glStencilMaskSeparate==NULL)return false;
 glClearDepthf= (void(__stdcall*)(GLclampf))load_function("glClearDepthf");
 if(glClearDepthf==NULL)return false;
-/*:124*//*127:*/
-#line 2721 "weaver-window.tex"
+/*:125*//*128:*/
+#line 2744 "weaver-window.tex"
 
 glBindFramebuffer= (void(__stdcall*)(GLenum,unsigned int))
 load_function("glBindFramebuffer");
@@ -1314,12 +1330,12 @@ if(glIsRenderbuffer==NULL)return false;
 glGetRenderbufferParameteriv= (void(__stdcall*)(GLenum,GLenum,int*))
 load_function("glGetRenderbufferParameteriv");
 if(glGetRenderbufferParameteriv==NULL)return false;
-/*:127*/
-#line 971 "weaver-window.tex"
+/*:128*/
+#line 994 "weaver-window.tex"
 
 #endif
-/*:43*//*44:*/
-#line 981 "weaver-window.tex"
+/*:44*//*45:*/
+#line 1004 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -1330,15 +1346,15 @@ GetMessage(&msg,NULL,0,0);
 }while(msg.message==WM_CREATE);
 }
 #endif
-/*:44*/
-#line 1009 "weaver-window.tex"
+/*:45*/
+#line 1032 "weaver-window.tex"
 
 _Wflush_window_input();
 already_have_window= true;
 return true;
 }
-/*:45*//*130:*/
-#line 2867 "weaver-window.tex"
+/*:46*//*131:*/
+#line 2890 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -1356,8 +1372,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:130*//*131:*/
-#line 2895 "weaver-window.tex"
+/*:131*//*132:*/
+#line 2918 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -1373,8 +1389,8 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:131*//*132:*/
-#line 2919 "weaver-window.tex"
+/*:132*//*133:*/
+#line 2942 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -1387,16 +1403,16 @@ already_have_window= false;
 return true;
 }
 #endif
-/*:132*//*133:*/
-#line 2951 "weaver-window.tex"
+/*:133*//*134:*/
+#line 2974 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
 return eglSwapBuffers(egl_display,egl_window);
 }
 #endif
-/*:133*//*134:*/
-#line 2977 "weaver-window.tex"
+/*:134*//*135:*/
+#line 3000 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -1404,16 +1420,16 @@ glFlush();
 return true;
 }
 #endif
-/*:134*//*135:*/
-#line 2994 "weaver-window.tex"
+/*:135*//*136:*/
+#line 3017 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wrender_window(void){
 return wglSwapLayerBuffers(device_context,WGL_SWAP_MAIN_PLANE);
 }
 #endif
-/*:135*//*136:*/
-#line 3017 "weaver-window.tex"
+/*:136*//*137:*/
+#line 3040 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wget_window_size(int*width,int*height){
@@ -1431,8 +1447,8 @@ window_size_y= *height;
 return true;
 }
 #endif
-/*:136*//*137:*/
-#line 3046 "weaver-window.tex"
+/*:137*//*138:*/
+#line 3069 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wget_window_size(int*width,int*height){
@@ -1459,8 +1475,8 @@ return false;
 }
 }
 #endif
-/*:137*//*138:*/
-#line 3082 "weaver-window.tex"
+/*:138*//*139:*/
+#line 3105 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wget_window_size(int*width,int*height){
@@ -1480,8 +1496,8 @@ return false;
 }
 }
 #endif
-/*:138*//*139:*/
-#line 3119 "weaver-window.tex"
+/*:139*//*140:*/
+#line 3142 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wis_fullscreen(void){
@@ -1492,8 +1508,8 @@ XGetWindowAttributes(display,window,&attributes);
 return(attributes.override_redirect==true);
 }
 #endif
-/*:139*//*140:*/
-#line 3140 "weaver-window.tex"
+/*:140*//*141:*/
+#line 3163 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 bool _Wis_fullscreen(void){
@@ -1507,8 +1523,8 @@ return 1;
 return full;
 }
 #endif
-/*:140*//*141:*/
-#line 3163 "weaver-window.tex"
+/*:141*//*142:*/
+#line 3186 "weaver-window.tex"
 
 #if defined(_WIN32)
 bool _Wis_fullscreen(void){
@@ -1516,8 +1532,8 @@ DWORD window_style= GetWindowLongA(window,GWL_STYLE);
 return(window_style&WS_POPUP);
 }
 #endif
-/*:141*//*142:*/
-#line 3196 "weaver-window.tex"
+/*:142*//*144:*/
+#line 3241 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 void _Wtoggle_fullscreen(void){
@@ -1538,16 +1554,60 @@ int size_x,size_y;
 _Wget_screen_resolution(&size_x,&size_y);
 XMoveResizeWindow(display,window,0,0,size_x,size_y);
 }
+else if(last_window_size_x> 0&&last_window_size_y> 0)
+XMoveResizeWindow(display,window,0,0,last_window_size_x,
+last_window_size_y);
 }
 #endif
-/*:142*//*147:*/
-#line 3317 "weaver-window.tex"
+/*:144*//*145:*/
+#line 3291 "weaver-window.tex"
+
+#if defined(__EMSCRIPTEN__)
+void _Wtoggle_fullscreen(void){
+if(fullscreen_mode){
+EM_ASM({
+var el= document.getElementById("canvas");
+el.style.position= "initial";
+el.style.top= "initial";
+el.style.left= "initial";
+if($0=== 0||$1==0){
+el.style.width= "initial";
+el.width= el.clientWidth*window.devicePixelRatio;
+el.style.height= "initial";
+el.height= el.clientHeight*window.devicePixelRatio;
+}else{
+el.style.width= ($0/window.devicePixelRatio)+"px";
+el.width= $0;
+el.style.height= ($1/window.devicePixelRatio)+"px";
+el.height= $1;
+}
+document.exitFullscreen();
+},last_window_size_x,last_window_size_y);
+fullscreen_mode= true;
+}else{
+EM_ASM(
+var el= document.getElementById("canvas");
+el.style.position= "absolute";
+el.style.top= "0px";
+el.style.left= "0px";
+el.style.width= window.screen.width+"px";
+el.style.height= window.screen.height+"px";
+el.width= (window.screen.width*window.devicePixelRatio);
+el.height= (window.screen.height*window.devicePixelRatio);
+el.requestFullscreen();
+);
+fullscreen_mode= true;
+}
+}
+#endif
+/*:145*//*150:*/
+#line 3428 "weaver-window.tex"
 
 void _Wget_window_input(unsigned long current_time){
 if(already_have_window==false)
 return;
-/*170:*/
-#line 3940 "weaver-window.tex"
+/*173:*/
+#line 4051 "weaver-window.tex"
 
 {
 int i;
@@ -1558,8 +1618,8 @@ _Wkeyboard.key[released_keys[i]]= 0;
 released_keys[i]= 0;
 }
 }
-/*:170*//*193:*/
-#line 4411 "weaver-window.tex"
+/*:173*//*196:*/
+#line 4522 "weaver-window.tex"
 
 {
 int i;
@@ -1570,23 +1630,23 @@ _Wmouse.button[released_buttons[i]]= 0;
 released_buttons[i]= 0;
 }
 }
-/*:193*/
-#line 3321 "weaver-window.tex"
+/*:196*/
+#line 3432 "weaver-window.tex"
 
-/*148:*/
-#line 3334 "weaver-window.tex"
+/*151:*/
+#line 3445 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XEvent event;
 while(XPending(display)){
 XNextEvent(display,&event);
-/*154:*/
-#line 3450 "weaver-window.tex"
+/*157:*/
+#line 3561 "weaver-window.tex"
 
 if(event.type==KeyPress){
 unsigned key= event.xkey.keycode;
-/*167:*/
-#line 3842 "weaver-window.tex"
+/*170:*/
+#line 3953 "weaver-window.tex"
 
 {
 int i;
@@ -1603,17 +1663,17 @@ break;
 }
 if(i==32)continue;
 }
-/*:167*/
-#line 3453 "weaver-window.tex"
+/*:170*/
+#line 3564 "weaver-window.tex"
 
 }
-/*:154*//*155:*/
-#line 3463 "weaver-window.tex"
+/*:157*//*158:*/
+#line 3574 "weaver-window.tex"
 
 if(event.type==KeyRelease){
 unsigned key= event.xkey.keycode;
-/*168:*/
-#line 3870 "weaver-window.tex"
+/*171:*/
+#line 3981 "weaver-window.tex"
 
 {
 int i;
@@ -1645,17 +1705,17 @@ if(_Wkeyboard.key[key]==0)
 _Wkeyboard.key[key]= -1;
 }
 }
-/*:168*/
-#line 3466 "weaver-window.tex"
+/*:171*/
+#line 3577 "weaver-window.tex"
 
 }
-/*:155*//*176:*/
-#line 4055 "weaver-window.tex"
+/*:158*//*179:*/
+#line 4166 "weaver-window.tex"
 
 if(event.type==ButtonPress){
 unsigned button= event.xbutton.button;
-/*190:*/
-#line 4325 "weaver-window.tex"
+/*193:*/
+#line 4436 "weaver-window.tex"
 
 {
 int i;
@@ -1672,17 +1732,17 @@ break;
 }
 if(i==4)continue;
 }
-/*:190*/
-#line 4058 "weaver-window.tex"
+/*:193*/
+#line 4169 "weaver-window.tex"
 
 }
-/*:176*//*177:*/
-#line 4069 "weaver-window.tex"
+/*:179*//*180:*/
+#line 4180 "weaver-window.tex"
 
 if(event.type==ButtonRelease){
 unsigned button= event.xbutton.button;
-/*191:*/
-#line 4350 "weaver-window.tex"
+/*194:*/
+#line 4461 "weaver-window.tex"
 
 {
 int i;
@@ -1714,19 +1774,19 @@ if(_Wmouse.button[button]==0)
 _Wmouse.button[button]= -1;
 }
 }
-/*:191*/
-#line 4072 "weaver-window.tex"
+/*:194*/
+#line 4183 "weaver-window.tex"
 
 }
-/*:177*//*178:*/
-#line 4081 "weaver-window.tex"
+/*:180*//*181:*/
+#line 4192 "weaver-window.tex"
 
 if(event.type==MotionNotify){
 int x,y;
 x= event.xmotion.x;
 y= (window_size_y-1)-event.xmotion.y;
-/*194:*/
-#line 4431 "weaver-window.tex"
+/*197:*/
+#line 4542 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -1744,28 +1804,28 @@ last_mouse_dy= _Wmouse.dy;
 if(mouse_initialization> 0)
 mouse_initialization--;
 }
-/*:194*/
-#line 4086 "weaver-window.tex"
+/*:197*/
+#line 4197 "weaver-window.tex"
 
 }
-/*:178*/
-#line 3339 "weaver-window.tex"
+/*:181*/
+#line 3450 "weaver-window.tex"
 
 }
 #endif
-/*:148*//*149:*/
-#line 3349 "weaver-window.tex"
+/*:151*//*152:*/
+#line 3460 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 SDL_Event event;
 while(SDL_PollEvent(&event)){
-/*160:*/
-#line 3628 "weaver-window.tex"
+/*163:*/
+#line 3739 "weaver-window.tex"
 
 if(event.type==SDL_KEYDOWN){
 unsigned key= event.key.keysym.scancode;
-/*167:*/
-#line 3842 "weaver-window.tex"
+/*170:*/
+#line 3953 "weaver-window.tex"
 
 {
 int i;
@@ -1782,17 +1842,17 @@ break;
 }
 if(i==32)continue;
 }
-/*:167*/
-#line 3631 "weaver-window.tex"
+/*:170*/
+#line 3742 "weaver-window.tex"
 
 }
-/*:160*//*161:*/
-#line 3640 "weaver-window.tex"
+/*:163*//*164:*/
+#line 3751 "weaver-window.tex"
 
 if(event.type==SDL_KEYUP){
 unsigned key= event.key.keysym.scancode;
-/*168:*/
-#line 3870 "weaver-window.tex"
+/*171:*/
+#line 3981 "weaver-window.tex"
 
 {
 int i;
@@ -1824,17 +1884,17 @@ if(_Wkeyboard.key[key]==0)
 _Wkeyboard.key[key]= -1;
 }
 }
-/*:168*/
-#line 3643 "weaver-window.tex"
+/*:171*/
+#line 3754 "weaver-window.tex"
 
 }
-/*:161*//*181:*/
-#line 4144 "weaver-window.tex"
+/*:164*//*184:*/
+#line 4255 "weaver-window.tex"
 
 if(event.type==SDL_MOUSEBUTTONDOWN){
 unsigned button= event.button.button;
-/*190:*/
-#line 4325 "weaver-window.tex"
+/*193:*/
+#line 4436 "weaver-window.tex"
 
 {
 int i;
@@ -1851,17 +1911,17 @@ break;
 }
 if(i==4)continue;
 }
-/*:190*/
-#line 4147 "weaver-window.tex"
+/*:193*/
+#line 4258 "weaver-window.tex"
 
 }
-/*:181*//*182:*/
-#line 4155 "weaver-window.tex"
+/*:184*//*185:*/
+#line 4266 "weaver-window.tex"
 
 if(event.type==SDL_MOUSEBUTTONUP){
 unsigned button= event.button.button;
-/*191:*/
-#line 4350 "weaver-window.tex"
+/*194:*/
+#line 4461 "weaver-window.tex"
 
 {
 int i;
@@ -1893,19 +1953,19 @@ if(_Wmouse.button[button]==0)
 _Wmouse.button[button]= -1;
 }
 }
-/*:191*/
-#line 4158 "weaver-window.tex"
+/*:194*/
+#line 4269 "weaver-window.tex"
 
 }
-/*:182*//*183:*/
-#line 4166 "weaver-window.tex"
+/*:185*//*186:*/
+#line 4277 "weaver-window.tex"
 
 if(event.type==SDL_MOUSEMOTION){
 int x,y;
 x= event.motion.x;
 y= (window_size_y-1)-event.motion.y;
-/*194:*/
-#line 4431 "weaver-window.tex"
+/*197:*/
+#line 4542 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -1923,28 +1983,28 @@ last_mouse_dy= _Wmouse.dy;
 if(mouse_initialization> 0)
 mouse_initialization--;
 }
-/*:194*/
-#line 4171 "weaver-window.tex"
+/*:197*/
+#line 4282 "weaver-window.tex"
 
 }
-/*:183*/
-#line 3353 "weaver-window.tex"
+/*:186*/
+#line 3464 "weaver-window.tex"
 
 }
 #endif
-/*:149*//*150:*/
-#line 3363 "weaver-window.tex"
+/*:152*//*153:*/
+#line 3474 "weaver-window.tex"
 
 #if defined(_WIN32)
 MSG event;
 while(PeekMessage(&event,window,WM_KEYFIRST,WM_KEYLAST,PM_REMOVE)){
-/*164:*/
-#line 3737 "weaver-window.tex"
+/*167:*/
+#line 3848 "weaver-window.tex"
 
 if(event.message==WM_KEYDOWN){
 unsigned key= (event.lParam&0x00ff0000)>>16;
-/*167:*/
-#line 3842 "weaver-window.tex"
+/*170:*/
+#line 3953 "weaver-window.tex"
 
 {
 int i;
@@ -1961,17 +2021,17 @@ break;
 }
 if(i==32)continue;
 }
-/*:167*/
-#line 3740 "weaver-window.tex"
+/*:170*/
+#line 3851 "weaver-window.tex"
 
 }
-/*:164*//*165:*/
-#line 3751 "weaver-window.tex"
+/*:167*//*168:*/
+#line 3862 "weaver-window.tex"
 
 if(event.message==WM_KEYUP){
 unsigned key= (event.lParam&0x00ff0000)>>16;
-/*168:*/
-#line 3870 "weaver-window.tex"
+/*171:*/
+#line 3981 "weaver-window.tex"
 
 {
 int i;
@@ -2003,22 +2063,22 @@ if(_Wkeyboard.key[key]==0)
 _Wkeyboard.key[key]= -1;
 }
 }
-/*:168*/
-#line 3754 "weaver-window.tex"
+/*:171*/
+#line 3865 "weaver-window.tex"
 
 }
-/*:165*/
-#line 3367 "weaver-window.tex"
+/*:168*/
+#line 3478 "weaver-window.tex"
 
 }
 while(PeekMessage(&event,window,WM_MOUSEFIRST,WM_MOUSELAST,PM_REMOVE)){
-/*186:*/
-#line 4222 "weaver-window.tex"
+/*189:*/
+#line 4333 "weaver-window.tex"
 
 if(event.message==WM_LBUTTONDOWN){
 unsigned button= W_MOUSE_LEFT;
-/*190:*/
-#line 4325 "weaver-window.tex"
+/*193:*/
+#line 4436 "weaver-window.tex"
 
 {
 int i;
@@ -2035,14 +2095,14 @@ break;
 }
 if(i==4)continue;
 }
-/*:190*/
-#line 4225 "weaver-window.tex"
+/*:193*/
+#line 4336 "weaver-window.tex"
 
 }
 else if(event.message==WM_MBUTTONDOWN){
 unsigned button= W_MOUSE_MIDDLE;
-/*190:*/
-#line 4325 "weaver-window.tex"
+/*193:*/
+#line 4436 "weaver-window.tex"
 
 {
 int i;
@@ -2059,14 +2119,14 @@ break;
 }
 if(i==4)continue;
 }
-/*:190*/
-#line 4229 "weaver-window.tex"
+/*:193*/
+#line 4340 "weaver-window.tex"
 
 }
 else if(event.message==WM_RBUTTONDOWN){
 unsigned button= W_MOUSE_RIGHT;
-/*190:*/
-#line 4325 "weaver-window.tex"
+/*193:*/
+#line 4436 "weaver-window.tex"
 
 {
 int i;
@@ -2083,8 +2143,8 @@ break;
 }
 if(i==4)continue;
 }
-/*:190*/
-#line 4233 "weaver-window.tex"
+/*:193*/
+#line 4344 "weaver-window.tex"
 
 }
 else if(event.message==WM_XBUTTONDOWN){
@@ -2092,8 +2152,8 @@ unsigned button= W_MOUSE_X2;
 if((event.wParam>>16)&0x0001){
 unsigned button= W_MOUSE_X1;
 }
-/*190:*/
-#line 4325 "weaver-window.tex"
+/*193:*/
+#line 4436 "weaver-window.tex"
 
 {
 int i;
@@ -2110,20 +2170,20 @@ break;
 }
 if(i==4)continue;
 }
-/*:190*/
-#line 4240 "weaver-window.tex"
+/*:193*/
+#line 4351 "weaver-window.tex"
 
 }
-/*:186*/
-#line 3370 "weaver-window.tex"
+/*:189*/
+#line 3481 "weaver-window.tex"
 
 }
 #endif
-/*:150*/
-#line 3322 "weaver-window.tex"
+/*:153*/
+#line 3433 "weaver-window.tex"
 
-/*169:*/
-#line 3912 "weaver-window.tex"
+/*172:*/
+#line 4023 "weaver-window.tex"
 
 {
 int i;
@@ -2136,8 +2196,8 @@ if(current_time> pressed_keys[i].key)
 _Wkeyboard.key[pressed_keys[i].key]= (current_time-pressed_keys[i].key);
 }
 }
-/*:169*//*192:*/
-#line 4390 "weaver-window.tex"
+/*:172*//*195:*/
+#line 4501 "weaver-window.tex"
 
 {
 int i;
@@ -2151,19 +2211,19 @@ _Wmouse.button[pressed_buttons[i].button]=
 (current_time-pressed_buttons[i].button);
 }
 }
-/*:192*/
-#line 3323 "weaver-window.tex"
+/*:195*/
+#line 3434 "weaver-window.tex"
 
 }
-/*:147*//*195:*/
-#line 4462 "weaver-window.tex"
+/*:150*//*198:*/
+#line 4573 "weaver-window.tex"
 
 void _Wflush_window_input(void){
 
 _Wget_window_input(~0x0);
 
-/*152:*/
-#line 3414 "weaver-window.tex"
+/*155:*/
+#line 3525 "weaver-window.tex"
 
 {
 int i;
@@ -2174,12 +2234,12 @@ released_keys[i]= 0;
 for(i= 0;i<W_KEYBOARD_SIZE+1;i++)
 _Wkeyboard.key[i]= 0;
 }
-/*:152*/
-#line 4467 "weaver-window.tex"
+/*:155*/
+#line 4578 "weaver-window.tex"
 
 
-/*174:*/
-#line 4009 "weaver-window.tex"
+/*177:*/
+#line 4120 "weaver-window.tex"
 
 {
 int i;
@@ -2192,8 +2252,8 @@ _Wmouse.button[i]= 0;
 _Wmouse.x= _Wmouse.y= _Wmouse.dx= _Wmouse.dy= _Wmouse.ddx= _Wmouse.ddy= 0;
 last_mouse_dx= last_mouse_dy= 0;
 mouse_initialization= 3;
-/*179:*/
-#line 4104 "weaver-window.tex"
+/*182:*/
+#line 4215 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
@@ -2205,8 +2265,8 @@ XQueryPointer(display,window,&root_return,&child_return,
 &root_x_return,&root_y_return,&x,&y,&mask_return);
 
 y= (window_size_y-1)-y;
-/*194:*/
-#line 4431 "weaver-window.tex"
+/*197:*/
+#line 4542 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -2224,13 +2284,13 @@ last_mouse_dy= _Wmouse.dy;
 if(mouse_initialization> 0)
 mouse_initialization--;
 }
-/*:194*/
-#line 4115 "weaver-window.tex"
+/*:197*/
+#line 4226 "weaver-window.tex"
 
 }
 #endif
-/*:179*//*184:*/
-#line 4180 "weaver-window.tex"
+/*:182*//*187:*/
+#line 4291 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 {
@@ -2238,8 +2298,8 @@ int x,y;
 SDL_GetMouseState(&x,&y);
 
 y= (window_size_y-1)-y;
-/*194:*/
-#line 4431 "weaver-window.tex"
+/*197:*/
+#line 4542 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -2257,13 +2317,13 @@ last_mouse_dy= _Wmouse.dy;
 if(mouse_initialization> 0)
 mouse_initialization--;
 }
-/*:194*/
-#line 4187 "weaver-window.tex"
+/*:197*/
+#line 4298 "weaver-window.tex"
 
 }
 #endif
-/*:184*//*189:*/
-#line 4294 "weaver-window.tex"
+/*:187*//*192:*/
+#line 4405 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -2276,8 +2336,8 @@ ScreenToClient(window,&point);
 
 x= point.x;
 y= (window_size_y-1)-point.y;
-/*194:*/
-#line 4431 "weaver-window.tex"
+/*197:*/
+#line 4542 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -2295,20 +2355,20 @@ last_mouse_dy= _Wmouse.dy;
 if(mouse_initialization> 0)
 mouse_initialization--;
 }
-/*:194*/
-#line 4306 "weaver-window.tex"
+/*:197*/
+#line 4417 "weaver-window.tex"
 
 }
 #endif
-/*:189*/
-#line 4021 "weaver-window.tex"
+/*:192*/
+#line 4132 "weaver-window.tex"
 
 }
-/*:174*/
-#line 4469 "weaver-window.tex"
+/*:177*/
+#line 4580 "weaver-window.tex"
 
 }
-/*:195*/
-#line 4487 "weaver-window.tex"
+/*:198*/
+#line 4598 "weaver-window.tex"
 
-/*:196*/
+/*:199*/

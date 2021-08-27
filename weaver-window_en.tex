@@ -702,13 +702,13 @@ when we execute the function to close the window).
 #if defined(__EMSCRIPTEN__)
 {
   int window_size_x = screen_resolution;
-  int fullscreen_flag = SDL_WINDOW_FULLSCREEN;
+  fullscreen_mode = true;
   double pixel_ratio = EM_ASM_DOUBLE({
     return window.devicePixelRatio;
   });
   window_size_y = screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
-  fullscreen_flag = 0;
+  fullscreen_mode = false;
 #if defined(W_WINDOW_SIZE_X) && W_Window_Size_X > 0
   window_size_x = W_Window_Size_X;
 #endif
@@ -728,7 +728,7 @@ when we execute the function to close the window).
   );
   window = SDL_SetVideoMode(window_size_x / pixel_ratio,
                             window_size_y / pixel_ratio, 0, SDL_OPENGL);
-  if(fullscreen_flag){
+  if(fullscreen_mode){
     EM_ASM(
       var el = document.getElementById("canvas");
       el.style.position = "absolute";
@@ -756,6 +756,26 @@ in a mobile device where the logical pixel size is different than the
 real device pixel, the default viewport could have wrong
 values. Because of this, it is important to adjust the viewport
 explicitly here.
+
+Another necessary thing for the code above is declaring a static
+variable to memorize if we are in fullscreen mode or not:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if defined(__EMSCRIPTEN__)
+static bool fullscreen_mode = false;
+#endif
+@
+\fimcodigo
+
+This variable is necessary in Web Assembly because here we, and not
+some window manager, are responsible to make some adjusts in our
+``window'' to make it fullscreen. And we also make things to act as a
+fullscreen window, even if the web broser do not let us became
+fullscreen: we make our canvas occupy the screen are in the top of the
+page, so that the user still can enter manually in fullscreen if we
+fail. Because of this, we should remember if we are in fullscreen mode
+or not.
 
 The window in this case is considered a SDL surface:
 
@@ -3074,7 +3094,7 @@ bool _Wget_window_size(int *width, int *height){
 Here we will define the function that checks if we are in fullscreen
 mode or not.
 
-\subsubsection{2.7.1. Checking Fullscreen Mode on X11}
+\subsubsecao{2.7.1. Checking Fullscreen Mode on X11}
 
 In X11, we create a fullscreen window adjusting a window attribute to
 make the window override any window manager configuration and occupy
@@ -3123,7 +3143,7 @@ bool _Wis_fullscreen(void){
 Detect a fullscreen mode on Windows means using the
 function \monoespaco{SHQueryUserNotificationState} to obtain the state
 of the screen. If we are in a fullscreen window, we will know getting
-as result \monespaco{QUNS\_BUSY}:
+as result \monoespaco{QUNS\_BUSY}:
 
 \iniciocodigo
 @<API Functions@>+=
@@ -3139,6 +3159,27 @@ bool _Wis_fullscreen(void){
 
 Here we present the functions that toggles between fulllscreen and
 windowed mode in different environments.
+
+Doing this correctly involves remembering the window size whet it is
+in windowed mode. If we enter fullscreen and then return to windowed
+mode, the winow size should be the last remembered size. We will store
+the last size for our window in windowed mode in the variables
+below. The initial values for these variables can be controlled by
+some macros if them exist. If not, we set their values to zero,
+meaning that we have no previous stored value for the window size:
+
+\iniciocodigo
+@<Local Variables@>+=
+#if defined(W_WINDOW_SIZE_X) && defined(W_WINDOW_SIZE_Y)
+static unsigned last_window_size_x = W_WINDOW_SIZE_X;
+static unsigned last_window_size_y = W_WINDOW_SIZE_Y;
+#else
+static unsigned last_window_size_x = 0;
+static unsigned last_window_size_y = 0;
+#endif
+@
+\fimcodigo
+
 
 \subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on X11}
 
@@ -3175,6 +3216,71 @@ void _Wtoggle_fullscreen(void){
     int size_x, size_y;
     _Wget_screen_resolution(&size_x, &size_y);
     XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
+  }
+  else if(last_window_size_x > 0 && last_window_size_y > 0)
+    XMoveResizeWindow(display, window, 0, 0, last_window_size_x,
+                      last_window_size_y);
+}
+#endif
+@
+
+\subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on Web Assembly}
+
+In a web browser, when we try to enter fullscreen mode, two things can
+happen. The browser can let us enter fullscreen mode or not. In the
+second case, we still try to simulate a fullscreen making our HTML
+canvas having the same size than the screen and occupy the top part of
+the document. We do this to let the user enter manually in fullscreen
+using the browser options.
+
+This means that we could be in a true fullscreen or in a simulated
+one. Because of this we store if we are in fullscreen mode (real or
+simulated) in the static variable \monoespaco{fullscreen\_mode}. The
+function \monoespaco{\_Wis\_fullscreen}, on the other hand, only
+informs if we are in the real fullscreen mode.
+
+Our function that toggles the windowed and fullscreen mode will make
+the changes according with the static variable. Even if we cannot
+enter a real fullscreen, we toggle between the windowed mode and the
+simulated fullscreen mode:
+
+\iniciocodigo
+@<API Functions@>+=
+#if defined(__EMSCRIPTEN__)
+void _Wtoggle_fullscreen(void){
+  if(fullscreen_mode){
+    EM_ASM({
+      var el = document.getElementById("canvas");
+      el.style.position = "initial";
+      el.style.top = "initial";
+      el.style.left = "initial";
+      if($0 === 0 || $1 == 0){
+        el.style.width = "initial";
+        el.width = el.clientWidth * window.devicePixelRatio;
+        el.style.height = "initial";
+        el.height = el.clientHeight * window.devicePixelRatio;
+      } else{
+        el.style.width = ($0 / window.devicePixelRatio) + "px";
+        el.width = $0;
+        el.style.height = ($1 / window.devicePixelRatio) + "px";
+        el.height = $1;
+      }
+      document.exitFullscreen();
+    }, last_window_size_x, last_window_size_y);
+    fullscreen_mode = true;
+  } else{
+    EM_ASM(
+      var el = document.getElementById("canvas");
+      el.style.position = "absolute";
+      el.style.top = "0px";
+      el.style.left = "0px";
+      el.style.width = window.screen.width + "px";
+      el.style.height = window.screen.height + "px";
+      el.width = (window.screen.width * window.devicePixelRatio);
+      el.height = (window.screen.height * window.devicePixelRatio);
+      el.requestFullscreen();
+    );
+    fullscreen_mode = true;
   }
 }
 #endif

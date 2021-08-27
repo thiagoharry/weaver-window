@@ -261,7 +261,7 @@ resultado é indefinido se uma janela não foi criada.
 @<Declarações de Janela@>+=
 void _Wtoggle_fullscreen(void);
 @
-\fimcodigp
+\fimcodigo
 
 Esta função alterna entre o modo de tela cheia e modo em
 janela. Dependendo do ambiente ela pode falhar.
@@ -724,13 +724,13 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
 #if defined(__EMSCRIPTEN__)
 {
   int window_size_x = screen_resolution_x;
-  int fullscreen_flag = SDL_WINDOW_FULLSCREEN;
+  fullscreen_mode = true;
   double pixel_ratio = EM_ASM_DOUBLE({
     return window.devicePixelRatio;
   });
   window_size_y = screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
-  fullscreen_flag = 0;
+  fullscreen_mode = false;
 #if defined(W_WINDOW_SIZE_X) && W_Window_Size_X > 0
   window_size_x = W_Window_Size_X;
 #endif
@@ -750,7 +750,7 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
   );
   window = SDL_SetVideoMode(window_size_x / pixel_ratio,
                             window_size_y / pixel_ratio, 0, SDL_OPENGL);
-  if(fullscreen_flag){
+  if(fullscreen_mode){
     EM_ASM(
       var el = document.getElementById("canvas");
       el.style.position = "absolute";
@@ -780,7 +780,30 @@ lógico é diferente do pixel físico da tela, o valor padrão da tela de
 exibição pode vir errado. Por isso é importante ajustar manualmente
 nestes casos.
 
-Nossa janela neste caso é considerada uma superfície SDL:
+Outra coisa necessária para o código acima é uma variável estática
+booleana que mantém se estamos em modo tela-cheia ou não:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if defined(__EMSCRIPTEN__)
+static bool fullscreen_mode = false;
+#endif
+@
+\fimcodigo
+
+A variável é necessária caso estejamos rodando em um navegador porque
+neste caso, somos nós e não um gerenciador de janelas externo que
+precisa fazer alguns ajustes na nossa ``janela'' para deixá-la em tela
+cheia. Além disso, também tentamos ajustar nossa janela para a
+tela-cheia mesmo que o navegador de Internet não nos deixe entrar em
+modo de tela-cheia: neste caso ainda deixamos a nossa área ficar com o
+tamanho da tela e ocupar o topo do documento para que o usuário possa
+ainda entrar em tela-cheia manualmente. Então somente no caso de
+ambiente Web Assembly, nós memorizamos em uma variável se devemos
+estar ou não em tela-cheia.
+
+O que chamamos de ``janela'' neste caso é considerada uma superfície
+SDL mapeada para um canvas HTML:
 
 \iniciocodigo
 @<Variáveis Locais@>+=
@@ -3157,7 +3180,7 @@ bool _Wis_fullscreen(void){
 Detectar a tela cheia no Windows envolve usar a
 função \monoespaco{SHQueryUserNotificationState} para obter o estado
 da tela. Se tivermos uma janela em tela-cheia, saberemos disso se
-obtiveros como resultado \monespaco{QUNS\_BUSY}:
+obtiveros como resultado \monoespaco{QUNS\_BUSY}:
 
 \iniciocodigo
 @<Funções da API@>+=
@@ -3174,6 +3197,28 @@ bool _Wis_fullscreen(void){
 
 Aqui iremos definir a função que alterna entre modo tela-cheia e
 janela nos diferentes ambientes suportados:
+
+Fazer isso corretamente requer que memorizemos qual o último tamanho
+de nossa janela quando não estamos em tela-cheia. Quando passamos da
+tela cheia para o modo de janela iremos fazer nossa janela ocupar de
+volta o mesmo tamanho de antes. O tamanho inicial é configurado por
+macros, se elas existirem. Neste caso, o valor inicial para a variável
+que memoriza o tamanho é o conteúdo das macros. Se elas não existirem,
+apenas armazenamos zero nas variáveis significando que não temos
+memória alguma de qual deve ser o tamanho da janela fora da tela
+cheia:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+#if defined(W_WINDOW_SIZE_X) && defined(W_WINDOW_SIZE_Y)
+static unsigned last_window_size_x = W_WINDOW_SIZE_X;
+static unsigned last_window_size_y = W_WINDOW_SIZE_Y;
+#else
+static unsigned last_window_size_x = 0;
+static unsigned last_window_size_y = 0;
+#endif
+@
+\fimcodigo
 
 \subsubsecao{2.8.1. Alternando entre Tela Cheia e Janela no X11}
 
@@ -3213,10 +3258,76 @@ void _Wtoggle_fullscreen(void){
     _Wget_screen_resolution(&size_x, &size_y);
     XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
   }
+  else if(last_window_size_x > 0 && last_window_size_y > 0)
+    XMoveResizeWindow(display, window, 0, 0, last_window_size_x,
+                      last_window_size_y);
 }
 #endif
 @
 
+\subsubsecao{2.8.2. Alternando entre Tela Cheia e Janela no Web Assembly}
+
+Em um navegador de Internet, quando tentamos entrar em tela-cheia,
+duas coisas podem acontecer: podemos realmente obter uma tela-cheia
+verdadeira se o navegador de Internet deixar ou podemos não obter
+permissão. Neste segundo caso nós ainda simulamos uma tela-cheia
+fazendo nosso canvas HTML ter o mesmo tamanho da tela e ocupar a área
+de topo do documento. Isso permite que o usuário ainda possa entrar em
+tela-cheia manualmente nas opções do navegador.
+
+Isso significa que podemos estar em uma tela-cheia verdadeira ou
+simulada. Por causa disso neste caso temos uma variável estática
+booleana, a \monoespaco{fullscreen\_mode} que nos diz se estamos em
+tela-cheia (verdadeira ou simulada) ou não. Em contraste, a
+função \monoespaco{\_Wis\_fullscreen} apenas nos informa se estamos em
+tela-cheia verdadeira.
+
+Nossa função que alternará entre modo janela e tela-cheia se baseará
+então na informação presente na variável estática. E mesmo que não
+possamos entrar em tela-cheia verdadeira,  alternaremos entre o modo de
+janela e o de tela-cheia simulada:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(__EMSCRIPTEN__)
+void _Wtoggle_fullscreen(void){
+  if(fullscreen_mode){
+    EM_ASM({
+      var el = document.getElementById("canvas");
+      el.style.position = "initial";
+      el.style.top = "initial";
+      el.style.left = "initial";
+      if($0 === 0 || $1 == 0){
+        el.style.width = "initial";
+        el.width = el.clientWidth * window.devicePixelRatio;
+        el.style.height = "initial";
+        el.height = el.clientHeight * window.devicePixelRatio;
+      } else{
+        el.style.width = ($0 / window.devicePixelRatio) + "px";
+        el.width = $0;
+        el.style.height = ($1 / window.devicePixelRatio) + "px";
+        el.height = $1;
+      }
+      document.exitFullscreen();
+    }, last_window_size_x, last_window_size_y);
+    fullscreen_mode = true;
+  } else{
+    EM_ASM(
+      var el = document.getElementById("canvas");
+      el.style.position = "absolute";
+      el.style.top = "0px";
+      el.style.left = "0px";
+      el.style.width = window.screen.width + "px";
+      el.style.height = window.screen.height + "px";
+      el.width = (window.screen.width * window.devicePixelRatio);
+      el.height = (window.screen.height * window.devicePixelRatio);
+      el.requestFullscreen();
+    );
+    fullscreen_mode = true;
+  }
+}
+#endif
+@
 
 
 \secao{3. Gerenciando Entrada}
