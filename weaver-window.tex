@@ -3329,6 +3329,32 @@ void _Wtoggle_fullscreen(void){
 #endif
 @
 
+\subsubsecao{2.8.3. Alternando entre Tela Cheia e Janela no Windows}
+
+No Windows controlamos a tela-cheia alternando entre os estilos da
+janela. Podemos ler e escrever informações sobre um estilo de janela
+por meio de \monoespaco{GetWindowLongA} e \monoespaco{SetWindowLongA}:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(_WIN32)
+void _Wtoggle_fullscreen(void){
+  int size_x, size_y;
+  DWORD window_style = GetWindowLongA(window, GWL_STYLE);
+  if(window_style & WS_POPUP){ // Estamos em tela-cheia. Entrar em modo janela.
+    SetWindowLong(window, GWL_STYLE, (window_style & ~WS_POPUP) | WS_OVERLAPPED);
+    if(last_window_size_x > 0 && last_window_size_y > 0)
+      SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x,
+                   last_window_size_y);
+  } else{ // Estamos em modo janela. Entrar em tela-cheia.
+    _Wget_screen_resolution(&size_x, &size_y);
+    SetWindowLong(window, GWL_STYLE, (window_style & ~WS_OVERLAPPED) | WS_POPUP);
+    SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y);
+  }
+}
+#endif
+@
+
 
 \secao{3. Gerenciando Entrada}
 

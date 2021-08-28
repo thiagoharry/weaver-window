@@ -315,26 +315,26 @@ typedef float GLclampf;
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL         0x8CD2
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE 0x8CD3
 #endif
-/*:129*//*156:*/
-#line 3550 "weaver-window.tex"
+/*:129*//*157:*/
+#line 3576 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:156*//*162:*/
-#line 3721 "weaver-window.tex"
+/*:157*//*163:*/
+#line 3747 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
-/*:162*//*166:*/
-#line 3834 "weaver-window.tex"
+/*:163*//*167:*/
+#line 3860 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
-/*:166*//*178:*/
-#line 4148 "weaver-window.tex"
+/*:167*//*179:*/
+#line 4174 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -344,8 +344,8 @@ typedef float GLclampf;
 #define W_MOUSE_X1     Button4
 #define W_MOUSE_X2     Button5
 #endif
-/*:178*//*183:*/
-#line 4240 "weaver-window.tex"
+/*:179*//*184:*/
+#line 4266 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -355,8 +355,8 @@ typedef float GLclampf;
 #define W_MOUSE_X1     SDL_BUTTON_X1
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
-/*:183*//*188:*/
-#line 4315 "weaver-window.tex"
+/*:184*//*189:*/
+#line 4341 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -366,7 +366,7 @@ typedef float GLclampf;
 #define W_MOUSE_X1     4
 #define W_MOUSE_X2     5
 #endif
-/*:188*/
+/*:189*/
 #line 114 "weaver-window.tex"
 
 /*3:*/
@@ -592,21 +592,21 @@ GLenum,int*);
 extern boolean(__stdcall*glIsRenderbuffer)(unsigned int);
 extern void(__stdcall*glGetRenderbufferParameteriv)(GLenum,GLenum,int*);
 #endif
-/*:126*//*146:*/
-#line 3348 "weaver-window.tex"
+/*:126*//*147:*/
+#line 3374 "weaver-window.tex"
 
 extern struct __Wkeyboard{
 long key[W_KEYBOARD_SIZE+1];
 }_Wkeyboard;
-/*:146*//*148:*/
-#line 3395 "weaver-window.tex"
+/*:147*//*149:*/
+#line 3421 "weaver-window.tex"
 
 extern struct __Wmouse{
 long button[W_MOUSE_SIZE];
 int x,y,dx,dy,ddx,ddy;
 }_Wmouse;
-/*:148*//*160:*/
-#line 3662 "weaver-window.tex"
+/*:149*//*161:*/
+#line 3688 "weaver-window.tex"
 
 extern int W_BACKSPACE,W_TAB,W_ENTER,W_UP,W_DOWN,W_LEFT,W_RIGHT,W_0,W_1,
 W_2,W_3,W_4,W_5,W_6,W_7,W_8,W_9,W_MINUS,W_PLUS,W_F1,W_F2,
@@ -616,7 +616,7 @@ W_RIGHT_CTRL,W_SPACE,W_A,W_B,W_C,W_D,W_E,W_F,W_G,W_H,W_I,
 W_J,W_K,W_L,W_M,W_N,W_O,W_P,W_Q,W_R,W_S,W_T,W_U,W_V,W_W,
 X_X,W_Y,W_Z,W_INSERT,W_HOME,W_PAGE_UP,W_DELETE,W_END,
 W_PAGE_DOWN,W_ESC,W_ANY;
-/*:160*/
+/*:161*/
 #line 115 "weaver-window.tex"
 
 #ifdef __cplusplus

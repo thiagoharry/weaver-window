@@ -241,6 +241,7 @@ void test_opengl_buffers(void){
 void test_opengl_shader(void){
   GLint shader_program, pos = 0;
   _Wcreate_window();
+  _Wtoggle_fullscreen();
   {
     GLint vertex_shader, fragment_shader;
     GLint ret;
