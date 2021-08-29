@@ -3254,6 +3254,12 @@ void _Wtoggle_fullscreen(void){
                           &attributes);
   XWithdrawWindow(display, window, 0);
   XMapWindow(display, window);
+  { // Ao mapear a janela novamente temos que esperar isso surtir efeito:
+    XEvent e;
+    do{
+      XNextEvent(display, &e);
+    } while(e.type != MapNotify);
+  }
   if(fullscreen_flag){
     int size_x, size_y;
     _Wget_screen_resolution(&size_x, &size_y);
