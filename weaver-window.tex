@@ -3243,6 +3243,7 @@ janela e ajustar o tamanho dela para o tamanho da tela.
 void _Wtoggle_fullscreen(void){
   bool fullscreen_flag = false;
   XSetWindowAttributes attributes;
+  int new_size_x, new_size_y;
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
     fullscreen_flag = true;
@@ -3261,6 +3262,8 @@ void _Wtoggle_fullscreen(void){
   else if(last_window_size_x > 0 && last_window_size_y > 0)
     XMoveResizeWindow(display, window, 0, 0, last_window_size_x,
                       last_window_size_y);
+  _Wget_window_size(&new_size_x, &new_size_y);
+  glViewport(0, 0, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3291,6 +3294,7 @@ janela e o de tela-cheia simulada:
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 void _Wtoggle_fullscreen(void){
+  int new_size_x, new_size_y;
   if(fullscreen_mode){
     EM_ASM({
       var el = document.getElementById("canvas");
@@ -3325,6 +3329,8 @@ void _Wtoggle_fullscreen(void){
     );
     fullscreen_mode = true;
   }
+  _Wget_window_size(&new_size_x, &new_size_y);
+  glViewport(0, 0, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3355,6 +3361,8 @@ void _Wtoggle_fullscreen(void){
     SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y, SWP_SHOWWINDOW |
                                                          SWP_FRAMECHANGED);
   }
+  _Wget_window_size(&size_x, &size_y);
+  glViewport(0, 0, size_x, size_y);
 }
 #endif
 @
