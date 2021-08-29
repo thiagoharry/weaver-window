@@ -944,7 +944,7 @@ abaixo:
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
   DWORD fullscreen_flag = WS_POPUP;
 #if defined(W_WINDOW_NO_FULLSCREEN)
-  fullscreen_flag = WS_OVERLAPPED;
+  fullscreen_flag = WS_OVERLAPPED | WS_CAPTION;
   window_size_x = size.left - size.right;
   window_size_y = size.bottom - size.top;
 #if defined(W_WINDOW_SIZE_X) && W_WINDOW_SIZE_X > 0
@@ -3333,23 +3333,27 @@ void _Wtoggle_fullscreen(void){
 
 No Windows controlamos a tela-cheia alternando entre os estilos da
 janela. Podemos ler e escrever informações sobre um estilo de janela
-por meio de \monoespaco{GetWindowLongA} e \monoespaco{SetWindowLongA}:
+por meio de \monoespaco{GetWindowLongPtrA} e \monoespaco{SetWindowLongPtrA}:
 
 \iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 void _Wtoggle_fullscreen(void){
   int size_x, size_y;
-  DWORD window_style = GetWindowLongA(window, GWL_STYLE);
+  DWORD window_style = GetWindowLongPtrA(window, GWL_STYLE);
   if(window_style & WS_POPUP){ // Estamos em tela-cheia. Entrar em modo janela.
-    SetWindowLong(window, GWL_STYLE, (window_style & ~WS_POPUP) | WS_OVERLAPPED);
+    SetWindowLong(window, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_VISIBLE);
     if(last_window_size_x > 0 && last_window_size_y > 0)
-      SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x,
-                   last_window_size_y);
+      SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x, last_window_size_y,
+                   SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+    else
+      SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x, last_window_size_y,
+                   SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE);
   } else{ // Estamos em modo janela. Entrar em tela-cheia.
     _Wget_screen_resolution(&size_x, &size_y);
-    SetWindowLong(window, GWL_STYLE, (window_style & ~WS_OVERLAPPED) | WS_POPUP);
-    SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y);
+    SetWindowLongPtr(window, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+    SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y, SWP_SHOWWINDOW |
+                                                         SWP_FRAMECHANGED);
   }
 }
 #endif

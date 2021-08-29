@@ -915,7 +915,7 @@ code below:
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
   DWORD fullscreen_flag = WS_POPUP;
 #if defined(W_WINDOW_NO_FULLSCREEN)
-  fullscreen_flag = WS_OVERLAPPED;
+  fullscreen_flag = WS_OVERLAPPED | WS_CAPTION;
   window_size_x = size.left - size.right;
   window_size_y = size.bottom - size.top;
 #if defined(W_WINDOW_SIZE_X) && W_WINDOW_SIZE_X > 0
@@ -3286,7 +3286,7 @@ void _Wtoggle_fullscreen(void){
 #endif
 @
 
-\subsubsecao{2.8.2. Changing Between Fullscreen and Windowed Mode on Windows}
+\subsubsecao{2.8.3. Changing Between Fullscreen and Windowed Mode on Windows}
 
 On Windows we controll the fullscreen mode changing between styles for
 our window. We can read and write new information about a style with
@@ -3297,16 +3297,20 @@ the functions \monoespaco{GetWindowLongA} and \monoespaco{SetWindowLongA}:
 #if defined(_WIN32)
 void _Wtoggle_fullscreen(void){
   int size_x, size_y;
-  DWORD window_style = GetWindowLongA(window, GWL_STYLE);
-  if(window_style & WS_POPUP){ // We are in fullscreen. Entering windowed mode.
-    SetWindowLong(window, GWL_STYLE, (window_style & ~WS_POPUP) | WS_OVERLAPPED);
+  DWORD window_style = GetWindowLongPtrA(window, GWL_STYLE);
+  if(window_style & WS_POPUP){ // Estamos em tela-cheia. Entrar em modo janela.
+    SetWindowLong(window, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_VISIBLE);
     if(last_window_size_x > 0 && last_window_size_y > 0)
-      SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x,
-                   last_window_size_y);
-  } else{ // We are in windowed mode. Entering fullscreen.
+      SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x, last_window_size_y,
+                   SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+    else
+      SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x, last_window_size_y,
+                   SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE);
+  } else{ // Estamos em modo janela. Entrar em tela-cheia.
     _Wget_screen_resolution(&size_x, &size_y);
-    SetWindowLong(window, GWL_STYLE, (window_style & ~WS_OVERLAPPED) | WS_POPUP);
-    SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y);
+    SetWindowLongPtr(window, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+    SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y, SWP_SHOWWINDOW |
+                                                         SWP_FRAMECHANGED);
   }
 }
 #endif
