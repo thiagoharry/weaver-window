@@ -93,6 +93,26 @@ void test_resolution(void){
   _Wdestroy_window();
 }
 
+void test_resizing(void){
+  int width, height;
+  bool ret;
+  _Wcreate_window();
+  ret = _Wresize_window(800, 600);
+  assert("Do not resize a fullscreen window", !ret);
+  _Wtoggle_fullscreen();
+  ret = _Wresize_window(900, 700);
+  _Wget_window_size(&width, &height);
+  assert("Resizing the window", ret && width == 900 && height == 700);
+  _Wtoggle_fullscreen();
+  ret = _Wresize_window(100, 200);
+  _Wtoggle_fullscreen();
+  _Wget_window_size(&width, &height);
+  assert("Window remembers its size when toggling fullscreen", ret &&
+	 width == 900 && height == 700);
+  _Wget_window_size(&width, &height);
+  _Wdestroy_window();
+}
+
 void test_opengl_simple(void){
   char message[1024];
   time_t initial_time, current_time;
@@ -360,6 +380,7 @@ int main(int argc, char **argv){
   test_create_destroy_window();
   test_resolution();
   test_fullscreen();
+  test_resizing();
   test_opengl_simple();
   test_opengl_shader();
   test_opengl_buffers();

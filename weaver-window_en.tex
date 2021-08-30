@@ -249,6 +249,15 @@ void _Wtoggle_fullscreen(void);
 This function alternates between fullscreen mode and windowed
 mode. Depending on the environment, it could fail.
 
+\iniciocodigo
+@<Window Declarations@>+=
+void _Wresize_window(int width, int height);
+@
+\fimcodigo
+
+This function changes the window size if it exists and if we are not i
+fullscreen mode. If this operation fails because these conditions are
+not met, the function returns false.
 
 \secao{2. Creating and Managing the Window}
 
@@ -3180,6 +3189,18 @@ static unsigned last_window_size_y = 0;
 @
 \fimcodigo
 
+Also when we enter or exit fullscreen, or if we change the size of our
+window, it could be necessary for the user to recompute the position
+for elements in the screen. Because of this, we will et the user to
+define a funtion to be executed when this happens. If no function is
+passewd by the user, then nothing additional is executed. The pointer
+that will store the user-defined function, if it exists, is:
+
+\iniciocodigo
+@<Local Variables@>+=
+static void (*function_handle_for_resizing)(void) = NULL;
+@
+\fimcodigo
 
 \subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on X11}
 
@@ -3203,6 +3224,8 @@ void _Wtoggle_fullscreen(void){
   bool fullscreen_flag = false;
   XSetWindowAttributes attributes;
   int new_size_x, new_size_y;
+  if(!already_have_window)
+    return;
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
     fullscreen_flag = true;
@@ -3229,6 +3252,8 @@ void _Wtoggle_fullscreen(void){
                       last_window_size_y);
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
 }
 #endif
 @
@@ -3294,6 +3319,8 @@ void _Wtoggle_fullscreen(void){
   }
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
 }
 #endif
 @
@@ -3326,6 +3353,37 @@ void _Wtoggle_fullscreen(void){
   }
   _Wget_window_size(&size_x, &size_y);
   glViewport(0, 0, size_x, size_y);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+}
+#endif
+@
+
+\subsecao{2.9. Resizing the Window}
+
+Here we will define how to resize our window in different
+environments, provided that the window exists and that we are not in
+fullscreen mode. In case of error, the function returns
+false. Otherwise, it returns true.
+
+\subsubsecao{2.9.1. Resizing the Window on X11}
+
+Resize on X11 means uusing the function \monoespaco{XResizeWindow},
+which we already used in other functions:
+
+\iniciocodigo
+@<API Functions@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wresize_window(int width, int height){
+  if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
+    return false;
+  last_window_size_x = width;
+  last_window_size_y = height;
+  XResizeWindow(display, window, width, height);
+  glViewport(0, 0, width, height);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+  return true;
 }
 #endif
 @

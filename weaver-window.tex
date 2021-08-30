@@ -266,6 +266,16 @@ void _Wtoggle_fullscreen(void);
 Esta função alterna entre o modo de tela cheia e modo em
 janela. Dependendo do ambiente ela pode falhar.
 
+\iniciocodigo
+@<Declarações de Janela@>+=
+bool _Wresize_window(int width, int height);
+@
+\fimcodigo
+
+Esta função muda o tamanho da janela se ela existir e se não
+estivermos no modo de tela-cheia. Caso a operação falhe devido a estas
+condições não estiverem satisfeitas, a função retorna falso.
+
 \secao{2. Criando e Gerenciando a Janela}
 
 Nesta seção definiremos funções e códigos que envolvem criar uma
@@ -3220,6 +3230,21 @@ static unsigned last_window_size_y = 0;
 @
 \fimcodigo
 
+Além disso, quando entramos, saímos da tela-cheia ou quando mudamos o
+tamanho da janela, pode ser necessário para o usuário recalcular a
+posição dos objetos que aparecem na tela. Por causa disso, vamos
+deixar que o usuário possa definir uma função a ser executada toda vez
+que isso acontecer. Se nenhuma função for passada pelo usuário, nada
+adicional será executado. O ponteiro que armazena a função definida
+pelo usuário, se ela existir, será:
+
+\iniciocodigo
+@<Variáveis Locais@>+=
+static void (*function_handle_for_resizing)(void) = NULL;
+@
+\fimcodigo
+
+
 \subsubsecao{2.8.1. Alternando entre Tela Cheia e Janela no X11}
 
 Alternar entre a tela cheia no X11 significa mudar um atributo da
@@ -3244,6 +3269,8 @@ void _Wtoggle_fullscreen(void){
   bool fullscreen_flag = false;
   XSetWindowAttributes attributes;
   int new_size_x, new_size_y;
+  if(!already_have_window)
+    return;
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
     fullscreen_flag = true;
@@ -3270,6 +3297,8 @@ void _Wtoggle_fullscreen(void){
                       last_window_size_y);
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
 }
 #endif
 @
@@ -3337,6 +3366,8 @@ void _Wtoggle_fullscreen(void){
   }
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
 }
 #endif
 @
@@ -3369,6 +3400,38 @@ void _Wtoggle_fullscreen(void){
   }
   _Wget_window_size(&size_x, &size_y);
   glViewport(0, 0, size_x, size_y);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+}
+#endif
+@
+
+\subsecao{2.9. Redimencionando a Janela}
+
+Aqui definiremos como redimencionar a nossa janela em diferentes
+ambientes, caso nossa janela exista e caso não estejamos em modo de
+tela-cheia. Em caso de erro, a função retorna falso. Caso contrário,
+retorna verdadeiro.
+
+\subsubsecao{2.9.1. Redimencionando a Janela no X11}
+
+Redimencionar o X11 significa usar a
+função \monoespaco{XResizeWindow}, que já viemos usando em outras
+funções.
+
+\iniciocodigo
+@<Funções da API@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+bool _Wresize_window(int width, int height){
+  if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
+    return false;
+  last_window_size_x = width;
+  last_window_size_y = height;
+  XResizeWindow(display, window, width, height);
+  glViewport(0, 0, width, height);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+  return true;
 }
 #endif
 @
