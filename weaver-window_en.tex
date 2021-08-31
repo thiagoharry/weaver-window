@@ -251,7 +251,7 @@ mode. Depending on the environment, it could fail.
 
 \iniciocodigo
 @<Window Declarations@>+=
-void _Wresize_window(int width, int height);
+bool _Wresize_window(int width, int height);
 @
 \fimcodigo
 
@@ -3369,7 +3369,16 @@ false. Otherwise, it returns true.
 \subsubsecao{2.9.1. Resizing the Window on X11}
 
 Resize on X11 means uusing the function \monoespaco{XResizeWindow},
-which we already used in other functions:
+which we already used in other functions. Besides this, we also need
+to update the new maximum and minimum size for our window to be equal
+the new size using \monoespaco{XSetWMNormalHints}. We do this becaus
+we do not let the user change the window size by means outside this
+resizing function. Finally, after resizing the window we wait for
+confirmation that the operation succeed
+using \monoespaco{XNextEvent}. And like when we toggled the fullscreen
+mode, here we also update the OpenGL viewport dize and run the
+function passed by the user associated with the window resize, if it
+exists.
 
 \iniciocodigo
 @<API Functions@>+=
@@ -3377,9 +3386,22 @@ which we already used in other functions:
 bool _Wresize_window(int width, int height){
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  {
+    XSizeHints hints;
+    hints.flags = PMinSize | PMaxSize;
+    hints.min_width = hints.max_width = width;
+    hints.min_height = hints.max_height = height;
+    XSetWMNormalHints(display, window, &hints);
+  }
   last_window_size_x = width;
   last_window_size_y = height;
   XResizeWindow(display, window, width, height);
+  {
+    XEvent e;
+    do{
+      XNextEvent(display, &e);
+    } while(e.type != ConfigureNotify);
+  }
   glViewport(0, 0, width, height);
   if(function_handle_for_resizing != NULL)
     function_handle_for_resizing();

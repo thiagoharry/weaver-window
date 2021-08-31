@@ -107,7 +107,7 @@ void test_resizing(void){
   ret = _Wresize_window(100, 200);
   _Wtoggle_fullscreen();
   _Wget_window_size(&width, &height);
-  assert("Window remembers its size when toggling fullscreen", ret &&
+  assert("Window remembers its size when toggling fullscreen",
 	 width == 900 && height == 700);
   _Wget_window_size(&width, &height);
   _Wdestroy_window();
@@ -262,6 +262,7 @@ void test_opengl_shader(void){
   GLint shader_program, pos = 0;
   _Wcreate_window();
   _Wtoggle_fullscreen();
+  _Wresize_window(800, 600);
   {
     GLint vertex_shader, fragment_shader;
     GLint ret;

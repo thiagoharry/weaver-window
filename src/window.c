@@ -1,5 +1,5 @@
 /*203:*/
-#line 4699 "weaver-window.tex"
+#line 4721 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -51,7 +51,7 @@
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
 /*:131*/
-#line 4701 "weaver-window.tex"
+#line 4723 "weaver-window.tex"
 
 /*65:*/
 #line 1414 "weaver-window.tex"
@@ -70,7 +70,7 @@ return ret;
 }
 #endif
 /*:65*/
-#line 4702 "weaver-window.tex"
+#line 4724 "weaver-window.tex"
 
 /*67:*/
 #line 1460 "weaver-window.tex"
@@ -252,15 +252,15 @@ boolean(__stdcall*glIsRenderbuffer)(unsigned int);
 void(__stdcall*glGetRenderbufferParameteriv)(GLenum,GLenum,int*);
 #endif
 /*:128*//*151:*/
-#line 3466 "weaver-window.tex"
+#line 3488 "weaver-window.tex"
 
 struct __Wkeyboard _Wkeyboard;
 /*:151*//*153:*/
-#line 3514 "weaver-window.tex"
+#line 3536 "weaver-window.tex"
 
 struct __Wmouse _Wmouse;
 /*:153*//*165:*/
-#line 3788 "weaver-window.tex"
+#line 3810 "weaver-window.tex"
 
 int W_BACKSPACE= W_KEYBOARD_SIZE,W_TAB= W_KEYBOARD_SIZE,
 W_ENTER= W_KEYBOARD_SIZE,W_UP= W_KEYBOARD_SIZE,W_DOWN= W_KEYBOARD_SIZE,
@@ -290,7 +290,7 @@ W_PAGE_UP= W_KEYBOARD_SIZE,W_DELETE= W_KEYBOARD_SIZE,
 W_END= W_KEYBOARD_SIZE,W_PAGE_DOWN= W_KEYBOARD_SIZE,
 W_ESC= W_KEYBOARD_SIZE,W_ANY= 0;
 /*:165*/
-#line 4703 "weaver-window.tex"
+#line 4725 "weaver-window.tex"
 
 /*13:*/
 #line 303 "weaver-window.tex"
@@ -388,7 +388,7 @@ static unsigned last_window_size_y= 0;
 
 static void(*function_handle_for_resizing)(void)= NULL;
 /*:145*//*158:*/
-#line 3612 "weaver-window.tex"
+#line 3634 "weaver-window.tex"
 
 static struct{
 unsigned key;
@@ -396,7 +396,7 @@ long time;
 }pressed_keys[32];
 static unsigned released_keys[32];
 /*:158*//*178:*/
-#line 4180 "weaver-window.tex"
+#line 4202 "weaver-window.tex"
 
 static struct{
 unsigned button;
@@ -404,15 +404,15 @@ long time;
 }pressed_buttons[4];
 static unsigned released_buttons[4];
 /*:178*//*179:*/
-#line 4195 "weaver-window.tex"
+#line 4217 "weaver-window.tex"
 
 static int last_mouse_dx= 0,last_mouse_dy= 0;
 /*:179*//*180:*/
-#line 4217 "weaver-window.tex"
+#line 4239 "weaver-window.tex"
 
 static int mouse_initialization= 3;
 /*:180*/
-#line 4704 "weaver-window.tex"
+#line 4726 "weaver-window.tex"
 
 /*15:*/
 #line 347 "weaver-window.tex"
@@ -1650,15 +1650,28 @@ function_handle_for_resizing();
 }
 #endif
 /*:148*//*149:*/
-#line 3423 "weaver-window.tex"
+#line 3432 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wresize_window(int width,int height){
 if(_Wis_fullscreen()||width<=0||height<=0||!already_have_window)
 return false;
+{
+XSizeHints hints;
+hints.flags= PMinSize|PMaxSize;
+hints.min_width= hints.max_width= width;
+hints.min_height= hints.max_height= height;
+XSetWMNormalHints(display,window,&hints);
+}
 last_window_size_x= width;
 last_window_size_y= height;
 XResizeWindow(display,window,width,height);
+{
+XEvent e;
+do{
+XNextEvent(display,&e);
+}while(e.type!=ConfigureNotify);
+}
 glViewport(0,0,width,height);
 if(function_handle_for_resizing!=NULL)
 function_handle_for_resizing();
@@ -1666,13 +1679,13 @@ return true;
 }
 #endif
 /*:149*//*154:*/
-#line 3535 "weaver-window.tex"
+#line 3557 "weaver-window.tex"
 
 void _Wget_window_input(unsigned long current_time){
 if(already_have_window==false)
 return;
 /*177:*/
-#line 4158 "weaver-window.tex"
+#line 4180 "weaver-window.tex"
 
 {
 int i;
@@ -1684,7 +1697,7 @@ released_keys[i]= 0;
 }
 }
 /*:177*//*200:*/
-#line 4629 "weaver-window.tex"
+#line 4651 "weaver-window.tex"
 
 {
 int i;
@@ -1696,22 +1709,22 @@ released_buttons[i]= 0;
 }
 }
 /*:200*/
-#line 3539 "weaver-window.tex"
+#line 3561 "weaver-window.tex"
 
 /*155:*/
-#line 3552 "weaver-window.tex"
+#line 3574 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 XEvent event;
 while(XPending(display)){
 XNextEvent(display,&event);
 /*161:*/
-#line 3668 "weaver-window.tex"
+#line 3690 "weaver-window.tex"
 
 if(event.type==KeyPress){
 unsigned key= event.xkey.keycode;
 /*174:*/
-#line 4060 "weaver-window.tex"
+#line 4082 "weaver-window.tex"
 
 {
 int i;
@@ -1729,16 +1742,16 @@ break;
 if(i==32)continue;
 }
 /*:174*/
-#line 3671 "weaver-window.tex"
+#line 3693 "weaver-window.tex"
 
 }
 /*:161*//*162:*/
-#line 3681 "weaver-window.tex"
+#line 3703 "weaver-window.tex"
 
 if(event.type==KeyRelease){
 unsigned key= event.xkey.keycode;
 /*175:*/
-#line 4088 "weaver-window.tex"
+#line 4110 "weaver-window.tex"
 
 {
 int i;
@@ -1771,16 +1784,16 @@ _Wkeyboard.key[key]= -1;
 }
 }
 /*:175*/
-#line 3684 "weaver-window.tex"
+#line 3706 "weaver-window.tex"
 
 }
 /*:162*//*183:*/
-#line 4273 "weaver-window.tex"
+#line 4295 "weaver-window.tex"
 
 if(event.type==ButtonPress){
 unsigned button= event.xbutton.button;
 /*197:*/
-#line 4543 "weaver-window.tex"
+#line 4565 "weaver-window.tex"
 
 {
 int i;
@@ -1798,16 +1811,16 @@ break;
 if(i==4)continue;
 }
 /*:197*/
-#line 4276 "weaver-window.tex"
+#line 4298 "weaver-window.tex"
 
 }
 /*:183*//*184:*/
-#line 4287 "weaver-window.tex"
+#line 4309 "weaver-window.tex"
 
 if(event.type==ButtonRelease){
 unsigned button= event.xbutton.button;
 /*198:*/
-#line 4568 "weaver-window.tex"
+#line 4590 "weaver-window.tex"
 
 {
 int i;
@@ -1840,18 +1853,18 @@ _Wmouse.button[button]= -1;
 }
 }
 /*:198*/
-#line 4290 "weaver-window.tex"
+#line 4312 "weaver-window.tex"
 
 }
 /*:184*//*185:*/
-#line 4299 "weaver-window.tex"
+#line 4321 "weaver-window.tex"
 
 if(event.type==MotionNotify){
 int x,y;
 x= event.xmotion.x;
 y= (window_size_y-1)-event.xmotion.y;
 /*201:*/
-#line 4649 "weaver-window.tex"
+#line 4671 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -1870,27 +1883,27 @@ if(mouse_initialization> 0)
 mouse_initialization--;
 }
 /*:201*/
-#line 4304 "weaver-window.tex"
+#line 4326 "weaver-window.tex"
 
 }
 /*:185*/
-#line 3557 "weaver-window.tex"
+#line 3579 "weaver-window.tex"
 
 }
 #endif
 /*:155*//*156:*/
-#line 3567 "weaver-window.tex"
+#line 3589 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 SDL_Event event;
 while(SDL_PollEvent(&event)){
 /*167:*/
-#line 3846 "weaver-window.tex"
+#line 3868 "weaver-window.tex"
 
 if(event.type==SDL_KEYDOWN){
 unsigned key= event.key.keysym.scancode;
 /*174:*/
-#line 4060 "weaver-window.tex"
+#line 4082 "weaver-window.tex"
 
 {
 int i;
@@ -1908,16 +1921,16 @@ break;
 if(i==32)continue;
 }
 /*:174*/
-#line 3849 "weaver-window.tex"
+#line 3871 "weaver-window.tex"
 
 }
 /*:167*//*168:*/
-#line 3858 "weaver-window.tex"
+#line 3880 "weaver-window.tex"
 
 if(event.type==SDL_KEYUP){
 unsigned key= event.key.keysym.scancode;
 /*175:*/
-#line 4088 "weaver-window.tex"
+#line 4110 "weaver-window.tex"
 
 {
 int i;
@@ -1950,16 +1963,16 @@ _Wkeyboard.key[key]= -1;
 }
 }
 /*:175*/
-#line 3861 "weaver-window.tex"
+#line 3883 "weaver-window.tex"
 
 }
 /*:168*//*188:*/
-#line 4362 "weaver-window.tex"
+#line 4384 "weaver-window.tex"
 
 if(event.type==SDL_MOUSEBUTTONDOWN){
 unsigned button= event.button.button;
 /*197:*/
-#line 4543 "weaver-window.tex"
+#line 4565 "weaver-window.tex"
 
 {
 int i;
@@ -1977,16 +1990,16 @@ break;
 if(i==4)continue;
 }
 /*:197*/
-#line 4365 "weaver-window.tex"
+#line 4387 "weaver-window.tex"
 
 }
 /*:188*//*189:*/
-#line 4373 "weaver-window.tex"
+#line 4395 "weaver-window.tex"
 
 if(event.type==SDL_MOUSEBUTTONUP){
 unsigned button= event.button.button;
 /*198:*/
-#line 4568 "weaver-window.tex"
+#line 4590 "weaver-window.tex"
 
 {
 int i;
@@ -2019,18 +2032,18 @@ _Wmouse.button[button]= -1;
 }
 }
 /*:198*/
-#line 4376 "weaver-window.tex"
+#line 4398 "weaver-window.tex"
 
 }
 /*:189*//*190:*/
-#line 4384 "weaver-window.tex"
+#line 4406 "weaver-window.tex"
 
 if(event.type==SDL_MOUSEMOTION){
 int x,y;
 x= event.motion.x;
 y= (window_size_y-1)-event.motion.y;
 /*201:*/
-#line 4649 "weaver-window.tex"
+#line 4671 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -2049,27 +2062,27 @@ if(mouse_initialization> 0)
 mouse_initialization--;
 }
 /*:201*/
-#line 4389 "weaver-window.tex"
+#line 4411 "weaver-window.tex"
 
 }
 /*:190*/
-#line 3571 "weaver-window.tex"
+#line 3593 "weaver-window.tex"
 
 }
 #endif
 /*:156*//*157:*/
-#line 3581 "weaver-window.tex"
+#line 3603 "weaver-window.tex"
 
 #if defined(_WIN32)
 MSG event;
 while(PeekMessage(&event,window,WM_KEYFIRST,WM_KEYLAST,PM_REMOVE)){
 /*171:*/
-#line 3955 "weaver-window.tex"
+#line 3977 "weaver-window.tex"
 
 if(event.message==WM_KEYDOWN){
 unsigned key= (event.lParam&0x00ff0000)>>16;
 /*174:*/
-#line 4060 "weaver-window.tex"
+#line 4082 "weaver-window.tex"
 
 {
 int i;
@@ -2087,16 +2100,16 @@ break;
 if(i==32)continue;
 }
 /*:174*/
-#line 3958 "weaver-window.tex"
+#line 3980 "weaver-window.tex"
 
 }
 /*:171*//*172:*/
-#line 3969 "weaver-window.tex"
+#line 3991 "weaver-window.tex"
 
 if(event.message==WM_KEYUP){
 unsigned key= (event.lParam&0x00ff0000)>>16;
 /*175:*/
-#line 4088 "weaver-window.tex"
+#line 4110 "weaver-window.tex"
 
 {
 int i;
@@ -2129,21 +2142,21 @@ _Wkeyboard.key[key]= -1;
 }
 }
 /*:175*/
-#line 3972 "weaver-window.tex"
+#line 3994 "weaver-window.tex"
 
 }
 /*:172*/
-#line 3585 "weaver-window.tex"
+#line 3607 "weaver-window.tex"
 
 }
 while(PeekMessage(&event,window,WM_MOUSEFIRST,WM_MOUSELAST,PM_REMOVE)){
 /*193:*/
-#line 4440 "weaver-window.tex"
+#line 4462 "weaver-window.tex"
 
 if(event.message==WM_LBUTTONDOWN){
 unsigned button= W_MOUSE_LEFT;
 /*197:*/
-#line 4543 "weaver-window.tex"
+#line 4565 "weaver-window.tex"
 
 {
 int i;
@@ -2161,13 +2174,13 @@ break;
 if(i==4)continue;
 }
 /*:197*/
-#line 4443 "weaver-window.tex"
+#line 4465 "weaver-window.tex"
 
 }
 else if(event.message==WM_MBUTTONDOWN){
 unsigned button= W_MOUSE_MIDDLE;
 /*197:*/
-#line 4543 "weaver-window.tex"
+#line 4565 "weaver-window.tex"
 
 {
 int i;
@@ -2185,13 +2198,13 @@ break;
 if(i==4)continue;
 }
 /*:197*/
-#line 4447 "weaver-window.tex"
+#line 4469 "weaver-window.tex"
 
 }
 else if(event.message==WM_RBUTTONDOWN){
 unsigned button= W_MOUSE_RIGHT;
 /*197:*/
-#line 4543 "weaver-window.tex"
+#line 4565 "weaver-window.tex"
 
 {
 int i;
@@ -2209,7 +2222,7 @@ break;
 if(i==4)continue;
 }
 /*:197*/
-#line 4451 "weaver-window.tex"
+#line 4473 "weaver-window.tex"
 
 }
 else if(event.message==WM_XBUTTONDOWN){
@@ -2218,7 +2231,7 @@ if((event.wParam>>16)&0x0001){
 unsigned button= W_MOUSE_X1;
 }
 /*197:*/
-#line 4543 "weaver-window.tex"
+#line 4565 "weaver-window.tex"
 
 {
 int i;
@@ -2236,19 +2249,19 @@ break;
 if(i==4)continue;
 }
 /*:197*/
-#line 4458 "weaver-window.tex"
+#line 4480 "weaver-window.tex"
 
 }
 /*:193*/
-#line 3588 "weaver-window.tex"
+#line 3610 "weaver-window.tex"
 
 }
 #endif
 /*:157*/
-#line 3540 "weaver-window.tex"
+#line 3562 "weaver-window.tex"
 
 /*176:*/
-#line 4130 "weaver-window.tex"
+#line 4152 "weaver-window.tex"
 
 {
 int i;
@@ -2262,7 +2275,7 @@ _Wkeyboard.key[pressed_keys[i].key]= (current_time-pressed_keys[i].key);
 }
 }
 /*:176*//*199:*/
-#line 4608 "weaver-window.tex"
+#line 4630 "weaver-window.tex"
 
 {
 int i;
@@ -2277,18 +2290,18 @@ _Wmouse.button[pressed_buttons[i].button]=
 }
 }
 /*:199*/
-#line 3541 "weaver-window.tex"
+#line 3563 "weaver-window.tex"
 
 }
 /*:154*//*202:*/
-#line 4680 "weaver-window.tex"
+#line 4702 "weaver-window.tex"
 
 void _Wflush_window_input(void){
 
 _Wget_window_input(~0x0);
 
 /*159:*/
-#line 3632 "weaver-window.tex"
+#line 3654 "weaver-window.tex"
 
 {
 int i;
@@ -2300,11 +2313,11 @@ for(i= 0;i<W_KEYBOARD_SIZE+1;i++)
 _Wkeyboard.key[i]= 0;
 }
 /*:159*/
-#line 4685 "weaver-window.tex"
+#line 4707 "weaver-window.tex"
 
 
 /*181:*/
-#line 4227 "weaver-window.tex"
+#line 4249 "weaver-window.tex"
 
 {
 int i;
@@ -2318,7 +2331,7 @@ _Wmouse.x= _Wmouse.y= _Wmouse.dx= _Wmouse.dy= _Wmouse.ddx= _Wmouse.ddy= 0;
 last_mouse_dx= last_mouse_dy= 0;
 mouse_initialization= 3;
 /*186:*/
-#line 4322 "weaver-window.tex"
+#line 4344 "weaver-window.tex"
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 {
@@ -2331,7 +2344,7 @@ XQueryPointer(display,window,&root_return,&child_return,
 
 y= (window_size_y-1)-y;
 /*201:*/
-#line 4649 "weaver-window.tex"
+#line 4671 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -2350,12 +2363,12 @@ if(mouse_initialization> 0)
 mouse_initialization--;
 }
 /*:201*/
-#line 4333 "weaver-window.tex"
+#line 4355 "weaver-window.tex"
 
 }
 #endif
 /*:186*//*191:*/
-#line 4398 "weaver-window.tex"
+#line 4420 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 {
@@ -2364,7 +2377,7 @@ SDL_GetMouseState(&x,&y);
 
 y= (window_size_y-1)-y;
 /*201:*/
-#line 4649 "weaver-window.tex"
+#line 4671 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -2383,12 +2396,12 @@ if(mouse_initialization> 0)
 mouse_initialization--;
 }
 /*:201*/
-#line 4405 "weaver-window.tex"
+#line 4427 "weaver-window.tex"
 
 }
 #endif
 /*:191*//*196:*/
-#line 4512 "weaver-window.tex"
+#line 4534 "weaver-window.tex"
 
 #if defined(_WIN32)
 {
@@ -2402,7 +2415,7 @@ ScreenToClient(window,&point);
 x= point.x;
 y= (window_size_y-1)-point.y;
 /*201:*/
-#line 4649 "weaver-window.tex"
+#line 4671 "weaver-window.tex"
 
 {
 if(mouse_initialization<3){
@@ -2421,19 +2434,19 @@ if(mouse_initialization> 0)
 mouse_initialization--;
 }
 /*:201*/
-#line 4524 "weaver-window.tex"
+#line 4546 "weaver-window.tex"
 
 }
 #endif
 /*:196*/
-#line 4239 "weaver-window.tex"
+#line 4261 "weaver-window.tex"
 
 }
 /*:181*/
-#line 4687 "weaver-window.tex"
+#line 4709 "weaver-window.tex"
 
 }
 /*:202*/
-#line 4705 "weaver-window.tex"
+#line 4727 "weaver-window.tex"
 
 /*:203*/

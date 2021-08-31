@@ -3417,7 +3417,16 @@ retorna verdadeiro.
 
 Redimencionar o X11 significa usar a
 função \monoespaco{XResizeWindow}, que já viemos usando em outras
-funções.
+funções. Mas além disso, precisamos também ajustar um novo tamanho
+máximo e mínimo de janela como sendo igual ao novo tamanho
+usando \monoespaco{XSetWMNormalHints}. Fazemos isso para impedir que o
+usuário possa redimencionar a janela sem que seja por meio da função
+de redimencionamento. Por fim, após redimencionar a janela, esperamos
+a confirmação de que a operação foi bem-sucedida lendo os próxios
+eventos com o \monoespaco{XNextEvent}. Em seguida, atualizamos o
+tamanho da tela de desenho OpenGL e executamos a função personalizada
+escolhida pelo usuário relacionada ao redimencionamento da janela,
+caso ela exista.
 
 \iniciocodigo
 @<Funções da API@>+=
@@ -3425,9 +3434,22 @@ funções.
 bool _Wresize_window(int width, int height){
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  {
+    XSizeHints hints;
+    hints.flags = PMinSize | PMaxSize;
+    hints.min_width = hints.max_width = width;
+    hints.min_height = hints.max_height = height;
+    XSetWMNormalHints(display, window, &hints);
+  }
   last_window_size_x = width;
   last_window_size_y = height;
   XResizeWindow(display, window, width, height);
+  {
+    XEvent e;
+    do{
+      XNextEvent(display, &e);
+    } while(e.type != ConfigureNotify);
+  }
   glViewport(0, 0, width, height);
   if(function_handle_for_resizing != NULL)
     function_handle_for_resizing();
