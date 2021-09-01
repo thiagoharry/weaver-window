@@ -3248,8 +3248,7 @@ void _Wtoggle_fullscreen(void){
     XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
   }
   else if(last_window_size_x > 0 && last_window_size_y > 0)
-    XMoveResizeWindow(display, window, 0, 0, last_window_size_x,
-                      last_window_size_y);
+    _Wresize_window(last_window_size_x, last_window_size_y);
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
   if(function_handle_for_resizing != NULL)
@@ -3374,11 +3373,11 @@ to update the new maximum and minimum size for our window to be equal
 the new size using \monoespaco{XSetWMNormalHints}. We do this becaus
 we do not let the user change the window size by means outside this
 resizing function. Finally, after resizing the window we wait for
-confirmation that the operation succeed
-using \monoespaco{XNextEvent}. And like when we toggled the fullscreen
-mode, here we also update the OpenGL viewport dize and run the
-function passed by the user associated with the window resize, if it
-exists.
+confirmation that the operation succeed measuring the new window
+size. We wait at most 0.5 seconds for confirmation. And like when we
+toggled the fullscreen mode, here we also update the OpenGL viewport
+dize and run the function passed by the user associated with the
+window resize, if it exists.
 
 \iniciocodigo
 @<API Functions@>+=
@@ -3396,11 +3395,16 @@ bool _Wresize_window(int width, int height){
   last_window_size_x = width;
   last_window_size_y = height;
   XResizeWindow(display, window, width, height);
-  {
-    XEvent e;
+  { // Wait at most 0.5 seconds for the change make effect
+    struct timeval begin_time, now;
+    int new_width, new_height;
+    gettimeofday(&begin_time, NULL);
     do{
-      XNextEvent(display, &e);
-    } while(e.type != ConfigureNotify);
+      _Wget_window_size(&new_width, &new_height);
+      gettimeofday(&now, NULL);
+    } while((new_width != width || new_height != height) &&
+            (now.tv_sec - begin_time.tv_sec) * 1000000 +
+            (now.tv_usec - begin_time.tv_usec) < 500000);
   }
   glViewport(0, 0, width, height);
   if(function_handle_for_resizing != NULL)
@@ -3409,6 +3413,17 @@ bool _Wresize_window(int width, int height){
 }
 #endif
 @
+
+Measuring the time to do not expend more than 0.5 seconds waiting for
+the resizing require the following header:
+
+\iniciocodigo
+@<Headers@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <sys/time.h>
+#endif
+@
+\fimcodigo
 
 
 \secao{3. Managing Input}

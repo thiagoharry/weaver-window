@@ -3293,8 +3293,7 @@ void _Wtoggle_fullscreen(void){
     XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
   }
   else if(last_window_size_x > 0 && last_window_size_y > 0)
-    XMoveResizeWindow(display, window, 0, 0, last_window_size_x,
-                      last_window_size_y);
+    _Wresize_window(last_window_size_x, last_window_size_y);
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
   if(function_handle_for_resizing != NULL)
@@ -3422,11 +3421,12 @@ máximo e mínimo de janela como sendo igual ao novo tamanho
 usando \monoespaco{XSetWMNormalHints}. Fazemos isso para impedir que o
 usuário possa redimencionar a janela sem que seja por meio da função
 de redimencionamento. Por fim, após redimencionar a janela, esperamos
-a confirmação de que a operação foi bem-sucedida lendo os próxios
-eventos com o \monoespaco{XNextEvent}. Em seguida, atualizamos o
-tamanho da tela de desenho OpenGL e executamos a função personalizada
-escolhida pelo usuário relacionada ao redimencionamento da janela,
-caso ela exista.
+a confirmação de que a operação foi bem-sucedida lendo o novo tamanho
+da janela para conferir se a operação foi bem-sucedida. Mas se não
+tivermos confirmação de que foi tudo bem-sucedido em até 0.5 segundos,
+desistimos e continuamos de qualquer forma, executando a função
+personalizada escolhida pelo usuário relacionada ao redimencionamento
+da janela, caso ela exista.
 
 \iniciocodigo
 @<Funções da API@>+=
@@ -3444,11 +3444,16 @@ bool _Wresize_window(int width, int height){
   last_window_size_x = width;
   last_window_size_y = height;
   XResizeWindow(display, window, width, height);
-  {
-    XEvent e;
+  { // Espera no máximo 0.5 segundos para que a mudança surta efeito
+    struct timeval begin_time, now;
+    int new_width, new_height;
+    gettimeofday(&begin_time, NULL);
     do{
-      XNextEvent(display, &e);
-    } while(e.type != ConfigureNotify);
+      _Wget_window_size(&new_width, &new_height);
+      gettimeofday(&now, NULL);
+    } while((new_width != width || new_height != height) &&
+            (now.tv_sec - begin_time.tv_sec) * 1000000 +
+            (now.tv_usec - begin_time.tv_usec) < 500000);
   }
   glViewport(0, 0, width, height);
   if(function_handle_for_resizing != NULL)
@@ -3458,6 +3463,16 @@ bool _Wresize_window(int width, int height){
 #endif
 @
 
+Medir o tempo de execução como fizemos requer a inserção do seguinte
+cabeçalho:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#include <sys/time.h>
+#endif
+@
+\fimcodigo
 
 \secao{3. Gerenciando Entrada}
 
