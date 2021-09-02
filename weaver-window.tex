@@ -511,6 +511,7 @@ se realmente formos iniciar no modo tela-cheia:
 #if !defined(W_WINDOW_NO_FULLSCREEN)
 {
   XSetWindowAttributes attributes;
+  XMoveWindow(display, window, 0, 0);
   attributes.override_redirect = true;
   XChangeWindowAttributes(display, window, CWOverrideRedirect,
                           &attributes);
@@ -3271,15 +3272,16 @@ void _Wtoggle_fullscreen(void){
   int new_size_x, new_size_y;
   if(!already_have_window)
     return;
+  XWithdrawWindow(display, window, 0);
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
     fullscreen_flag = true;
+    XMoveWindow(display, window, 0, 0);
   }
   else
     attributes.override_redirect = false;
   XChangeWindowAttributes(display, window, CWOverrideRedirect,
                           &attributes);
-  XWithdrawWindow(display, window, 0);
   XMapWindow(display, window);
   { // Ao mapear a janela novamente temos que esperar isso surtir efeito:
     XEvent e;

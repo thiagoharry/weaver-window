@@ -492,6 +492,7 @@ fullscreen setting a macro:
 {
   XSetWindowAttributes attributes;
   attributes.override_redirect = true;
+  XMoveWindow(display, window, 0, 0);
   XChangeWindowAttributes(display, window, CWOverrideRedirect,
                           &attributes);
 }
@@ -3226,15 +3227,16 @@ void _Wtoggle_fullscreen(void){
   int new_size_x, new_size_y;
   if(!already_have_window)
     return;
+  XWithdrawWindow(display, window, 0);
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
     fullscreen_flag = true;
+    XMoveWindow(display, window, 0, 0);
   }
   else
     attributes.override_redirect = false;
   XChangeWindowAttributes(display, window, CWOverrideRedirect,
                           &attributes);
-  XWithdrawWindow(display, window, 0);
   XMapWindow(display, window);
   { // When mapping the window again, we need to wait until this succeeds:
     XEvent e;
