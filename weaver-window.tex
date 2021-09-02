@@ -3476,6 +3476,37 @@ cabeçalho:
 @
 \fimcodigo
 
+\subsubsecao{2.9.2. Redimencionando a Janela no Web Assembly}
+
+No Web Assembly, para mudar o tamanho de nosso ``canvas'', caso não
+estejamos nem em tela-cheia e nem simulando uma tela-cheia, apenas
+acessamos o nosso ``canvas'' por meio de seu ID e editamos suas
+propriedades CSS e atributos de tamanho:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wresize_window(int width, int height){
+  if(fullscreen_mode || width <= 0 || height <= 0 || !already_have_window)
+    return false;
+  last_window_size_x = width;
+  last_window_size_y = height;
+  EM_ASM({
+    var el = document.getElementById("canvas");
+    el.style.width = ($0 / window.devicePixelRatio) + "px";
+    el.width = $0;
+    el.style.height = ($1 / window.devicePixelRatio) + "px";
+    el.height = $1;
+  }, width, height);
+  glViewport(0, 0, width, height);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+  return true;
+}
+#endif
+@
+
+
 \secao{3. Gerenciando Entrada}
 
 Nesta seção trataremos a detecção de eventos de entrada de um

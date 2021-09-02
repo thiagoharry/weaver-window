@@ -3427,6 +3427,36 @@ the resizing require the following header:
 @
 \fimcodigo
 
+\subsubsecao{2.9.2. Redimencionando a Janela no Web Assembly}
+
+On Web Assembly, to change the size of our canvas, if we are not in
+fullscreen mode (the real one or the simulated one), we just access
+our canvas by its ID and edit its CSS properties and attributes about
+its size:
+
+\iniciocodigo
+@<API Functions@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wresize_window(int width, int height){
+  if(fullscreen_mode || width <= 0 || height <= 0 || !already_have_window)
+    return false;
+  last_window_size_x = width;
+  last_window_size_y = height;
+  EM_ASM({
+    var el = document.getElementById("canvas");
+    el.style.width = ($0 / window.devicePixelRatio) + "px";
+    el.width = $0;
+    el.style.height = ($1 / window.devicePixelRatio) + "px";
+    el.height = $1;
+  }, width, height);
+  glViewport(0, 0, width, height);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+  return true;
+}
+#endif
+@
+
 
 \secao{3. Managing Input}
 
