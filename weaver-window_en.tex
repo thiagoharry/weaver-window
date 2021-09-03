@@ -711,7 +711,7 @@ when we execute the function to close the window).
 @<Web Assembly: Create Window@>+=
 #if defined(__EMSCRIPTEN__)
 {
-  int window_size_x = screen_resolution;
+  int window_size_x = screen_resolution_x;
   fullscreen_mode = true;
   double pixel_ratio = EM_ASM_DOUBLE({
     return window.devicePixelRatio;
