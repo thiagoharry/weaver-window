@@ -3086,12 +3086,10 @@ bool _Wget_window_size(int *width, int *height){
     return false;
   }
   *width = EM_ASM_INT({
-    return document.getElementById("canvas").clientWidth *
-                                         window.devicePixelRatio;
+    return document.getElementById("canvas").width;
   });
   *height = EM_ASM_INT({
-    return document.getElementById("canvas").clientHeight *
-                                          window.devicePixelRatio;
+    return document.getElementById("canvas").height;
   });
   window_size_y = *height;
   if(*width > 0 && *height > 0)
