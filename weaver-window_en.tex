@@ -3427,7 +3427,7 @@ the resizing require the following header:
 @
 \fimcodigo
 
-\subsubsecao{2.9.2. Redimencionando a Janela no Web Assembly}
+\subsubsecao{2.9.2. Resizing the Window on Web Assembly}
 
 On Web Assembly, to change the size of our canvas, if we are not in
 fullscreen mode (the real one or the simulated one), we just access
@@ -3457,6 +3457,32 @@ bool _Wresize_window(int width, int height){
 #endif
 @
 
+\subsubsecao{2.9.3. Resizing the WIndow on Windows}
+
+On Windows, resizing the window means
+calling \monoespaco{SetWindowPos}. We do it only if we are not on
+fullscreen mode. And after resizing, if it exists, we execute the user
+custom function to be run when the window size changes:
+
+\iniciocodigo
+@<API Functions@>+=
+#if defined(_WIN32)
+bool _Wresize_window(int width, int height){
+  bool ret;
+  if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
+    return false;
+  last_window_size_x = width;
+  last_window_size_y = height;
+  ret = SetWindowPos(window, 0, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+  if(!ret)
+    return false;
+  glViewport(0, 0, width, height);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+  return true;
+}
+#endif
+@
 
 \secao{3. Managing Input}
 

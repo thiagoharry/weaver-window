@@ -3506,6 +3506,34 @@ bool _Wresize_window(int width, int height){
 #endif
 @
 
+\subsubsecao{2.9.3. Redimencionando a Janela no Windows}
+
+No Windows mover a janela significa usar a
+função \monoespaco{SetWindowPos}, o que fazemos somente se não
+estivermos em modo de tela-cheia. Em seguida, se existir, executamos a
+função personalizada pelo usuário a ser usada sempre que o tamanho da
+janela muda:
+
+\iniciocodigo
+@<Funções da API@>+=
+#if defined(_WIN32)
+bool _Wresize_window(int width, int height){
+  bool ret;
+  if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
+    return false;
+  last_window_size_x = width;
+  last_window_size_y = height;
+  ret = SetWindowPos(window, 0, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+  if(!ret)
+    return false;
+  glViewport(0, 0, width, height);
+  if(function_handle_for_resizing != NULL)
+    function_handle_for_resizing();
+  return true;
+}
+#endif
+@
+
 
 \secao{3. Gerenciando Entrada}
 

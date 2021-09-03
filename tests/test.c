@@ -181,6 +181,8 @@ void test_opengl_buffers(void){
     "  gl_FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
     "}\n";
   _Wcreate_window();
+  _Wtoggle_fullscreen();
+  _Wtoggle_fullscreen();
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
