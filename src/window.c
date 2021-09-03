@@ -1608,7 +1608,7 @@ el.height= $1;
 }
 document.exitFullscreen();
 },last_window_size_x,last_window_size_y);
-fullscreen_mode= true;
+fullscreen_mode= false;
 }else{
 EM_ASM(
 var el= document.getElementById("canvas");
