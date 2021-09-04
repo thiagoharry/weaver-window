@@ -97,6 +97,9 @@ library. The content of \monoespaco{window.h} is:
 extern "C" {
 #endif
 #include <stdbool.h> // Define type 'bool'
+#if !defined(_WIN32)
+#include <sys/param.h> // Needed on BSD, but do not exist on Windows
+#endif
 @<OpenGL Header@>
 @<Macro Definition@>
 @<Window Declarations@>
@@ -319,7 +322,7 @@ header:
 
 \iniciocodigo
 @<Headers@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #include <X11/Xlib.h>
 #endif
 @
@@ -335,7 +338,7 @@ below:
 
 \iniciocodigo
 @<API Functions@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
   bool keep_alive = true; // Should we keep the connection alive?
   // The first called unction should be this that prepares X11 for any
@@ -368,7 +371,7 @@ Of course, we assume the existence of the following static variable:
 
 \iniciocodigo
 @<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 static Display *display = NULL; //Connection with server and info about screens
 #endif
 @
@@ -446,7 +449,7 @@ The above steps are implemented using the functions and macros below:
 
 \iniciocodigo
 @<X11: Create Window@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 int screen_resolution_x, screen_resolution_y; //Screen resolution
 /* Step 0: */
 XInitThreads();
@@ -479,7 +482,7 @@ store and remember the created window:
 
 \iniciocodigo
 @<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 static Window window;    // Created window struct
 #endif
 @
@@ -497,7 +500,7 @@ fullscreen setting a macro:
 
 \iniciocodigo
 @<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #if !defined(W_WINDOW_NO_FULLSCREEN)
 {
   XSetWindowAttributes attributes;
@@ -525,7 +528,7 @@ outside fullscreen mode:
 
 \iniciocodigo
 @<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #if defined(W_WINDOW_NO_FULLSCREEN)
 {
   int window_size_x;
@@ -552,7 +555,7 @@ soon define:
 
 \iniciocodigo
 @<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 {
   XSizeHints hints;
   hints.flags = PMinSize | PMaxSize;
@@ -576,7 +579,7 @@ The above resource needs the following header:
 
 \iniciocodigo
 @<Headers@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #include <X11/Xutil.h>
 #endif
 @
@@ -597,7 +600,7 @@ not be able to know if the user interacts with it pressing keys.
 
 \iniciocodigo
 @<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
                               KeyReleaseMask | ButtonPressMask |
                               ButtonReleaseMask | PointerMotionMask);
@@ -611,7 +614,7 @@ the name setting the macro \monoespaco{W\_WINDOW\_NAME}:
 
 \iniciocodigo
 @<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 XStoreName(display, window, W_WINDOW_NAME);
 #endif
 @
@@ -631,7 +634,7 @@ write the necessary steps in the next session:
 
 \iniciocodigo
 @<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 @<X11: Configure OpenGL ES@>
 #endif
 @
@@ -646,7 +649,7 @@ function \monoespaco{XSelectInput} previously). The code for this is:
 
 \iniciocodigo
 @<X11: Create Window@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 XMapWindow(display, window);
 {
   XEvent e;
@@ -1048,7 +1051,7 @@ its functions and macros are declared in the following header:
 
 \iniciocodigo
 @<OpenGL Header@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <EGL/eglext.h>
@@ -1062,7 +1065,7 @@ display can be obtained from the X display that we already created:
 
 \iniciocodigo
 @<X11: Configure OpenGL ES@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
                                     NULL);
 if(egl_display == EGL_NO_DISPLAY){
@@ -1080,7 +1083,7 @@ This variable is declared here:
 
 \iniciocodigo
 @<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 static EGLDisplay *egl_display;
 #endif
 @
@@ -1127,7 +1130,7 @@ here:
 
 \iniciocodigo
 @<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 EGLConfig egl_config;
 #endif
 @
@@ -1156,7 +1159,7 @@ The EGL window is decared here:
 
 \iniciocodigo
 @<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 static EGLSurface egl_window;
 #endif
 @
@@ -1194,7 +1197,7 @@ here:
 
 \iniciocodigo
 @<Local Variables@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 static EGLContext egl_context;
 #endif
 @
@@ -2881,7 +2884,7 @@ existing window before trying to close and destroy it.
 
 \iniciocodigo
 @<API Functions@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 bool _Wdestroy_window(void){
   if(already_have_window == false)
     return false;
@@ -2963,7 +2966,7 @@ achieved with the following code:
 
 \iniciocodigo
 @<API Functions@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 bool _Wrender_window(void){
   return eglSwapBuffers(egl_display, egl_window);
 }
@@ -3025,7 +3028,7 @@ also returns the window width and height that we need:
 
 \iniciocodigo
 @<API Functions@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 bool _Wget_window_size(int *width, int *height){
   Window root_window;
   int x, y;
@@ -3121,7 +3124,7 @@ if such attribute is marked or not:
 
 \iniciocodigo
 @<API Functions@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 bool _Wis_fullscreen(void){
   XWindowAttributes attributes;
   if(!already_have_window || display == NULL)
@@ -3239,7 +3242,7 @@ move and resize the window to make it occupy the whole screen again.
 
 \iniciocodigo
 @<API Functions@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 void _Wtoggle_fullscreen(void){
   bool fullscreen_flag = false;
   XSetWindowAttributes attributes;
@@ -3409,7 +3412,7 @@ window resize, if it exists.
 
 \iniciocodigo
 @<API Functions@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 bool _Wresize_window(int width, int height){
   int old_size_x, old_size_y;
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
@@ -3449,7 +3452,7 @@ the resizing require the following header:
 
 \iniciocodigo
 @<Headers@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #include <sys/time.h>
 #endif
 @
@@ -3620,7 +3623,7 @@ example, on X11, the reading of events is done this way:
 
 \iniciocodigo
 @<Get Window Events@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 XEvent event;
 while(XPending(display)){
   XNextEvent(display, &event);
@@ -3721,7 +3724,7 @@ keys.
 
 \iniciocodigo
 @<Macro Definition@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #define W_KEYBOARD_SIZE 257
 #endif
 @
@@ -3764,7 +3767,7 @@ are:
 
 \iniciocodigo
 @<Keyboard Initialization@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 {
   int i;
   for(i = 8; i < 256; i ++){
@@ -4304,7 +4307,7 @@ button array with the following macros:
 
 \iniciocodigo
 @<Macro Definition@>+=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 #define W_MOUSE_SIZE 6
 #define W_MOUSE_LEFT   Button1
 #define W_MOUSE_MIDDLE Button2
@@ -4370,7 +4373,7 @@ information about mouse position relative to our current window.
 
 \iniciocodigo
 @<Get Mouse Position@>=
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(BSD)
 {
   int x, y;
   Window root_return, child_return;
