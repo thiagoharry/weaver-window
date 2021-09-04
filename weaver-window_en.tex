@@ -259,6 +259,16 @@ This function changes the window size if it exists and if we are not i
 fullscreen mode. If this operation fails because these conditions are
 not met, the function returns false.
 
+\iniciocodigo
+@<Window Declarations@>+=
+void _Wset_resize_function(void (*func)(int, int, int, int));
+@
+\fimcodigo
+
+This function register a function to be executed always that our
+window changes its size. The function gets as arguments the old width
+and height, followed by the new width and height.
+
 \secao{2. Creating and Managing the Window}
 
 In this Section we will define the functions and core about creating a
@@ -3192,12 +3202,23 @@ Also when we enter or exit fullscreen, or if we change the size of our
 window, it could be necessary for the user to recompute the position
 for elements in the screen. Because of this, we will et the user to
 define a funtion to be executed when this happens. If no function is
-passewd by the user, then nothing additional is executed. The pointer
+passed by the user, then nothing additional is executed. The pointer
 that will store the user-defined function, if it exists, is:
 
 \iniciocodigo
 @<Local Variables@>+=
-static void (*function_handle_for_resizing)(void) = NULL;
+static void (*resizing_function)(int, int, int, int) = NULL;
+@
+\fimcodigo
+
+To register a new function and store its addresss in the above
+pointer, we invoke the following function:
+
+\iniciocodigo
+@<API Functions@>+=
+void _Wset_resize_function(void (*func)(int, int, int, int)){
+  resizing_function = func;
+}
 @
 \fimcodigo
 
@@ -3222,9 +3243,10 @@ move and resize the window to make it occupy the whole screen again.
 void _Wtoggle_fullscreen(void){
   bool fullscreen_flag = false;
   XSetWindowAttributes attributes;
-  int new_size_x, new_size_y;
+  int new_size_x, new_size_y, old_size_x, old_size_y;
   if(!already_have_window)
     return;
+  _Wget_window_size(&old_size_x, &old_size_y);
   XWithdrawWindow(display, window, 0);
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
@@ -3248,11 +3270,11 @@ void _Wtoggle_fullscreen(void){
     XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
   }
   else if(last_window_size_x > 0 && last_window_size_y > 0)
-    _Wresize_window(last_window_size_x, last_window_size_y);
+    XResizeWindow(display, window, last_window_size_x, last_window_size_y);
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3281,7 +3303,10 @@ simulated fullscreen mode:
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 void _Wtoggle_fullscreen(void){
-  int new_size_x, new_size_y;
+  int new_size_x, new_size_y, old_size_x, old_size_y;
+  if(!already_have_window)
+    return;
+  _Wget_window_size(&old_size_x, &old_size_y);
   if(fullscreen_mode){
     EM_ASM({
       var el = document.getElementById("canvas");
@@ -3318,8 +3343,8 @@ void _Wtoggle_fullscreen(void){
   }
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3334,9 +3359,12 @@ the functions \monoespaco{GetWindowLongA} and \monoespaco{SetWindowLongA}:
 @<API Functions@>+=
 #if defined(_WIN32)
 void _Wtoggle_fullscreen(void){
-  int size_x, size_y;
+  int new_size_x, new_size_y, old_size_x, old_size_y;
   DWORD window_style = GetWindowLongPtrA(window, GWL_STYLE);
-  if(window_style & WS_POPUP){ // Estamos em tela-cheia. Entrar em modo janela.
+  if(!already_have_window)
+    return;
+  _Wget_window_size(&old_size_x, &old_size_y);
+  if(window_style & WS_POPUP){ // We are in fullscreen. Enter windowed mode.
     SetWindowLong(window, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_VISIBLE);
     if(last_window_size_x > 0 && last_window_size_y > 0)
       SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x, last_window_size_y,
@@ -3344,16 +3372,16 @@ void _Wtoggle_fullscreen(void){
     else
       SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x, last_window_size_y,
                    SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE);
-  } else{ // Estamos em modo janela. Entrar em tela-cheia.
-    _Wget_screen_resolution(&size_x, &size_y);
+  } else{ // We are in windowed mode. Enter fullscreen.
+    _Wget_screen_resolution(&new_size_x, &new_size_y);
     SetWindowLongPtr(window, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y, SWP_SHOWWINDOW |
-                                                         SWP_FRAMECHANGED);
+    SetWindowPos(window, HWND_TOP, 0, 0, new_size_x, new_size_y,
+                 SWP_SHOWWINDOW | SWP_FRAMECHANGED);
   }
-  _Wget_window_size(&size_x, &size_y);
+  _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, size_x, size_y);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3383,8 +3411,10 @@ window resize, if it exists.
 @<API Functions@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wresize_window(int width, int height){
+  int old_size_x, old_size_y;
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  _Wget_window_size(&old_size_x, &old_size_y);
   {
     XSizeHints hints;
     hints.flags = PMinSize | PMaxSize;
@@ -3407,8 +3437,8 @@ bool _Wresize_window(int width, int height){
             (now.tv_usec - begin_time.tv_usec) < 500000);
   }
   glViewport(0, 0, width, height);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, width, height);
   return true;
 }
 #endif
@@ -3436,8 +3466,10 @@ its size:
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wresize_window(int width, int height){
+  int old_size_x, old_size_y;
   if(fullscreen_mode || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  _Wget_window_size(&old_size_x, &old_size_y);
   last_window_size_x = width;
   last_window_size_y = height;
   EM_ASM({
@@ -3448,14 +3480,14 @@ bool _Wresize_window(int width, int height){
     el.height = $1;
   }, width, height);
   glViewport(0, 0, width, height);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, width, height);
   return true;
 }
 #endif
 @
 
-\subsubsecao{2.9.3. Resizing the WIndow on Windows}
+\subsubsecao{2.9.3. Resizing the Window on Windows}
 
 On Windows, resizing the window means
 calling \monoespaco{SetWindowPos}. We do it only if we are not on
@@ -3466,17 +3498,19 @@ custom function to be run when the window size changes:
 @<API Functions@>+=
 #if defined(_WIN32)
 bool _Wresize_window(int width, int height){
+  int old_size_x, old_size_y;
   bool ret;
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  _Wget_window_size(&old_size_x, &old_size_y);
   last_window_size_x = width;
   last_window_size_y = height;
   ret = SetWindowPos(window, 0, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
   if(!ret)
     return false;
   glViewport(0, 0, width, height);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, width, height);
   return true;
 }
 #endif

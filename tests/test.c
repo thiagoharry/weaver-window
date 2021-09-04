@@ -109,8 +109,32 @@ void test_resizing(void){
   _Wget_window_size(&width, &height);
   assert("Window remembers its size when toggling fullscreen",
 	 width == 900 && height == 700);
-  _Wget_window_size(&width, &height);
   _Wdestroy_window();
+}
+
+
+static int counter = 0;
+void update_counter(int old_width, int old_height, int new_width, int new_height){
+  counter ++;
+}
+void test_resizing_function(void){
+  int counter0, counter1, counter2, counter3, counter4;
+  _Wcreate_window();
+  counter0 = counter;
+  _Wset_resize_function(update_counter);
+  _Wtoggle_fullscreen();
+  counter1 = counter;
+  _Wresize_window(900, 700);
+  counter2 = counter;
+  _Wtoggle_fullscreen();
+  counter3 = counter;
+  _Wset_resize_function(NULL);
+  _Wtoggle_fullscreen();
+  _Wresize_window(900, 700);
+  counter4 = counter;
+  _Wdestroy_window();
+  assert("Testing resizing function", counter0 == 0 && counter1 == 1 &&
+	 counter2 == 2 && counter3 == 3 && counter4 == 3);
 }
 
 void test_opengl_simple(void){
@@ -384,6 +408,7 @@ int main(int argc, char **argv){
   test_resolution();
   test_fullscreen();
   test_resizing();
+  test_resizing_function();
   test_opengl_simple();
   test_opengl_shader();
   test_opengl_buffers();

@@ -276,6 +276,17 @@ Esta função muda o tamanho da janela se ela existir e se não
 estivermos no modo de tela-cheia. Caso a operação falhe devido a estas
 condições não estiverem satisfeitas, a função retorna falso.
 
+\iniciocodigo
+@<Declarações de Janela@>+=
+void _Wset_resize_function(void (*func)(int, int, int, int));
+@
+\fimcodigo
+
+Esta função registra uma função para que seja executada toda vez que
+ocorrer uma mudança no tamanho de nossa janela. A função recebe como
+argumentos a largura e altura anterior da janela e como dois últimos
+argumentos a largura e altura da janela após o redimencionamento.
+
 \secao{2. Criando e Gerenciando a Janela}
 
 Nesta seção definiremos funções e códigos que envolvem criar uma
@@ -3239,10 +3250,20 @@ pelo usuário, se ela existir, será:
 
 \iniciocodigo
 @<Variáveis Locais@>+=
-static void (*function_handle_for_resizing)(void) = NULL;
+static void (*resizing_function)(int, int, int, int) = NULL;
 @
 \fimcodigo
 
+Para registrar uma função e armazenar o endereço dela neste ponteiro,
+invoca-se a seguinte função:
+
+\iniciocodigo
+@<Funções da API@>+=
+void _Wset_resize_function(void (*func)(int, int, int, int)){
+  resizing_function = func;
+}
+@
+\fimcodigo
 
 \subsubsecao{2.8.1. Alternando entre Tela Cheia e Janela no X11}
 
@@ -3267,9 +3288,10 @@ janela e ajustar o tamanho dela para o tamanho da tela.
 void _Wtoggle_fullscreen(void){
   bool fullscreen_flag = false;
   XSetWindowAttributes attributes;
-  int new_size_x, new_size_y;
+  int new_size_x, new_size_y, old_size_x, old_size_y;
   if(!already_have_window)
     return;
+  _Wget_window_size(&old_size_x, &old_size_y);
   XWithdrawWindow(display, window, 0);
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
@@ -3293,11 +3315,11 @@ void _Wtoggle_fullscreen(void){
     XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
   }
   else if(last_window_size_x > 0 && last_window_size_y > 0)
-    _Wresize_window(last_window_size_x, last_window_size_y);
+    XResizeWindow(display, window, last_window_size_x, last_window_size_y);
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3328,7 +3350,10 @@ janela e o de tela-cheia simulada:
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 void _Wtoggle_fullscreen(void){
-  int new_size_x, new_size_y;
+  int new_size_x, new_size_y, old_size_x, old_size_y;
+  if(!already_have_window)
+    return;
+  _Wget_window_size(&old_size_x, &old_size_y);
   if(fullscreen_mode){
     EM_ASM({
       var el = document.getElementById("canvas");
@@ -3365,8 +3390,8 @@ void _Wtoggle_fullscreen(void){
   }
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3381,8 +3406,11 @@ por meio de \monoespaco{GetWindowLongPtrA} e \monoespaco{SetWindowLongPtrA}:
 @<Funções da API@>+=
 #if defined(_WIN32)
 void _Wtoggle_fullscreen(void){
-  int size_x, size_y;
+  int new_size_x, new_size_y, old_size_x, old_size_y;
   DWORD window_style = GetWindowLongPtrA(window, GWL_STYLE);
+  if(!already_have_window)
+    return;
+  _Wget_window_size(&old_size_x, &old_size_y);
   if(window_style & WS_POPUP){ // Estamos em tela-cheia. Entrar em modo janela.
     SetWindowLong(window, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_VISIBLE);
     if(last_window_size_x > 0 && last_window_size_y > 0)
@@ -3392,15 +3420,15 @@ void _Wtoggle_fullscreen(void){
       SetWindowPos(window, HWND_TOP, 0, 0, last_window_size_x, last_window_size_y,
                    SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE);
   } else{ // Estamos em modo janela. Entrar em tela-cheia.
-    _Wget_screen_resolution(&size_x, &size_y);
+    _Wget_screen_resolution(&new_size_x, &new_size_y);
     SetWindowLongPtr(window, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-    SetWindowPos(window, HWND_TOP, 0, 0, size_x, size_y, SWP_SHOWWINDOW |
-                                                         SWP_FRAMECHANGED);
+    SetWindowPos(window, HWND_TOP, 0, 0, new_size_x, new_size_y,
+                 SWP_SHOWWINDOW | SWP_FRAMECHANGED);
   }
-  _Wget_window_size(&size_x, &size_y);
-  glViewport(0, 0, size_x, size_y);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  _Wget_window_size(&new_size_x, &new_size_y);
+  glViewport(0, 0, new_size_x, new_size_y);
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
 }
 #endif
 @
@@ -3432,8 +3460,10 @@ da janela, caso ela exista.
 @<Funções da API@>+=
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 bool _Wresize_window(int width, int height){
+  int old_size_x, old_size_y;
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  _Wget_window_size(&old_size_x, &old_size_y);
   {
     XSizeHints hints;
     hints.flags = PMinSize | PMaxSize;
@@ -3456,8 +3486,8 @@ bool _Wresize_window(int width, int height){
             (now.tv_usec - begin_time.tv_usec) < 500000);
   }
   glViewport(0, 0, width, height);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, width, height);
   return true;
 }
 #endif
@@ -3485,8 +3515,10 @@ propriedades CSS e atributos de tamanho:
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wresize_window(int width, int height){
+  int old_size_x, old_size_y;
   if(fullscreen_mode || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  _Wget_window_size(&old_size_x, &old_size_y);
   last_window_size_x = width;
   last_window_size_y = height;
   EM_ASM({
@@ -3497,8 +3529,8 @@ bool _Wresize_window(int width, int height){
     el.height = $1;
   }, width, height);
   glViewport(0, 0, width, height);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, width, height);
   return true;
 }
 #endif
@@ -3516,17 +3548,19 @@ janela muda:
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wresize_window(int width, int height){
+  int old_size_x, old_size_y;
   bool ret;
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
+  _Wget_window_size(&old_size_x, &old_size_y);
   last_window_size_x = width;
   last_window_size_y = height;
   ret = SetWindowPos(window, 0, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
   if(!ret)
     return false;
   glViewport(0, 0, width, height);
-  if(function_handle_for_resizing != NULL)
-    function_handle_for_resizing();
+  if(resizing_function != NULL)
+    resizing_function(old_size_x, old_size_y, width, height);
   return true;
 }
 #endif
