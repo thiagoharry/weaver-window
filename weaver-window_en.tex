@@ -3244,16 +3244,16 @@ move and resize the window to make it occupy the whole screen again.
 @<API Functions@>+=
 #if defined(__linux__) || defined(BSD)
 void _Wtoggle_fullscreen(void){
-  bool fullscreen_flag = false;
-  XSetWindowAttributes attributes;
   int new_size_x, new_size_y, old_size_x, old_size_y;
+  bool changing_to_fullscreen = false;
+  XSetWindowAttributes attributes;
   if(!already_have_window)
     return;
   _Wget_window_size(&old_size_x, &old_size_y);
   XWithdrawWindow(display, window, 0);
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
-    fullscreen_flag = true;
+    changing_to_fullscreen = true;
     XMoveWindow(display, window, 0, 0);
   }
   else
@@ -3261,19 +3261,23 @@ void _Wtoggle_fullscreen(void){
   XChangeWindowAttributes(display, window, CWOverrideRedirect,
                           &attributes);
   XMapWindow(display, window);
-  { // When mapping the window again, we need to wait until this succeeds:
+  { // After request the mapping for the window, wait until it became mapped
     XEvent e;
     do{
       XNextEvent(display, &e);
     } while(e.type != MapNotify);
   }
-  if(fullscreen_flag){
-    int size_x, size_y;
-    _Wget_screen_resolution(&size_x, &size_y);
-    XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
+  if(changing_to_fullscreen){
+    _Wget_screen_resolution(&new_size_x, &new_size_y);
+    XMoveResizeWindow(display, window, 0, 0, new_size_x, new_size_y);
+    @<X11: Wait for Resizing@>
   }
-  else if(last_window_size_x > 0 && last_window_size_y > 0)
-    XResizeWindow(display, window, last_window_size_x, last_window_size_y);
+  else{
+    new_size_x = ((last_window_size_x > 0)?(last_window_size_x):(800));
+    new_size_y = ((last_window_size_y > 0)?(last_window_size_y):(600));
+    XResizeWindow(display, window, new_size_x, new_size_y);
+    @<X11: Wait for Resizing@>
+  }
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
   if(resizing_function != NULL)
@@ -3281,6 +3285,50 @@ void _Wtoggle_fullscreen(void){
 }
 #endif
 @
+
+In the above function, we sent to the X server a request to change our
+window size. However, this does not mean that when the
+function \monoespaco{XResizeWindow} or \monoespaco{XResizeWindow}
+return, the window is already in the new size. It is important to wait
+until the size is successfully changed, otherwise we could return
+incorrect or inconsistent values in other functions. For example, if
+the window asks what is our window size after toggling the
+fullscreen. Because of this in the abocve code we wait until the size
+change is completed. This is more important when we exit
+
+However, we cannot wait forever. We could be running in a window
+manager that ignores our request to change the window size when we are
+not in fullscreen mode. Because of this, we should have a maximum
+waiting time. The code below shows how we implement the waiting
+code. It waits until our window have the new size, but if this does
+not happen in 0.1 seconds, it halts the waiting:
+
+\iniciocodigo
+@<X11: Wait for Resizing@>=
+{ // Wait at most 0.1 for the resizing
+  struct timeval begin_time, now;
+  int new_width, new_height;
+  gettimeofday(&begin_time, NULL);
+  do{
+    _Wget_window_size(&new_width, &new_height);
+    gettimeofday(&now, NULL);
+  } while((new_width != new_size_x || new_height != new_size_y) &&
+          (now.tv_sec - begin_time.tv_sec) * 1000000 +
+          (now.tv_usec - begin_time.tv_usec) < 100000);
+}
+@
+\fimcodigo
+
+And the function \monoespaco{gettimeofday} requires the following
+header:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(__linux__) || defined(BSD)
+#include <sys/time.h>
+#endif
+@
+\fimcodigo
 
 \subsubsecao{2.8.2. Changing Between Fullscreen and Windowed Mode on Web Assembly}
 
@@ -3414,7 +3462,7 @@ window resize, if it exists.
 @<API Functions@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wresize_window(int width, int height){
-  int old_size_x, old_size_y;
+  int old_size_x, old_size_y, new_size_x = width, new_size_y = height;
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
   _Wget_window_size(&old_size_x, &old_size_y);
@@ -3428,17 +3476,7 @@ bool _Wresize_window(int width, int height){
   last_window_size_x = width;
   last_window_size_y = height;
   XResizeWindow(display, window, width, height);
-  { // Wait at most 0.5 seconds for the change make effect
-    struct timeval begin_time, now;
-    int new_width, new_height;
-    gettimeofday(&begin_time, NULL);
-    do{
-      _Wget_window_size(&new_width, &new_height);
-      gettimeofday(&now, NULL);
-    } while((new_width != width || new_height != height) &&
-            (now.tv_sec - begin_time.tv_sec) * 1000000 +
-            (now.tv_usec - begin_time.tv_usec) < 500000);
-  }
+  @<X11: Wait for Resizing@>
   glViewport(0, 0, width, height);
   if(resizing_function != NULL)
     resizing_function(old_size_x, old_size_y, width, height);
@@ -3446,17 +3484,6 @@ bool _Wresize_window(int width, int height){
 }
 #endif
 @
-
-Measuring the time to do not expend more than 0.5 seconds waiting for
-the resizing require the following header:
-
-\iniciocodigo
-@<Headers@>+=
-#if defined(__linux__) || defined(BSD)
-#include <sys/time.h>
-#endif
-@
-\fimcodigo
 
 \subsubsecao{2.9.2. Resizing the Window on Web Assembly}
 

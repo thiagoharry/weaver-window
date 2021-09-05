@@ -3289,16 +3289,16 @@ janela e ajustar o tamanho dela para o tamanho da tela.
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 void _Wtoggle_fullscreen(void){
-  bool fullscreen_flag = false;
-  XSetWindowAttributes attributes;
   int new_size_x, new_size_y, old_size_x, old_size_y;
+  bool changing_to_fullscreen = false;
+  XSetWindowAttributes attributes;
   if(!already_have_window)
     return;
   _Wget_window_size(&old_size_x, &old_size_y);
   XWithdrawWindow(display, window, 0);
   if(!_Wis_fullscreen()){
     attributes.override_redirect = true;
-    fullscreen_flag = true;
+    changing_to_fullscreen = true;
     XMoveWindow(display, window, 0, 0);
   }
   else
@@ -3312,13 +3312,17 @@ void _Wtoggle_fullscreen(void){
       XNextEvent(display, &e);
     } while(e.type != MapNotify);
   }
-  if(fullscreen_flag){
-    int size_x, size_y;
-    _Wget_screen_resolution(&size_x, &size_y);
-    XMoveResizeWindow(display, window, 0, 0, size_x, size_y);
+  if(changing_to_fullscreen){
+    _Wget_screen_resolution(&new_size_x, &new_size_y);
+    XMoveResizeWindow(display, window, 0, 0, new_size_x, new_size_y);
+    @<X11: Esperar Redimencionamento Surtir Efeito@>
   }
-  else if(last_window_size_x > 0 && last_window_size_y > 0)
-    XResizeWindow(display, window, last_window_size_x, last_window_size_y);
+  else{
+    new_size_x = ((last_window_size_x > 0)?(last_window_size_x):(800));
+    new_size_y = ((last_window_size_y > 0)?(last_window_size_y):(600));
+    XResizeWindow(display, window, new_size_x, new_size_y);
+    @<X11: Esperar Redimencionamento Surtir Efeito@>
+  }
   _Wget_window_size(&new_size_x, &new_size_y);
   glViewport(0, 0, new_size_x, new_size_y);
   if(resizing_function != NULL)
@@ -3326,6 +3330,50 @@ void _Wtoggle_fullscreen(void){
 }
 #endif
 @
+
+Na função acima nós enviamos ao servidor X o pedido para que a janela
+tenha seu tamanho modificado. Entretanto, enfviar o pedido não quer
+dizer que o pedido é realizado. É importante esperar a modificação
+para que possamos realmente atualizar corretamente o tamanho da área
+de desenho do OpenGL e garantir que as próximas funções que tentarem
+medir o tamanho da janela retorne o valor correto. Por causa dsso, nós
+temos um trecho de código acima para esperar as modificações surtirem
+efeito.
+
+Mas não podemos esperar para sempre. Pois pode ser que o gerenciador
+de janelas se recuse a mudar o tamanho e neste cenário nós nunca
+terímamos o redimencionamento. Por causa disso, vamos estabelecer o
+tempo de espera máximo de 0,1 segundos.
+
+O trecho de código que nos permite esperar a mudança de tamanho surtir
+efeito é:
+
+\iniciocodigo
+@<X11: Esperar Redimencionamento Surtir Efeito@>=
+{ // Espera no máximo 0.5 segundos para que a mudança surta efeito
+  struct timeval begin_time, now;
+  int new_width, new_height;
+  gettimeofday(&begin_time, NULL);
+  do{
+    _Wget_window_size(&new_width, &new_height);
+    gettimeofday(&now, NULL);
+  } while((new_width != new_size_x || new_height != new_size_y) &&
+          (now.tv_sec - begin_time.tv_sec) * 1000000 +
+          (now.tv_usec - begin_time.tv_usec) < 100000);
+}
+@
+\fimcodigo
+
+E como usamos a função de obter o tempo, precisamos inserir o seguinte
+cabeçalho:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(__linux__) || defined(BSD)
+#include <sys/time.h>
+#endif
+@
+\fimcodigo
 
 \subsubsecao{2.8.2. Alternando entre Tela Cheia e Janela no Web Assembly}
 
@@ -3463,7 +3511,7 @@ da janela, caso ela exista.
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wresize_window(int width, int height){
-  int old_size_x, old_size_y;
+  int old_size_x, old_size_y, new_size_x = width, new_size_y = height;
   if(_Wis_fullscreen() || width <= 0 || height <= 0 || !already_have_window)
     return false;
   _Wget_window_size(&old_size_x, &old_size_y);
@@ -3477,17 +3525,7 @@ bool _Wresize_window(int width, int height){
   last_window_size_x = width;
   last_window_size_y = height;
   XResizeWindow(display, window, width, height);
-  { // Espera no máximo 0.5 segundos para que a mudança surta efeito
-    struct timeval begin_time, now;
-    int new_width, new_height;
-    gettimeofday(&begin_time, NULL);
-    do{
-      _Wget_window_size(&new_width, &new_height);
-      gettimeofday(&now, NULL);
-    } while((new_width != width || new_height != height) &&
-            (now.tv_sec - begin_time.tv_sec) * 1000000 +
-            (now.tv_usec - begin_time.tv_usec) < 500000);
-  }
+  @<X11: Esperar Redimencionamento Surtir Efeito@>
   glViewport(0, 0, width, height);
   if(resizing_function != NULL)
     resizing_function(old_size_x, old_size_y, width, height);
@@ -3495,17 +3533,6 @@ bool _Wresize_window(int width, int height){
 }
 #endif
 @
-
-Medir o tempo de execução como fizemos requer a inserção do seguinte
-cabeçalho:
-
-\iniciocodigo
-@<Cabeçalhos@>+=
-#if defined(__linux__) || defined(BSD)
-#include <sys/time.h>
-#endif
-@
-\fimcodigo
 
 \subsubsecao{2.9.2. Redimencionando a Janela no Web Assembly}
 
