@@ -66,6 +66,122 @@
   OpenGL e obter entrada do mouse e teclado. Tudo isso pode ser obtido
   pela interface de aplicação portável definida neste trabalho.}
 
+\secao{Índice}
+
+\def\indice#1{\leaders\hbox{.}\hfill #1}
+
+1. Introdução \indice{02}
+
+1.1. Programação Literária e Notação \indice{03}
+
+1.2. Funções de API a serem Definidas \indice{04}
+
+2. Criando e Gerenciando a Janela \indice{05}
+
+2.1. Obtendo a Resolução da Tela \indice{05}
+
+2.1.1. Obtendo a Resolução da Tela no X \indice{06}
+
+2.1.2. Obtendo a Resolução da Tela no Web Assembly \indice{07}
+
+2.1.3. Obtendo a Resolução da Tela no Windows \indice{07}
+
+2.2. Criando uma Janela \indice{07}
+
+2.2.1. Criando uma Janela no X \indice{07}
+
+2.2.2. Criando uma Janela com Web Assembly \indice{11}
+
+2.2.3. Criando uma Janela no Windows \indice{13}
+
+2.2.4. Definindo a Função de Criação de Janelas para Todo Ambiente \indice{16}
+
+2.3. Configurando o OpenGL \indice{16}
+
+2.3.1. Configurando OpenGL ES no X11 \indice{16}
+
+2.3.2.Configuring OpenGL on Web Assembly \indice{18}
+
+2.3.3. Configurando OpenGL no Windows \indice{18}
+
+2.3.4. Escolhendo a Versão do OpenGL \indice{43}
+
+2.4. Fechando uma Janela \indice{43}
+
+2.4.1. Closing a Window on X11 \indice{43}
+
+2.4.2. Fechando uma Janela em Web Assembly \indice{44}
+
+2.4.3. Fechando uma Janela no Windows \indice{44}
+
+2.5. Renderizando a Janela \indice{44}
+
+2.5.1. Renderizando a Janela no X \indice{45}
+
+2.5.2. Renderizando a Janela no Emscripten \indice{45}
+
+2.5.3. Renderizando a Janela no Windows \indice{45}
+
+2.6. Obtendo o Tamanho da Janela \indice{45}
+
+2.6.1. Obtendo o Tamanho da Janela no X \indice{45}
+
+2.6.2. Obtendo o Tamanho da Janela no Web Assembly \indice{46}
+
+2.6.3. Obtendo o Tamanho da Janela no Windows \indice{46}
+
+2.7. Checando o modo de tela cheia \indice{47}
+
+2.7.1. Checando modo de tela cheia no X11 \indice{47}
+
+2.7.2. Checando modo de tela cheia no Web Assembly \indice{47}
+
+2.7.3. Checando modo de tela cheia no Windows \indice{48}
+
+2.8. Alternando entre Tela Cheia e Janela \indice{48}
+
+2.8.1. Alternando entre Tela Cheia e Janela no X11 \indice{49}
+
+2.8.2. Alternando entre Tela Cheia e Janela no Web Assembly \indice{50}
+
+2.8.3. Alternando entre Tela Cheia e Janela no Windows \indice{51}
+
+2.9. Redimencionando a Janela \indice{52}
+
+2.9.1. Redimencionando a Janela no X11 \indice{52}
+
+2.9.2. Redimencionando a Janela no Web Assembly \indice{53}
+
+2.9.3. Redimencionando a Janela no Windows \indice{53}
+
+3. Gerenciando Entrada \indice{54}
+
+3.1. Definindo o Teclado e Mouse \indice{54}
+
+3.2. Lendo o Teclado \indice{56}
+
+3.2.1. Lendo o Teclado no X \indice{57}
+
+3.2.2. Lendo o Teclado no Web Assembly \indice{59}
+
+3.2.3. Lendo o Teclado no Windows \indice{61}
+
+3.2.4. Código Adicional para Suporte de Teclado \indice{63}
+
+3.3. Lendo o Mouse \indice{65}
+
+3.3.1. Lendo o Mouse no X \indice{66}
+
+3.3.2. Lendo o Mouse no Web Assembly \indice{67}
+
+3.3.3. Lendo o Mouse no Windows \indice{68}
+
+3.3.4. Código Adicional para Suporte de Mouse \indice{70}
+
+3.4. Funções Adicionais de Entrada \indice{72}
+
+4. Estrutura Final do Arquivo \indice{72}
+
 \secao{1. Introdução}
 
 Um programa de computador gráfico precisa de um espaço no qual ele
@@ -736,10 +852,10 @@ SDL_Init(SDL_INIT_VIDEO);
 \fimcodigo
 
 Agora vamos efetivamente criar a janela, o que na prática ajusta o
-tamanho do canvas HTML onde iremos desenhar e o inicializa. O canvas
-HTML deverá ter o tamanho da tela, exceto caso o usuário tenha
-definido a macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} e tenha
-definido valores positivos para \monoespaco{W\_WINDOW\_RESOLUTION\_X}
+tamanho do canvas HTML onde iremos desenhar e o inicializa. O
+``canvas'' HTML deverá ter o tamanho da tela, exista definida a
+macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} com valores positivos
+para \monoespaco{W\_WINDOW\_RESOLUTION\_X}
 e \monoespaco{W\_WINDOW\_RESOLUTION\_Y}. Também iremos nos certificar
 de que o canvas está realmente visível, pois ele pode ter sido oculto
 (é o que fazemos com ele se executarmos a função de fechar janela).
@@ -2958,7 +3074,7 @@ bool _Wdestroy_window(void){
 @
 \fimcodigo
 
-\subsecao{2.4.3. Fechando uma Janela no Windows}
+\subsubsecao{2.4.3. Fechando uma Janela no Windows}
 
 Fechar a janela no Windows significa chamar a  função que irá
 encerrá-la:
@@ -2987,7 +3103,7 @@ significa pedir para que a janela seja atualizada depois de realizar
 chamadas OpenGL para desenhar. O modo de fazer isso depende do nosso
 ambiente e API.
 
-\subsecao{2.5.1. Renderizando a Janela no X} 
+\subsubsecao{2.5.1. Renderizando a Janela no X} 
 
 No X, como pedimos para o EGL criar uma janela e por padrão ele cria
 uma janela com buffer duplo, para renderizarmos os comandos OpenGL
@@ -3005,7 +3121,7 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.5.2. Renderizando a Janela no Emscripten} 
+\subsubsecao{2.5.2. Renderizando a Janela no Emscripten} 
 
 A função \monoespaco{emscripten\_sleep} seria a que realiza a
 atualização de uma janela quando estamos em um laço
@@ -3032,7 +3148,7 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.5.3. Renderizando a Janela no Windows}
+\subsubsecao{2.5.3. Renderizando a Janela no Windows}
 
 No Windows, a função WGL responsável por trocar os buffers da janela e
 assim tornar visíveis os desenhos feitos é
@@ -3082,7 +3198,7 @@ bool _Wget_window_size(int *width, int *height){
 @
 \fimcodigo
 
-\subsubsecao{2.6.1. Obtendo o Tamanho da Janela no Web Assembly}
+\subsubsecao{2.6.2. Obtendo o Tamanho da Janela no Web Assembly}
 
 Em um navegador web, nós não temos uma janela, mas um ``canvas''
 HTML. Por convenção, o canvas que usamos como janela tem o ID
@@ -3118,7 +3234,7 @@ bool _Wget_window_size(int *width, int *height){
 @
 \fimcodigo
 
-\subsubsecao{2.6.3. Obtendo o Tamanho da Janela no WIndows}
+\subsubsecao{2.6.3. Obtendo o Tamanho da Janela no Windows}
 
 No Windows nós usamos uma chamada a \monoespaco{GetWindowRect} para
 obter o tamanho da janela. o qual é armazenado em uma
@@ -3802,7 +3918,7 @@ reinicialização do teclado é:
 @
 \fimcodigo
 
-\subsecao{3.2.1. Lendo o Teclado no X}
+\subsubsecao{3.2.1. Lendo o Teclado no X}
 
 No X11, cada tecla de teclado diferente possui um códico único entre 8
 e 255. Esse código representa a tecla física pressionada, mas não tem
@@ -3976,7 +4092,7 @@ int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
 @
 \fimcodigo
 
-\subsecao{3.2.2. Lendo o Teclado no Web Assembly}
+\subsubsecao{3.2.2. Lendo o Teclado no Web Assembly}
 
 O Emscripten fornece para nós a API do SDL para interagir com o
 teclado. Nesta API, o número de teclas suportadas é definida pela
@@ -4089,7 +4205,7 @@ cada uma destas teclas:
 @
 \fimcodigo
 
-\subsecao{3.2.3. Lendo o Teclado no WIndows}
+\subsubsecao{3.2.3. Lendo o Teclado no Windows}
 
 No Windows as teclas físicas são chamadas pelo nome
 de \monoespaco{Scancode} e o símbolo associado a ela é chamado de
@@ -4592,8 +4708,8 @@ macros abaixo:
 \fimcodigo
 
 Como o Windows cria eventos de tipos diferentes para cada um dos
-botões, e além disso trata como se fôsse um único botão os botões X1 e
-X2, apenas diferenciando-os por meio de um dos bits da mensagem, temos
+botões, e além disso trata como se fôsse um único botão o X1 e X2,
+apenas diferenciando-os por meio de um dos bits da mensagem, temos
 trabalho adicional para tratar os eventos de clique de mouse:
 
 \iniciocodigo
@@ -4850,7 +4966,7 @@ void _Wflush_window_input(void){
 \fimcodigo
 
 
-\secao{X. Estrutura Final do Arquivo}
+\secao{4. Estrutura Final do Arquivo}
 
 O arquivo com o código-fonte de todas as funções definidas neste
 artigo terá a seguinte forma:

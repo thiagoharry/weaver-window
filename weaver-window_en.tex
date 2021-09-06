@@ -56,6 +56,122 @@
   keyboard. All this can be achieved by the portable API defined in
   this work.}
 
+\secao{Index}
+\def\indice#1{\leaders\hbox{.}\hfill #1}
+
+1. Introduction \indice{02}
+
+1.1. Literary Programming and Notation \indice{03}
+
+1.2. API Functions to Be Defined \indice{04}
+
+2. Creating and Managing the Window \indice{05}
+
+2.1. Getting Screen Resolution \indice{05}
+
+2.1.1. Getting Screen Resolution on X \indice{05}
+
+2.1.2. Getting Screen Resolution on Web Assembly \indice{06}
+
+2.1.3. Getting Screen Resolution on Windows \indice{07}
+
+2.2. Creating a Window \indice{07}
+
+2.2.1. Creating a Window on X \indice{07}
+
+2.2.2. Creating a Window on Web Assembly \indice{10}
+
+2.2.3. Creating a Window on (Microsoft) Windows \indice{13}
+
+2.2.4. Defining the  Window Creation Function for All Environments \indice{15}
+
+2.3. Configuring OpenGL \indice{16}
+
+2.3.1. Configuring OpenGL ES in X11 \indice{16}
+
+2.3.2.Configuring OpenGL on Web Assembly \indice{18}
+
+2.3.3. Configuring OpenGL on Windows \indice{18}
+
+2.3.4. Choosing OpenGL Version \indice{43}
+
+2.4. Closing a Window \indice{44}
+
+2.4.1. Closing a Window on X \indice{44}
+
+2.4.2. Closing a Window in Web Assembly \indice{44}
+
+2.4.3. Closing a Window on Windows \indice{45}
+
+2.5. Rendering the Window \indice{45}
+
+2.5.1. Rendering Window on X \indice{45}
+
+2.5.2. Rendering Window on Web Assembly \indice{45}
+
+2.5.3. Rendering Window on Windows \indice{46}
+
+2.6. Getting Window Size \indice{46}
+
+2.6.1. Getting Window Size on X \indice{46}
+
+2.6.2. Getting Window Size on Web Assembly \indice{46}
+
+2.6.3. Getting Window Size on Windows \indice{47}
+
+2.7. Checking Fullscreen Mode \indice{47}
+
+2.7.1. Checking Fullscreen Mode on X \indice{47}
+
+2.7.2. Checking Fullscreen Mode on Web Assembly \indice{48}
+
+2.7.3. Checking Fullscreen Mode on Windows \indice{48}
+
+2.8. Changing Between Fullscreen and Windowed Mode \indice{48}
+
+2.8.1. Changing Between Fullscreen and Windowed Mode on X \indice{49}
+
+2.8.2. Changing Between Fullscreen and Windowed Mode on Web Assembly \indice{51}
+
+2.8.3. Changing Between Fullscreen and Windowed Mode on Windows \indice{52}
+
+2.9. Resizing the Window \indice{52}
+
+2.9.1. Resizing the Window on X \indice{53}
+
+2.9.2. Resizing the Window on Web Assembly \indice{53}
+
+2.9.3. Resizing the Window on Windows \indice{54}
+
+3. Managing Input \indice{54}
+
+3.1. Defining the Keyboard and Mouse \indice{54}
+
+3.2. Reading the Keyboard \indice{56}
+
+3.2.1. Reading the Keyboard on X \indice{57}
+
+3.2.2. Reading the Keyboard on Web Assembly \indice{59}
+
+3.2.3. Reading the Keyboard on Windows \indice{61}
+
+3.2.4. Additional Code for Keyboard Support \indice{63}
+
+3.3. Reading the Mouse \indice{65}
+
+3.3.1. Reading the Mouse on X \indice{66}
+
+3.3.2. Reading the Mouse on Web Assembly \indice{67}
+
+3.3.3. Reading the Mouse on Windows \indice{68}
+
+3.3.4. Additional Code for Mouse Support \indice{70}
+
+3.4. Additional Input Functions \indice{72}
+
+4. Estrutura Final do Arquivo \indice{72}
+
+
 \secao{1. Introduction}
 
 A graphical computer program needs a space where it can draw in the
@@ -146,7 +262,7 @@ our code will be more verbose:
 Notice that we still did not define where this code section called
 ``Headers'' will be positioned. We can do this later.
 
-\subsecao{1.2. API functions that will be defined}
+\subsecao{1.2. API Functions to Be Defined}
 
 In this article we will define the following functions:
 
@@ -672,9 +788,9 @@ attention to the size of the screen and should allow the resizing of
 our canvas.
 
 Here we can create and manipulate the drawing area combining two
-things: the SDL library, presented as an interface to graphical
-actions by Emscripten environment and Javascript code that we also can
-execute.
+things: the SDL library, presented by Emscripten as the graphical API
+and Javascript code to control the canvas where the SDL code is
+rendered.
 
 Now we include the Emscripten and SDL headers:
 
@@ -712,13 +828,13 @@ SDL_Init(SDL_INIT_VIDEO);
 \fimcodigo
 
 Now we will create the window, which in practice means adjust the
-canvas size where we will draw and initialize it. The HTML canvas
-should be the screen size, except if the user defined
-macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} and defined positive
-values for \monoespaco{W\_WINDOW\_RESOLUTION\_X}
-and \monoespaco{W\_WINDOW\_RESOLUTION\_Y}. We also ensure that the
-canvas is visible using Javascript, as it could be hidden (we do it
-when we execute the function to close the window).
+canvas size where we will draw and initialize it with SDL code. The
+HTML canvas should have the same size than the screen, except if
+macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} is defined and if
+macros \monoespaco{W\_WINDOW\_RESOLUTION\_X}
+and \monoespaco{W\_WINDOW\_RESOLUTION\_Y} have positive values. We
+also ensure that the canvas is visible using Javascript, as it could
+be hidden (we do it when we execute the function to close the window).
 
 \iniciocodigo
 @<Web Assembly: Create Window@>+=
@@ -1005,7 +1121,7 @@ a loop until we get a message saying that the window was created:
 @
 \fimcodigo
 
-\subsubsecao{2.2.4. Defining the Function for Window Creation in All Environments}
+\subsubsecao{2.2.4. Defining the  Window Creation Function for All Environments}
 
 In the previous subsubsections, we defined code for window creation in
 different environments, and all code was placed inside conditional
@@ -1166,10 +1282,11 @@ static EGLSurface egl_window;
 \fimcodigo
 
 
-Now we can create the OpenGL context. We let the user choose which
-will be the major and minor OpenGL version using
+Now we can create the OpenGL context. We choose the major and minor
+OpenGL version using
 macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} and
-\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. With this information, we create the context:
+\monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. With this information,
+we create the context:
 
 \iniciocodigo
 @<X11: Configure OpenGL ES@>+=
@@ -2824,20 +2941,7 @@ OpenGL version according with the following two macros:
 2) \monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}
 
 We will now define what these macros values will be if the user did
-not personalized them to some valuye.
-
-\subsecao{2.6. Window Creation Function}
-
-Our function that creates a new window will execute the adequate code,
-depending on the graphical environment where termosit is being
-executed. But before this we will add code to check if a window
-already was created. This information will be stored in a boolean
-variable:
-
-There is one last thing to define about the window creation, more
-specifically about the OpenL context associated with the created
-window. We need to choose a default OpenGL version to load when the
-user do not set her own value.
+not personalized them to some value.
 
 When we are running in X11, we can use EGL to create an OpenGL ES
 context. In this case, we prefer version 3.0, as is the newer version
@@ -2874,7 +2978,7 @@ Closing a window makes the window disappear and also finalizes any
 data initialized during window creation. This includes the OpenGL
 context.
 
-\subsubsecao{2.4.1. Closing a Window on X11}
+\subsubsecao{2.4.1. Closing a Window on X}
 
 Closing a window in X11 means calling the function that asks the
 server to close the window and also closing the connection with the
@@ -2956,7 +3060,7 @@ loop, we call some function that draws in our window. This means
 asking to update the window after making OpenGL calls to draw. How we
 do this depends on our environment and API.
 
-\subsecao{2.5.1. Rendering window in X} 
+\subsubsecao{2.5.1. Rendering Window on X}
 
 In X, when we asked EGL to create a window, by default it creates a
 double buffered window. Rendering in the screen means in this case to
@@ -2974,7 +3078,7 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.5.2. Rendering window in Emscripten}
+\subsubsecao{2.5.2. Rendering Window on Web Assembly}
 
 The function \monoespaco{emscripten\_sleep} is what makes the window
 update in a main loop. However, using it is a bad practice. In Web
@@ -2998,7 +3102,7 @@ bool _Wrender_window(void){
 @
 \fimcodigo
 
-\subsecao{2.5.3. Rendering window in (Microsoft) Windows}
+\subsubsecao{2.5.3. Rendering Window on Windows}
 
 In Windows, the WGL function responsible for swapping buffers in the
 window making our drawings visible is
@@ -3110,12 +3214,12 @@ bool _Wget_window_size(int *width, int *height){
 @
 \fimcodigo
 
-\subsecao{2.7. Checking fullscreen mode}
+\subsecao{2.7. Checking Fullscreen Mode}
 
 Here we will define the function that checks if we are in fullscreen
 mode or not.
 
-\subsubsecao{2.7.1. Checking Fullscreen Mode on X11}
+\subsubsecao{2.7.1. Checking Fullscreen Mode on X}
 
 In X11, we create a fullscreen window adjusting a window attribute to
 make the window override any window manager configuration and occupy
@@ -3225,7 +3329,7 @@ void _Wset_resize_function(void (*func)(int, int, int, int)){
 @
 \fimcodigo
 
-\subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on X11}
+\subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on X}
 
 Toggling between windowed and fulscreen mode means changing one
 attribute in our window, the attriute that determines if the window
@@ -3444,7 +3548,7 @@ environments, provided that the window exists and that we are not in
 fullscreen mode. In case of error, the function returns
 false. Otherwise, it returns true.
 
-\subsubsecao{2.9.1. Resizing the Window on X11}
+\subsubsecao{2.9.1. Resizing the Window on X}
 
 Resize on X11 means uusing the function \monoespaco{XResizeWindow},
 which we already used in other functions. Besides this, we also need
@@ -4761,7 +4865,7 @@ void _Wflush_window_input(void){
 \fimcodigo
 
 
-\subsecao{X. Final File Sctructure}
+\subsecao{4. Final File Sctructure}
 
 The file with all the necessary source code for the functions defined
 in this article will have the following organization:
