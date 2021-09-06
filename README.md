@@ -18,7 +18,11 @@ and
 This is written in Literary Programming. And the code is tested on
 Linux, Open BSD, Windows 10 and Web Assembly. Therefore, if you plan
 to study how this library works, you can read the full source code
-with additional text explanations in [weaver-window_en.pdf](https://github.com/thiagoharry/weaver-window/blob/master/weaver-window_en.pdf).
+with additional text explanations in
+[weaver-window_en.pdf](https://github.com/thiagoharry/weaver-window/blob/master/weaver-window.pdf)
+(engish version) or in
+[weaver-window_en.pdf](https://github.com/thiagoharry/weaver-window/blob/master/weaver-window.pdf)
+(portuguese version).
 
 This code is licensed under GNU Affero Gneral Public Licence v. 3. See
 the LICENSE file.
