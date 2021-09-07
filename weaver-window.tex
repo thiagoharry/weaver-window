@@ -3888,7 +3888,7 @@ de teclas que iremos atualizar:
 @<Variáveis Locais@>=
 static struct{
   unsigned key; // Qual tecla foi pressionada?
-  long time;    // Quando foi pressionada?
+  unsigned long time;    // Quando foi pressionada?
 } pressed_keys[32];
 static unsigned released_keys[32]; // Que teclas foram soltas?
 @
@@ -4456,7 +4456,7 @@ pressionar mais do que quatro botões de teclado:
 @<Variáveis Locais@>+=
 static struct{
   unsigned button; // Which button was pressed?
-  long time;       // When it was pressed?
+  unsigned long time;       // When it was pressed?
 } pressed_buttons[4];
 static unsigned released_buttons[4]; // Which buttons were released?
 @
