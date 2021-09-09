@@ -395,7 +395,7 @@ bool _Wget_window_size(int*width,int*height);
 /*:7*//*8:*/
 #line 347 "weaver-window.tex"
 
-void _Wget_window_input(unsigned long current_time);
+void _Wget_window_input(unsigned long long current_time);
 /*:8*//*9:*/
 #line 358 "weaver-window.tex"
 

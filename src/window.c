@@ -398,7 +398,7 @@ static void(*resizing_function)(int,int,int,int)= NULL;
 
 static struct{
 unsigned key;
-unsigned long time;
+unsigned long long time;
 }pressed_keys[32];
 static unsigned released_keys[32];
 /*:164*//*184:*/
@@ -406,7 +406,7 @@ static unsigned released_keys[32];
 
 static struct{
 unsigned button;
-unsigned long time;
+unsigned long long time;
 }pressed_buttons[4];
 static unsigned released_buttons[4];
 /*:184*//*185:*/
@@ -1793,7 +1793,7 @@ return true;
 /*:155*//*160:*/
 #line 3811 "weaver-window.tex"
 
-void _Wget_window_input(unsigned long current_time){
+void _Wget_window_input(unsigned long long current_time){
 if(already_have_window==false)
 return;
 /*183:*/

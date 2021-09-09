@@ -177,7 +177,7 @@ if this was done successfully.
 
 #### Getting Window Input
 
-    void _Wget_window_input(unsigned long current_time);
+    void _Wget_window_input(unsigned long long current_time);
 
 Updates the mouse and keyboard data sctructures (seen above). You
 should call this function in each iteration of your main loop. You
