@@ -28,4 +28,3 @@ clean:
 	rm -f *~ *.core *.scn *.dvi *.idx *.log tests/*~ test_window
 distclean: clean
 	rm -f test_* weaver-memory-manager.pdf src/*
-

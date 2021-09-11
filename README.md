@@ -33,7 +33,6 @@ the LICENSE file.
     #include <time.h>
 
     int main(int argc, char **argv){
-       time_t initial_time, current_time;
       _Wcreate_window();
       // Create a fullscreen window that exits if the user press the ESC key for
       // 2 or more seconds.
@@ -44,7 +43,7 @@ the LICENSE file.
     #if defined(__EMSCRIPTEN__)
         emscripten_sleep(10);
     #endif
-      } while(_Wkeyboard.key[W_ESC] >= 2);
+      } while(_Wkeyboard.key[W_ESC] < 2);
       _Wdestroy_window();
     }
 

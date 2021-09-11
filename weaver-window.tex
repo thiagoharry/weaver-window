@@ -795,6 +795,7 @@ XMapWindow(display, window);
     XNextEvent(display, &e);
   } while(e.type != MapNotify);
 }
+XSetInputFocus(display, window, RevertToParent, CurrentTime);
 #endif
 @
 \fimcodigo
@@ -1171,6 +1172,7 @@ bool _Wcreate_window(void){
   @<X11: Criar Janela@>
   @<Web Assembly: Criar Janela@>
   @<Windows: Criar Janela@>
+  @<Inicialização de Teclado@>
   _Wflush_window_input();
   already_have_window = true;
   return true;
@@ -3982,6 +3984,8 @@ a posição de cada tecla que suportamos é:
 #if defined(__linux__) || defined(BSD)
 {
   int i;
+  // Produza eventos de teclas somente quando eles realmente ocorrerem:
+  XkbSetDetectableAutoRepeat(display, true, NULL);
   for(i = 8; i < 256; i ++){
     unsigned long value = XkbKeycodeToKeysym(display, i, 0, 0);
     switch(value){
@@ -3991,7 +3995,7 @@ a posição de cada tecla que suportamos é:
     case XK_Tab: W_TAB = i; break;
     case XK_Return: W_ENTER = i; break;
     case XK_Up:   W_UP   = i; break; case XK_Down:  W_DOWN =  i; break;
-    case XK_Left: W_LEFT = i; break; case XK_RIGHT: W_RIGHT = i; break;
+    case XK_Left: W_LEFT = i; break; case XK_Right: W_RIGHT = i; break;
     case XK_0: W_0 = i; break;     case XK_1: W_1 = i; break;
     case XK_2: W_2 = i; break;     case XK_3: W_3 = i; break;
     case XK_4: W_4 = i; break;     case XK_5: W_5 = i; break;
@@ -4038,6 +4042,16 @@ a posição de cada tecla que suportamos é:
 @
 \fimcodigo
 
+O uso da função \monoespaco{XkbKeycodeToKeysym} requer o cabeçalho:
+
+\iniciocodigo
+@<Cabeçalhos@>+=
+#if defined(__linux__) || defined(BSD)
+#include <X11/XKBlib.h>
+#endif
+@
+\fimcodigo
+
 Todas estas variáveis que representam posições no nosso vetor de
 teclas de teclado precisam ser declaradas:
 
@@ -4049,7 +4063,7 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_LEFT_SHIFT, W_RIGHT_SHIFT, W_LEFT_ALT, W_RIGHT_ALT, W_LEFT_CTRL,
            W_RIGHT_CTRL, W_SPACE, W_A, W_B, W_C, W_D, W_E, W_F, W_G, W_H, W_I,
            W_J, W_K, W_L, W_M, W_N, W_O, W_P, W_Q, W_R, W_S, W_T, W_U, W_V, W_W,
-           X_X, W_Y, W_Z, W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END,
+           W_X, W_Y, W_Z, W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END,
            W_PAGE_DOWN, W_ESC, W_ANY;
 @
 \fimcodigo
@@ -4084,7 +4098,7 @@ int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_O = W_KEYBOARD_SIZE, W_P = W_KEYBOARD_SIZE, W_Q = W_KEYBOARD_SIZE,
     W_R = W_KEYBOARD_SIZE, W_S = W_KEYBOARD_SIZE, W_T = W_KEYBOARD_SIZE,
     W_U = W_KEYBOARD_SIZE, W_V = W_KEYBOARD_SIZE, W_W = W_KEYBOARD_SIZE,
-    X_X = W_KEYBOARD_SIZE, W_Y = W_KEYBOARD_SIZE, W_Z = W_KEYBOARD_SIZE,
+    W_X = W_KEYBOARD_SIZE, W_Y = W_KEYBOARD_SIZE, W_Z = W_KEYBOARD_SIZE,
     W_INSERT = W_KEYBOARD_SIZE, W_HOME = W_KEYBOARD_SIZE,
     W_PAGE_UP = W_KEYBOARD_SIZE, W_DELETE = W_KEYBOARD_SIZE,
     W_END = W_KEYBOARD_SIZE, W_PAGE_DOWN = W_KEYBOARD_SIZE,
@@ -4363,6 +4377,7 @@ vaga e inserimos nossa nova tecla ali:
 \iniciocodigo
 @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>=
 {
+  printf("Released: %d\n", key);
   int i;
   long stored_time = -1;
   for(i = 0; i < 32; i ++){ // Removing from pressed keys
@@ -4412,7 +4427,7 @@ de teclado:
     if(pressed_keys[i].key == 0)
       break;
     if(current_time > pressed_keys[i].key)
-      _Wkeyboard.key[pressed_keys[i].key] = (current_time - pressed_keys[i].key);
+      _Wkeyboard.key[pressed_keys[i].key] = (current_time - pressed_keys[i].time);
   }
 }
 @
