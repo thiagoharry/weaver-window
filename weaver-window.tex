@@ -108,7 +108,7 @@
 
 2.4. Fechando uma Janela \indice{43}
 
-2.4.1. Closing a Window on X11 \indice{43}
+2.4.1. Fechando uma Janele no X11 \indice{43}
 
 2.4.2. Fechando uma Janela em Web Assembly \indice{44}
 
@@ -3020,7 +3020,7 @@ Fechar um janela faz a janela desaparecer e finaliza qualquer coisa
 que tenha sido inicializada durante a criação da janela. O que inclui
 o contexto OpenGL.
 
-\subsubsecao{2.4.1. Closing a Window on X11}
+\subsubsecao{2.4.1. Fechando uma Janela no X11}
 
 Fechar uma janela no X11 significa invocar a função do X que pede ao
 servidor para que a janela seja fechada. E além disso, fechar a
@@ -4377,7 +4377,6 @@ vaga e inserimos nossa nova tecla ali:
 \iniciocodigo
 @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>=
 {
-  printf("Released: %d\n", key);
   int i;
   long stored_time = -1;
   for(i = 0; i < 32; i ++){ // Removing from pressed keys
@@ -4906,7 +4905,7 @@ pressionado:
       break;
     if(current_time > pressed_buttons[i].time)
       _Wmouse.button[pressed_buttons[i].button] =
-        (current_time - pressed_buttons[i].button);
+        (current_time - pressed_buttons[i].time);
   }
 }
 @

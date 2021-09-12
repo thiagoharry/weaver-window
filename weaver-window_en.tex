@@ -4808,7 +4808,7 @@ button is being pressed:
       break;
     if(current_time > pressed_buttons[i].time)
       _Wmouse.button[pressed_buttons[i].button] =
-        (current_time - pressed_buttons[i].button);
+        (current_time - pressed_buttons[i].time);
   }
 }
 @

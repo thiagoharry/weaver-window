@@ -129,6 +129,9 @@ The variables `x` and `y` stores the mouse pointer position. The
 variables `dx` and `dy` are the pointer velocity. And the variables
 `ddx` and `ddy` are the pointer acceleration.
 
+Mouse coordinates are measured in pixels and use the lower left corner
+as the origin.
+
 ### Functions
 
 #### Creating the Window
