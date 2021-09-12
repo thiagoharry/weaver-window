@@ -1390,7 +1390,7 @@ case XK_2:W_2= i;break;case XK_3:W_3= i;break;
 case XK_4:W_4= i;break;case XK_5:W_5= i;break;
 case XK_6:W_6= i;break;case XK_7:W_7= i;break;
 case XK_8:W_8= i;break;case XK_9:W_9= i;break;
-case XK_minus:W_MINUS= i;break;case XK_plus:W_PLUS= i;
+case XK_minus:W_MINUS= i;break;case XK_plus:W_PLUS= i;break;
 case XK_F1:W_F1= i;break;case XK_F2:W_F2= i;break;
 case XK_F3:W_F3= i;break;case XK_F4:W_F4= i;break;
 case XK_F5:W_F5= i;break;case XK_F6:W_F6= i;break;
@@ -1449,7 +1449,7 @@ case SDLK_2:W_2= i;break;case SDLK_3:W_3= i;break;
 case SDLK_4:W_4= i;break;case SDLK_5:W_5= i;break;
 case SDLK_6:W_6= i;break;case SDLK_7:W_7= i;break;
 case SDLK_8:W_8= i;break;case SDLK_9:W_9= i;break;
-case SDLK_MINUS:W_MINUS= i;break;case SDLK_PLUS:W_PLUS= i;
+case SDLK_MINUS:W_MINUS= i;break;case SDLK_PLUS:W_PLUS= i;break;
 case SDLK_F1:W_F1= i;break;case SDLK_F2:W_F2= i;break;
 case SDLK_F3:W_F3= i;break;case SDLK_F4:W_F4= i;break;
 case SDLK_F5:W_F5= i;break;case SDLK_F6:W_F6= i;break;
@@ -1508,7 +1508,7 @@ case'2':W_2= i;break;case'3':W_3= i;break;
 case'4':W_4= i;break;case'5':W_5= i;break;
 case'6':W_6= i;break;case'7':W_7= i;break;
 case'8':W_8= i;break;case'9':W_9= i;break;
-case VK_OEM__MINUS:W_MINUS= i;break;case VK_OEM__PLUS:W_PLUS= i;
+case VK_OEM__MINUS:W_MINUS= i;break;case VK_OEM__PLUS:W_PLUS= i;break;
 case VK_F1:W_F1= i;break;case VK_F2:W_F2= i;break;
 case VK_F3:W_F3= i;break;case VK_F4:W_F4= i;break;
 case VK_F5:W_F5= i;break;case VK_F6:W_F6= i;break;
@@ -2571,7 +2571,7 @@ _Wkeyboard.key[W_ANY]= (pressed_keys[0].key!=0);
 for(i= 0;i<32;i++){
 if(pressed_keys[i].key==0)
 break;
-if(current_time> pressed_keys[i].key)
+if(current_time> pressed_keys[i].time)
 _Wkeyboard.key[pressed_keys[i].key]= (current_time-pressed_keys[i].time);
 }
 }
