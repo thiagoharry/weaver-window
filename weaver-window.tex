@@ -4164,7 +4164,8 @@ cada uma destas teclas:
 {
   int i;
   for(i = 0; i < W_KEYBOARD_SIZE; i ++){
-    unsigned long value = SDL_GetKeyFromScancode(i);
+    // TODO: When Emscripten implements 'SDL_GetKeyFromScancode', use it:
+    unsigned long value = SDL_SCANCODE_TO_KEYCODE(i);
     switch(value){
     case 0: break;
     case SDLK_ESCAPE: W_ESC = i; break;
