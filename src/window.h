@@ -331,13 +331,13 @@ typedef float GLclampf;
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
 /*:173*//*177:*/
-#line 4232 "weaver-window.tex"
+#line 4231 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
 /*:177*//*189:*/
-#line 4546 "weaver-window.tex"
+#line 4545 "weaver-window.tex"
 
 #if defined(__linux__) || defined(BSD)
 #define W_MOUSE_SIZE 6
@@ -348,7 +348,7 @@ typedef float GLclampf;
 #define W_MOUSE_X2     Button5
 #endif
 /*:189*//*194:*/
-#line 4638 "weaver-window.tex"
+#line 4637 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -359,7 +359,7 @@ typedef float GLclampf;
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
 /*:194*//*199:*/
-#line 4713 "weaver-window.tex"
+#line 4712 "weaver-window.tex"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6

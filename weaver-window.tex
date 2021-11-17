@@ -4225,8 +4225,7 @@ cada uma destas teclas:
 No Windows as teclas físicas são chamadas pelo nome
 de \monoespaco{Scancode} e o símbolo associado a ela é chamado de
 ``código de tecla virtural''. O número de diferentes ``scancodes'' é
-sempre 256 e precisamos de uma posiçã a mais para representar ``qualquer
-tecla'':
+sempre 256:
 
 \iniciocodigo
 @<Define Macros@>+=
@@ -4265,7 +4264,7 @@ if(event.message == WM_KEYUP){
 @
 \fimcodigo
 
-E finalmente, inicializaos aqui os nomes das teclas para que eles
+E finalmente, inicializamos aqui os nomes das teclas para que eles
 apontem para a posição correta no nosso vetor de teclas:
 
 \iniciocodigo
@@ -4274,7 +4273,7 @@ apontem para a posição correta no nosso vetor de teclas:
 {
   int i;
   for(i = 0; i < W_KEYBOARD_SIZE; i ++){
-    unsigned long value = MapVirtualKey(i, MAPVK_VSK_TO_VSC_EX);
+    unsigned long value = MapVirtualKey(i, MAPVK_VSC_TO_VK_EX);
     switch(value){
     case 0: break;
     case VK_ESCAPE: W_ESC = i; break; 
