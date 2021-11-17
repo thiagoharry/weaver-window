@@ -1509,7 +1509,7 @@ case'2':W_2= i;break;case'3':W_3= i;break;
 case'4':W_4= i;break;case'5':W_5= i;break;
 case'6':W_6= i;break;case'7':W_7= i;break;
 case'8':W_8= i;break;case'9':W_9= i;break;
-case VK_OEM__MINUS:W_MINUS= i;break;case VK_OEM__PLUS:W_PLUS= i;break;
+case VK_OEM_MINUS:W_MINUS= i;break;case VK_OEM_PLUS:W_PLUS= i;break;
 case VK_F1:W_F1= i;break;case VK_F2:W_F2= i;break;
 case VK_F3:W_F3= i;break;case VK_F4:W_F4= i;break;
 case VK_F5:W_F5= i;break;case VK_F6:W_F6= i;break;
