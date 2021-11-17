@@ -2554,7 +2554,199 @@ if(i==4)continue;
 #line 4748 "weaver-window.tex"
 
 }
-/*:200*/
+/*:200*//*201:*/
+#line 4758 "weaver-window.tex"
+
+if(event.message==WM_LBUTTONUP){
+unsigned button= W_MOUSE_LEFT;
+/*205:*/
+#line 4858 "weaver-window.tex"
+
+{
+int i;
+long stored_time= -1;
+for(i= 0;i<4;i++){
+if(pressed_buttons[i].button==button){
+int j;
+stored_time= pressed_buttons[i].time;
+for(j= i;j<3;j++){
+pressed_buttons[j].button= pressed_buttons[j+1].button;
+pressed_buttons[j].time= pressed_buttons[j+1].time;
+if(pressed_buttons[j].button==0)
+break;
+}
+pressed_buttons[3].button= 0;
+break;
+}
+}
+for(i= 0;i<4;i++){
+if(released_buttons[i]==0)
+released_buttons[i]= button;
+}
+if(i==4)
+_Wmouse.button[button]= 0;
+else{
+
+_Wmouse.button[button]= -(long)(current_time-stored_time);
+if(_Wmouse.button[button]==0)
+_Wmouse.button[button]= -1;
+}
+}
+/*:205*/
+#line 4761 "weaver-window.tex"
+
+}
+else if(event.message==WM_MBUTTONUP){
+unsigned button= W_MOUSE_MIDDLE;
+/*205:*/
+#line 4858 "weaver-window.tex"
+
+{
+int i;
+long stored_time= -1;
+for(i= 0;i<4;i++){
+if(pressed_buttons[i].button==button){
+int j;
+stored_time= pressed_buttons[i].time;
+for(j= i;j<3;j++){
+pressed_buttons[j].button= pressed_buttons[j+1].button;
+pressed_buttons[j].time= pressed_buttons[j+1].time;
+if(pressed_buttons[j].button==0)
+break;
+}
+pressed_buttons[3].button= 0;
+break;
+}
+}
+for(i= 0;i<4;i++){
+if(released_buttons[i]==0)
+released_buttons[i]= button;
+}
+if(i==4)
+_Wmouse.button[button]= 0;
+else{
+
+_Wmouse.button[button]= -(long)(current_time-stored_time);
+if(_Wmouse.button[button]==0)
+_Wmouse.button[button]= -1;
+}
+}
+/*:205*/
+#line 4765 "weaver-window.tex"
+
+}
+else if(event.message==WM_RBUTTONUP){
+unsigned button= W_MOUSE_RIGHT;
+/*205:*/
+#line 4858 "weaver-window.tex"
+
+{
+int i;
+long stored_time= -1;
+for(i= 0;i<4;i++){
+if(pressed_buttons[i].button==button){
+int j;
+stored_time= pressed_buttons[i].time;
+for(j= i;j<3;j++){
+pressed_buttons[j].button= pressed_buttons[j+1].button;
+pressed_buttons[j].time= pressed_buttons[j+1].time;
+if(pressed_buttons[j].button==0)
+break;
+}
+pressed_buttons[3].button= 0;
+break;
+}
+}
+for(i= 0;i<4;i++){
+if(released_buttons[i]==0)
+released_buttons[i]= button;
+}
+if(i==4)
+_Wmouse.button[button]= 0;
+else{
+
+_Wmouse.button[button]= -(long)(current_time-stored_time);
+if(_Wmouse.button[button]==0)
+_Wmouse.button[button]= -1;
+}
+}
+/*:205*/
+#line 4769 "weaver-window.tex"
+
+}
+else if(event.message==WM_XBUTTONUP){
+unsigned button= W_MOUSE_X2;
+if((event.wParam>>16)&0x0001){
+unsigned button= W_MOUSE_X1;
+}
+/*205:*/
+#line 4858 "weaver-window.tex"
+
+{
+int i;
+long stored_time= -1;
+for(i= 0;i<4;i++){
+if(pressed_buttons[i].button==button){
+int j;
+stored_time= pressed_buttons[i].time;
+for(j= i;j<3;j++){
+pressed_buttons[j].button= pressed_buttons[j+1].button;
+pressed_buttons[j].time= pressed_buttons[j+1].time;
+if(pressed_buttons[j].button==0)
+break;
+}
+pressed_buttons[3].button= 0;
+break;
+}
+}
+for(i= 0;i<4;i++){
+if(released_buttons[i]==0)
+released_buttons[i]= button;
+}
+if(i==4)
+_Wmouse.button[button]= 0;
+else{
+
+_Wmouse.button[button]= -(long)(current_time-stored_time);
+if(_Wmouse.button[button]==0)
+_Wmouse.button[button]= -1;
+}
+}
+/*:205*/
+#line 4776 "weaver-window.tex"
+
+}
+/*:201*//*202:*/
+#line 4784 "weaver-window.tex"
+
+if(event.type==WM_MOUSEMOVE){
+int x,y;
+x= (event.lParam&0xffff);
+y= (window_size_y-1)-(event.lParam>>16);
+/*208:*/
+#line 4939 "weaver-window.tex"
+
+{
+if(mouse_initialization<3){
+_Wmouse.dx= (x-_Wmouse.x);
+_Wmouse.dy= (y-_Wmouse.y);
+}
+_Wmouse.x= x;
+_Wmouse.y= y;
+if(mouse_initialization<2){
+_Wmouse.ddx= (_Wmouse.dx-last_mouse_dx);
+_Wmouse.ddy= (_Wmouse.dy-last_mouse_dy);
+}
+last_mouse_dx= _Wmouse.dx;
+last_mouse_dy= _Wmouse.dy;
+if(mouse_initialization> 0)
+mouse_initialization--;
+}
+/*:208*/
+#line 4789 "weaver-window.tex"
+
+}
+/*:202*/
 #line 3866 "weaver-window.tex"
 
 }

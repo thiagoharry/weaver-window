@@ -4755,7 +4755,7 @@ verificar um evento diferente para cada botão tratando os botões X1 e
 X2 de maneira diferente dos demais:
 
 \iniciocodigo
-@<Windows: Manage Mouse Events@>+=
+@<Windows: Tratar Eventos de Mouse@>+=
 if(event.message == WM_LBUTTONUP){
   unsigned button = W_MOUSE_LEFT;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
@@ -4781,7 +4781,7 @@ else if(event.message == WM_XBUTTONUP){
 E assim é como detectamos o evento no qual o mmouse se move:
 
 \iniciocodigo
-@<Windows: Manage Mouse Events@>+=
+@<Windows: Tratar Eventos de Mouse@>+=
 if(event.type == WM_MOUSEMOVE){
   int x, y;
   x = (event.lParam & 0xffff);
