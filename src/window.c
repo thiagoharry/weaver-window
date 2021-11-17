@@ -2719,7 +2719,7 @@ _Wmouse.button[button]= -1;
 /*:201*//*202:*/
 #line 4784 "weaver-window.tex"
 
-if(event.type==WM_MOUSEMOVE){
+if(event.message==WM_MOUSEMOVE){
 int x,y;
 x= (event.lParam&0xffff);
 y= (window_size_y-1)-(event.lParam>>16);

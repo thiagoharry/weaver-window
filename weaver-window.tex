@@ -4782,7 +4782,7 @@ E assim é como detectamos o evento no qual o mmouse se move:
 
 \iniciocodigo
 @<Windows: Tratar Eventos de Mouse@>+=
-if(event.type == WM_MOUSEMOVE){
+if(event.message == WM_MOUSEMOVE){
   int x, y;
   x = (event.lParam & 0xffff);
   y = (window_size_y - 1) - (event.lParam >> 16);
