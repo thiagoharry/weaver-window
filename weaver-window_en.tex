@@ -412,7 +412,7 @@ height, so that we do not need to measure it all the time:
 
 \iniciocodigo
 @<Local Variables@>+=
-static int window_size_y = 0;
+static int window_size_y = 0, window_size_x = 0;
 @
 \fimcodigo
 
@@ -559,7 +559,7 @@ response a list of relevant information about the screen.
 window. We will do it in the default screen, The window size will be
 the greatest value allowed given the screen resolution.
 
-4. We memorize the initial value for our window height.
+4. We memorize the initial value for our window height and width.
 
 The above steps are implemented using the functions and macros below:
 
@@ -588,6 +588,7 @@ window = XCreateSimpleWindow(display, // X11 connection
                              0, 0, // Border width and color
                              0); // Default window color
 /* Step 4: */
+window_size_x =  screen_resolution_x;
 window_size_y = screen_resolution_y;
 #endif
 @
@@ -647,7 +648,6 @@ outside fullscreen mode:
 #if defined(__linux__) || defined(BSD)
 #if defined(W_WINDOW_NO_FULLSCREEN)
 {
-  int window_size_x;
 #if W_WINDOW_SIZE_X > 0
   window_size_x = W_WINDOW_SIZE_X;
 #else
@@ -841,11 +841,11 @@ be hidden (we do it when we execute the function to close the window).
 @<Web Assembly: Create Window@>+=
 #if defined(__EMSCRIPTEN__)
 {
-  int window_size_x = screen_resolution_x;
   fullscreen_mode = true;
   double pixel_ratio = EM_ASM_DOUBLE({
     return window.devicePixelRatio;
   });
+  window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
   fullscreen_mode = false;
@@ -1050,7 +1050,7 @@ code below:
 #if defined(_WIN32)
 {
   RECT size;
-  int window_size_x = screen_resolution_x;
+  window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
   DWORD fullscreen_flag = WS_POPUP;
@@ -3146,6 +3146,7 @@ bool _Wget_window_size(int *width, int *height){
   }
   XGetGeometry(display, window, &root_window, &x, &y,
                (unsigned int *) width, (unsigned int *) height, &border, &depth);
+  window_size_x = *width;
   window_size_y = *height;
   return true;
 }
@@ -3175,6 +3176,7 @@ bool _Wget_window_size(int *width, int *height){
   *height = EM_ASM_INT({
     return document.getElementById("canvas").height;
   });
+  window_size_x = *width;
   window_size_y = *height;
   if(*width > 0 && *height > 0)
     return true;
@@ -3203,6 +3205,7 @@ bool _Wget_window_size(int *width, int *height){
   if(ret){
     *width = rectangle.right - rectangle.left;
     *height = rectangle.bottom - rectangle.top;
+    window_size_x = *width;
     window_size_y = *height;
     return true;
   }

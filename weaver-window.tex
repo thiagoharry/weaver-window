@@ -431,7 +431,7 @@ memorizar o tamanho da janela para não termos que medi-la toda hora:
 
 \iniciocodigo
 @<Variáveis Locais@>=
-static int window_size_y = 0;
+static int window_size_y = 0, window_size_x = 0;
 @
 \fimcodigo
 
@@ -579,7 +579,7 @@ servidor nos revela várias informações relevantes sobre a tela.
 seja criada. Em princípio criaremos uma janela com o máximo de tamanho
 permitido dada a resolução da tela.
 
-4. Memorizamos o valor inicial da altura da janela.
+4. Memorizamos o valor inicial da altura e largura da janela.
 
 Estes passos são implementados por meio das seguintes funções e
 macros:
@@ -609,6 +609,7 @@ window = XCreateSimpleWindow(display, // Conexão com o X11
                              0, 0, // Espessura e cor da borda
                              0); // Cor padrão da janela
 /* Passo 4: */
+window_size_x =  screen_resolution_x;
 window_size_y =  screen_resolution_y;
 #endif
 @
@@ -667,7 +668,6 @@ janela. Mas isso só se aplica quando não estamos em tela cheia:
 #if defined(__linux__) || defined(BSD)
 #if defined(W_WINDOW_NO_FULLSCREEN)
 {
-  int window_size_x;
 #if W_WINDOW_SIZE_X > 0
   window_size_x = W_WINDOW_SIZE_X;
 #else
@@ -865,11 +865,11 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
 @<Web Assembly: Criar Janela@>+=
 #if defined(__EMSCRIPTEN__)
 {
-  int window_size_x = screen_resolution_x;
   fullscreen_mode = true;
   double pixel_ratio = EM_ASM_DOUBLE({
     return window.devicePixelRatio;
   });
+  window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
 #if defined(W_WINDOW_NO_FULLSCREEN)
   fullscreen_mode = false;
@@ -1081,7 +1081,7 @@ abaixo:
 #if defined(_WIN32)
 {
   RECT size;
-  int window_size_x = screen_resolution_x;
+  window_size_x = screen_resolution_x;
   window_size_y = screen_resolution_y;
   SystemParametersInfoA(SPI_GETWORKAREA, 0, &size, 0);
   DWORD fullscreen_flag = WS_POPUP;
@@ -3193,6 +3193,7 @@ bool _Wget_window_size(int *width, int *height){
   }
   XGetGeometry(display, window, &root_window, &x, &y,
                (unsigned int *) width, (unsigned int *) height, &border, &depth);
+  window_size_x = *width;
   window_size_y = *height;
   return true;
 }
@@ -3223,6 +3224,7 @@ bool _Wget_window_size(int *width, int *height){
   *height = EM_ASM_INT({
     return document.getElementById("canvas").height;
   });
+  window_size_x = *width;
   window_size_y = *height;
   if(*width > 0 && *height > 0)
     return true;
@@ -3252,6 +3254,7 @@ bool _Wget_window_size(int *width, int *height){
   if(ret){
     *width = rectangle.right - rectangle.left;
     *height = rectangle.bottom - rectangle.top;
+    window_size_x = *width;
     window_size_y = *height;
     return true;
   }
@@ -4488,7 +4491,7 @@ static int last_mouse_dx = 0, last_mouse_dy = 0;
 \fimcodigo
 
 Por fim, quando lemos pela primeira vez a posição do mouse, não temos
-uma leitura anterior de sua posição e velocidae. Então não faz sentido
+uma leitura anterior de sua posição e velocidade. Então não faz sentido
 calcularmos neste momento nem a velocidade e nem a aceleração. Já
 depois de passar o primeiro frame após a inicialização, temos a
 posição anterior e a atual, o que nos permite obter um valor correto
