@@ -1,5 +1,5 @@
-/*210:*/
-#line 4992 "weaver-window.tex"
+/*211:*/
+#line 5011 "weaver-window.tex"
 
 #include "window.h"
 /*2:*/
@@ -63,7 +63,7 @@
 #include <X11/XKBlib.h> 
 #endif
 /*:170*/
-#line 4994 "weaver-window.tex"
+#line 5013 "weaver-window.tex"
 
 /*66:*/
 #line 1547 "weaver-window.tex"
@@ -82,7 +82,7 @@ return ret;
 }
 #endif
 /*:66*/
-#line 4995 "weaver-window.tex"
+#line 5014 "weaver-window.tex"
 
 /*68:*/
 #line 1593 "weaver-window.tex"
@@ -302,7 +302,7 @@ W_PAGE_UP= W_KEYBOARD_SIZE,W_DELETE= W_KEYBOARD_SIZE,
 W_END= W_KEYBOARD_SIZE,W_PAGE_DOWN= W_KEYBOARD_SIZE,
 W_ESC= W_KEYBOARD_SIZE,W_ANY= 0;
 /*:172*/
-#line 4996 "weaver-window.tex"
+#line 5015 "weaver-window.tex"
 
 /*14:*/
 #line 433 "weaver-window.tex"
@@ -424,7 +424,7 @@ static int last_mouse_dx= 0,last_mouse_dy= 0;
 
 static int mouse_initialization= 3;
 /*:187*/
-#line 4997 "weaver-window.tex"
+#line 5016 "weaver-window.tex"
 
 /*16:*/
 #line 477 "weaver-window.tex"
@@ -2172,6 +2172,19 @@ y= (window_size_y-1)-event.xmotion.y;
 #line 4942 "weaver-window.tex"
 
 {
+/*209:*/
+#line 4970 "weaver-window.tex"
+
+#if defined(W_FORCE_LANDSCAPE)
+if(window_size_y> window_size_x){
+int tmp= x;
+x= y;
+y= tmp;
+}
+#endif
+/*:209*/
+#line 4944 "weaver-window.tex"
+
 if(mouse_initialization<3){
 _Wmouse.dx= (x-_Wmouse.x);
 _Wmouse.dy= (y-_Wmouse.y);
@@ -2351,6 +2364,19 @@ y= (window_size_y-1)-event.motion.y;
 #line 4942 "weaver-window.tex"
 
 {
+/*209:*/
+#line 4970 "weaver-window.tex"
+
+#if defined(W_FORCE_LANDSCAPE)
+if(window_size_y> window_size_x){
+int tmp= x;
+x= y;
+y= tmp;
+}
+#endif
+/*:209*/
+#line 4944 "weaver-window.tex"
+
 if(mouse_initialization<3){
 _Wmouse.dx= (x-_Wmouse.x);
 _Wmouse.dy= (y-_Wmouse.y);
@@ -2730,6 +2756,19 @@ y= (window_size_y-1)-(event.lParam>>16);
 #line 4942 "weaver-window.tex"
 
 {
+/*209:*/
+#line 4970 "weaver-window.tex"
+
+#if defined(W_FORCE_LANDSCAPE)
+if(window_size_y> window_size_x){
+int tmp= x;
+x= y;
+y= tmp;
+}
+#endif
+/*:209*/
+#line 4944 "weaver-window.tex"
+
 if(mouse_initialization<3){
 _Wmouse.dx= (x-_Wmouse.x);
 _Wmouse.dy= (y-_Wmouse.y);
@@ -2790,8 +2829,8 @@ _Wmouse.button[pressed_buttons[i].button]=
 #line 3822 "weaver-window.tex"
 
 }
-/*:160*//*209:*/
-#line 4973 "weaver-window.tex"
+/*:160*//*210:*/
+#line 4992 "weaver-window.tex"
 
 void _Wflush_window_input(void){
 
@@ -2810,7 +2849,7 @@ for(i= 0;i<W_KEYBOARD_SIZE+1;i++)
 _Wkeyboard.key[i]= 0;
 }
 /*:165*/
-#line 4978 "weaver-window.tex"
+#line 4997 "weaver-window.tex"
 
 
 /*188:*/
@@ -2844,6 +2883,19 @@ y= (window_size_y-1)-y;
 #line 4942 "weaver-window.tex"
 
 {
+/*209:*/
+#line 4970 "weaver-window.tex"
+
+#if defined(W_FORCE_LANDSCAPE)
+if(window_size_y> window_size_x){
+int tmp= x;
+x= y;
+y= tmp;
+}
+#endif
+/*:209*/
+#line 4944 "weaver-window.tex"
+
 if(mouse_initialization<3){
 _Wmouse.dx= (x-_Wmouse.x);
 _Wmouse.dy= (y-_Wmouse.y);
@@ -2877,6 +2929,19 @@ y= (window_size_y-1)-y;
 #line 4942 "weaver-window.tex"
 
 {
+/*209:*/
+#line 4970 "weaver-window.tex"
+
+#if defined(W_FORCE_LANDSCAPE)
+if(window_size_y> window_size_x){
+int tmp= x;
+x= y;
+y= tmp;
+}
+#endif
+/*:209*/
+#line 4944 "weaver-window.tex"
+
 if(mouse_initialization<3){
 _Wmouse.dx= (x-_Wmouse.x);
 _Wmouse.dy= (y-_Wmouse.y);
@@ -2915,6 +2980,19 @@ y= (window_size_y-1)-point.y;
 #line 4942 "weaver-window.tex"
 
 {
+/*209:*/
+#line 4970 "weaver-window.tex"
+
+#if defined(W_FORCE_LANDSCAPE)
+if(window_size_y> window_size_x){
+int tmp= x;
+x= y;
+y= tmp;
+}
+#endif
+/*:209*/
+#line 4944 "weaver-window.tex"
+
 if(mouse_initialization<3){
 _Wmouse.dx= (x-_Wmouse.x);
 _Wmouse.dy= (y-_Wmouse.y);
@@ -2940,10 +3018,10 @@ mouse_initialization--;
 
 }
 /*:188*/
-#line 4980 "weaver-window.tex"
+#line 4999 "weaver-window.tex"
 
 }
-/*:209*/
-#line 4998 "weaver-window.tex"
-
 /*:210*/
+#line 5017 "weaver-window.tex"
+
+/*:211*/

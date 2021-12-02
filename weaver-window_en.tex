@@ -4844,6 +4844,7 @@ during initialization.
 
 \iniciocodigo
 @<Update Mouse Position 'x' and 'y'@>=
+@<Correct Mouse Position 'x' and 'y' if Forcing Landscape Mode@>
 {
   if(mouse_initialization < 3){ // If we know previous position
     _Wmouse.dx = (x - _Wmouse.x);
@@ -4860,6 +4861,24 @@ during initialization.
   if(mouse_initialization > 0)
     mouse_initialization --;
 }
+@
+\fimcodigo
+
+We also will correct above the mouse coordinate if the
+macro \monoespaco{W\_FORCE\_LANDSCAPE} is defined and if the window
+height is greater than the window width. In this case, we will swap
+the axis $x$ and $y$ of our coordinate system. We do the correction
+using this code:
+
+\iniciocodigo
+@<Correct Mouse Position 'x' and 'y' if Forcing Landscape Mode@>=
+#if defined(W_FORCE_LANDSCAPE)
+if(window_size_y > window_size_x){
+  int tmp = x;
+  x = y;
+  y = tmp;
+}
+#endif
 @
 \fimcodigo
 

@@ -252,3 +252,6 @@ behaviour:
   non-fullscreen window.
 * `W_WINDOW_SIZE_Y`: De default window height when creating a
   non-fullscreen window.
+* `W_FORCE_LANDSCAPE`: If this macro is defined and if the window
+  height is greater than window width, we swap coordinates x and y
+  whem measuring mouse position.
