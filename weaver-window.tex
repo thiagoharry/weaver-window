@@ -102,7 +102,7 @@
 
 2.3.2.Configuring OpenGL on Web Assembly \indice{18}
 
-2.3.3. Configurando OpenGL no Windows \indice{18}
+2.3.3. Configurando OpenGL no Windows \indice{19}
 
 2.3.4. Escolhendo a Versão do OpenGL \indice{43}
 
@@ -114,7 +114,7 @@
 
 2.4.3. Fechando uma Janela no Windows \indice{44}
 
-2.5. Renderizando a Janela \indice{44}
+2.5. Renderizando a Janela \indice{45}
 
 2.5.1. Renderizando a Janela no X \indice{45}
 
@@ -124,11 +124,11 @@
 
 2.6. Obtendo o Tamanho da Janela \indice{45}
 
-2.6.1. Obtendo o Tamanho da Janela no X \indice{45}
+2.6.1. Obtendo o Tamanho da Janela no X \indice{46}
 
 2.6.2. Obtendo o Tamanho da Janela no Web Assembly \indice{46}
 
-2.6.3. Obtendo o Tamanho da Janela no Windows \indice{46}
+2.6.3. Obtendo o Tamanho da Janela no Windows \indice{47}
 
 2.7. Checando o modo de tela cheia \indice{47}
 
@@ -144,7 +144,7 @@
 
 2.8.2. Alternando entre Tela Cheia e Janela no Web Assembly \indice{50}
 
-2.8.3. Alternando entre Tela Cheia e Janela no Windows \indice{51}
+2.8.3. Alternando entre Tela Cheia e Janela no Windows \indice{52}
 
 2.9. Redimencionando a Janela \indice{52}
 
@@ -152,7 +152,7 @@
 
 2.9.2. Redimencionando a Janela no Web Assembly \indice{53}
 
-2.9.3. Redimencionando a Janela no Windows \indice{53}
+2.9.3. Redimencionando a Janela no Windows \indice{54}
 
 3. Gerenciando Entrada \indice{54}
 
@@ -180,7 +180,7 @@
 
 3.4. Funções Adicionais de Entrada \indice{72}
 
-4. Estrutura Final do Arquivo \indice{72}
+4. Estrutura Final do Arquivo \indice{73}
 
 \secao{1. Introdução}
 
@@ -1035,6 +1035,7 @@ if(!already_created_a_class){
   window_class.hInstance = GetModuleHandle(NULL);
   window_class.lpszClassName = class_name;
   window_class.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // Janela preta
+  window_class.hCursor = LoadCursor(NULL, IDC_ARROW); // Cursor normal
   ret = RegisterClass(&window_class);
   if(ret == 0){
 #if defined(W_DEBUG_WINDOW)

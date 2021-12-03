@@ -121,7 +121,7 @@
 
 2.7. Checking Fullscreen Mode \indice{47}
 
-2.7.1. Checking Fullscreen Mode on X \indice{47}
+2.7.1. Checking Fullscreen Mode on X \indice{48}
 
 2.7.2. Checking Fullscreen Mode on Web Assembly \indice{48}
 
@@ -135,7 +135,7 @@
 
 2.8.3. Changing Between Fullscreen and Windowed Mode on Windows \indice{52}
 
-2.9. Resizing the Window \indice{52}
+2.9. Resizing the Window \indice{53}
 
 2.9.1. Resizing the Window on X \indice{53}
 
@@ -151,7 +151,7 @@
 
 3.2.1. Reading the Keyboard on X \indice{57}
 
-3.2.2. Reading the Keyboard on Web Assembly \indice{59}
+3.2.2. Reading the Keyboard on Web Assembly \indice{60}
 
 3.2.3. Reading the Keyboard on Windows \indice{61}
 
@@ -167,9 +167,9 @@
 
 3.3.4. Additional Code for Mouse Support \indice{70}
 
-3.4. Additional Input Functions \indice{72}
+3.4. Additional Input Functions \indice{73}
 
-4. Estrutura Final do Arquivo \indice{72}
+4. Estrutura Final do Arquivo \indice{73}
 
 
 \secao{1. Introduction}
@@ -1004,6 +1004,7 @@ if(!already_created_a_class){
   window_class.hInstance = GetModuleHandle(NULL);
   window_class.lpszClassName = class_name;
   window_class.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // Black window
+  window_class.hCursor = LoadCursor(NULL, IDC_ARROW); // Default cursor
   ret = RegisterClass(&window_class);
   if(ret == 0){
 #if defined(W_DEBUG_WINDOW)
