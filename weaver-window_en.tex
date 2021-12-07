@@ -4867,7 +4867,7 @@ during initialization.
 
 We also will correct above the mouse coordinate if the
 macro \monoespaco{W\_FORCE\_LANDSCAPE} is defined and if the window
-height is greater than the window width. In this case, we will swap
+height is greater than the window width. In this case, we will rotate
 the axis $x$ and $y$ of our coordinate system. We do the correction
 using this code:
 
@@ -4876,7 +4876,7 @@ using this code:
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y > window_size_x){
   int tmp = x;
-  x = y;
+  x = window_size_y - y;
   y = tmp;
 }
 #endif

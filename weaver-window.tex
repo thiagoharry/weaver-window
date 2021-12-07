@@ -4963,16 +4963,16 @@ inicial do mouse.
 
 Acima nós também podemos precisar corrigir a posição do mouse se a
 macro \monoespaco{W\_FORCE\_LANDSCAPE} estiver definida. Neste caso,
-se a altura de nossa janela for maior que a largura, vamos inverter
-os eixos $x$ e $y$. O que significa que vamos trocar as posições $x$ e
-$y$ lidas do mouse:
+se a altura de nossa janela for maior que a largura, vamos inverter os
+eixos $x$ e $y$. O que significa que vamos girar em 90 graus os eixos
+$x$ e $y$:
 
 \iniciocodigo
 @<Corrige Posição do Mouse 'x' e 'y' se Forçamos Modo Paisagem@>=
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y > window_size_x){
   int tmp = x;
-  x = y;
+  x = window_size_y - y;
   y = tmp;
 }
 #endif

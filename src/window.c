@@ -2179,7 +2179,7 @@ y= (window_size_y-1)-event.xmotion.y;
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y> window_size_x){
 int tmp= x;
-x= y;
+x= window_size_y-y;
 y= tmp;
 }
 #endif
@@ -2371,7 +2371,7 @@ y= (window_size_y-1)-event.motion.y;
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y> window_size_x){
 int tmp= x;
-x= y;
+x= window_size_y-y;
 y= tmp;
 }
 #endif
@@ -2763,7 +2763,7 @@ y= (window_size_y-1)-(event.lParam>>16);
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y> window_size_x){
 int tmp= x;
-x= y;
+x= window_size_y-y;
 y= tmp;
 }
 #endif
@@ -2890,7 +2890,7 @@ y= (window_size_y-1)-y;
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y> window_size_x){
 int tmp= x;
-x= y;
+x= window_size_y-y;
 y= tmp;
 }
 #endif
@@ -2936,7 +2936,7 @@ y= (window_size_y-1)-y;
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y> window_size_x){
 int tmp= x;
-x= y;
+x= window_size_y-y;
 y= tmp;
 }
 #endif
@@ -2987,7 +2987,7 @@ y= (window_size_y-1)-point.y;
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y> window_size_x){
 int tmp= x;
-x= y;
+x= window_size_y-y;
 y= tmp;
 }
 #endif
