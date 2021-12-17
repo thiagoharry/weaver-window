@@ -903,10 +903,10 @@ com ele se executarmos a função de fechar janela).
       el.style.position = "absolute";
       el.style.top = "0px";
       el.style.left = "0px";
-      el.style.width = window.screen.width + "px";
-      el.style.height = window.screen.height + "px";
-      el.width = (window.screen.width * window.devicePixelRatio);
-      el.height = (window.screen.height * window.devicePixelRatio);
+      el.style.width = window.innerWidth + "px";
+      el.style.height = window.innerHeight + "px";
+      el.width = (window.innerWidth * window.devicePixelRatio);
+      el.height = (window.innerHeight * window.devicePixelRatio);
     );
   }
   if(window == NULL)
