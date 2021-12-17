@@ -722,10 +722,10 @@ double pixel_ratio= EM_ASM_DOUBLE({
 return window.devicePixelRatio;
 });
 window_size_x= EM_ASM_INT({
-return window.innerWidth;
+return window.innerWidth*window.devicePixelRatio;;
 });
 window_size_y= EM_ASM_INT({
-return window.innerHeight;
+return window.innerHeight*window.devicePixelRatio;;
 });
 #if defined(W_WINDOW_NO_FULLSCREEN)
 fullscreen_mode= false;
