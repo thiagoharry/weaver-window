@@ -830,7 +830,7 @@ SDL_Init(SDL_INIT_VIDEO);
 
 Now we will create the window, which in practice means adjust the
 canvas size where we will draw and initialize it with SDL code. The
-HTML canvas should have the same size than the screen, except if
+HTML canvas should have the window inner size, except if
 macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} is defined and if
 macros \monoespaco{W\_WINDOW\_RESOLUTION\_X}
 and \monoespaco{W\_WINDOW\_RESOLUTION\_Y} have positive values. We
@@ -845,8 +845,12 @@ be hidden (we do it when we execute the function to close the window).
   double pixel_ratio = EM_ASM_DOUBLE({
     return window.devicePixelRatio;
   });
-  window_size_x = screen_resolution_x;
-  window_size_y = screen_resolution_y;
+  window_size_x = EM_ASM_INT({
+    return window.innerWidth;
+  });
+  window_size_y = EM_ASM_INT({
+    return window.innerHeight;
+  });
 #if defined(W_WINDOW_NO_FULLSCREEN)
   fullscreen_mode = false;
 #if defined(W_WINDOW_SIZE_X) && W_Window_Size_X > 0
@@ -878,7 +882,6 @@ be hidden (we do it when we execute the function to close the window).
       el.style.height = window.screen.height + "px";
       el.width = (window.screen.width * window.devicePixelRatio);
       el.height = (window.screen.height * window.devicePixelRatio);
-      el.requestFullscreen();
     );
   }
   if(window == NULL)
@@ -3026,7 +3029,6 @@ bool _Wdestroy_window(void){
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "none";
-    document.exitFullscreen();
   );
   already_have_window = false;
   return true;
@@ -3485,7 +3487,6 @@ void _Wtoggle_fullscreen(void){
         el.style.height = ($1 / window.devicePixelRatio) + "px";
         el.height = $1;
       }
-      document.exitFullscreen();
     }, last_window_size_x, last_window_size_y);
     fullscreen_mode = false;
   } else{
@@ -3498,7 +3499,6 @@ void _Wtoggle_fullscreen(void){
       el.style.height = window.screen.height + "px";
       el.width = (window.screen.width * window.devicePixelRatio);
       el.height = (window.screen.height * window.devicePixelRatio);
-      el.requestFullscreen();
     );
     fullscreen_mode = true;
   }
@@ -4876,7 +4876,7 @@ using this code:
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y > window_size_x){
   int tmp = x;
-  x = window_size_y - y;
+  x = window_size_x - y;
   y = tmp;
 }
 #endif

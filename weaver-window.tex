@@ -854,12 +854,13 @@ SDL_Init(SDL_INIT_VIDEO);
 
 Agora vamos efetivamente criar a janela, o que na prática ajusta o
 tamanho do canvas HTML onde iremos desenhar e o inicializa. O
-``canvas'' HTML deverá ter o tamanho da tela, exista definida a
-macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} com valores positivos
-para \monoespaco{W\_WINDOW\_RESOLUTION\_X}
-e \monoespaco{W\_WINDOW\_RESOLUTION\_Y}. Também iremos nos certificar
-de que o canvas está realmente visível, pois ele pode ter sido oculto
-(é o que fazemos com ele se executarmos a função de fechar janela).
+``canvas'' HTML deverá ter o tamanho da janela, a menos que exista
+definida a macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} com valores
+positivos para \monoespaco{W\_WINDOW\_RESOLUTION\_X}
+e \monoespaco{W\_WINDOW\_RESOLUTION\_Y}, caso em que usaremos esses
+valores como tamanho. Também iremos nos certificar de que o canvas
+está realmente visível, pois ele pode ter sido oculto (é o que fazemos
+com ele se executarmos a função de fechar janela).
 
 \iniciocodigo
 @<Web Assembly: Criar Janela@>+=
@@ -869,8 +870,12 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
   double pixel_ratio = EM_ASM_DOUBLE({
     return window.devicePixelRatio;
   });
-  window_size_x = screen_resolution_x;
-  window_size_y = screen_resolution_y;
+  window_size_x = EM_ASM_INT({
+    return window.innerWidth;
+  });
+  window_size_y = EM_ASM_INT({
+    return window.innerHeight;
+  });
 #if defined(W_WINDOW_NO_FULLSCREEN)
   fullscreen_mode = false;
 #if defined(W_WINDOW_SIZE_X) && W_Window_Size_X > 0
@@ -902,7 +907,6 @@ de que o canvas está realmente visível, pois ele pode ter sido oculto
       el.style.height = window.screen.height + "px";
       el.width = (window.screen.width * window.devicePixelRatio);
       el.height = (window.screen.height * window.devicePixelRatio);
-      el.requestFullscreen();
     );
   }
   if(window == NULL)
@@ -3068,7 +3072,6 @@ bool _Wdestroy_window(void){
   EM_ASM(
     var el = document.getElementById("canvas");
     el.style.display = "none";
-    document.exitFullscreen();
   );
   already_have_window = false;
   return true;
@@ -3544,7 +3547,6 @@ void _Wtoggle_fullscreen(void){
         el.style.height = ($1 / window.devicePixelRatio) + "px";
         el.height = $1;
       }
-      document.exitFullscreen();
     }, last_window_size_x, last_window_size_y);
     fullscreen_mode = false;
   } else{
@@ -3553,11 +3555,10 @@ void _Wtoggle_fullscreen(void){
       el.style.position = "absolute";
       el.style.top = "0px";
       el.style.left = "0px";
-      el.style.width = window.screen.width + "px";
-      el.style.height = window.screen.height + "px";
-      el.width = (window.screen.width * window.devicePixelRatio);
-      el.height = (window.screen.height * window.devicePixelRatio);
-      el.requestFullscreen();
+      el.style.width = window.innerWidth + "px";
+      el.style.height = window.innerHeight + "px";
+      el.width = (window.innerWidth * window.devicePixelRatio);
+      el.height = (window.innerHeight * window.devicePixelRatio);
     );
     fullscreen_mode = true;
   }
@@ -4972,7 +4973,7 @@ $x$ e $y$:
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y > window_size_x){
   int tmp = x;
-  x = window_size_y - y;
+  x = window_size_x - y;
   y = tmp;
 }
 #endif
