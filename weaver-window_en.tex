@@ -4875,8 +4875,8 @@ using this code:
 @<Correct Mouse Position 'x' and 'y' if Forcing Landscape Mode@>=
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y > window_size_x){
-  int tmp = x;
-  x = window_size_x - y;
+  int tmp = window_size_x - x;
+  x = y;
   y = tmp;
 }
 #endif
