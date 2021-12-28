@@ -71,7 +71,7 @@
 
 2.1.1. Getting Screen Resolution on X \indice{05}
 
-2.1.2. Getting Screen Resolution on Web Assembly \indice{06}
+2.1.2. Getting Screen Resolution on Web Assembly \indice{07}
 
 2.1.3. Getting Screen Resolution on Windows \indice{07}
 
@@ -79,11 +79,11 @@
 
 2.2.1. Creating a Window on X \indice{07}
 
-2.2.2. Creating a Window on Web Assembly \indice{10}
+2.2.2. Creating a Window on Web Assembly \indice{11}
 
 2.2.3. Creating a Window on (Microsoft) Windows \indice{13}
 
-2.2.4. Defining the  Window Creation Function for All Environments \indice{15}
+2.2.4. Defining the  Window Creation Function for All Environments \indice{16}
 
 2.3. Configuring OpenGL \indice{16}
 
@@ -91,7 +91,7 @@
 
 2.3.2.Configuring OpenGL on Web Assembly \indice{18}
 
-2.3.3. Configuring OpenGL on Windows \indice{18}
+2.3.3. Configuring OpenGL on Windows \indice{19}
 
 2.3.4. Choosing OpenGL Version \indice{43}
 
@@ -119,7 +119,7 @@
 
 2.6.3. Getting Window Size on Windows \indice{47}
 
-2.7. Checking Fullscreen Mode \indice{47}
+2.7. Checking Fullscreen Mode \indice{48}
 
 2.7.1. Checking Fullscreen Mode on X \indice{48}
 
@@ -127,7 +127,7 @@
 
 2.7.3. Checking Fullscreen Mode on Windows \indice{48}
 
-2.8. Changing Between Fullscreen and Windowed Mode \indice{48}
+2.8. Changing Between Fullscreen and Windowed Mode \indice{49}
 
 2.8.1. Changing Between Fullscreen and Windowed Mode on X \indice{49}
 
@@ -167,7 +167,7 @@
 
 3.3.4. Additional Code for Mouse Support \indice{70}
 
-3.4. Additional Input Functions \indice{73}
+3.4. Additional Input Functions \indice{72}
 
 4. Estrutura Final do Arquivo \indice{73}
 
@@ -218,6 +218,7 @@ extern "C" {
 #endif
 @<OpenGL Header@>
 @<Macro Definition@>
+@<Window Data Structures@>
 @<Window Declarations@>
 #ifdef __cplusplus
 }
@@ -268,7 +269,7 @@ In this article we will define the following functions:
 
 \iniciocodigo
 @<Window Declarations@>=
-bool _Wcreate_window(void);
+bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
 @
 \fimcodigo
 
@@ -280,6 +281,8 @@ If the macro \monoespaco{W\_DEBUG\_WINDOW} is defined, this function
 also will print in the screen information about the graphical
 environment. Its resolution for example. But possibly other
 information that can be relevant.
+
+The function will initialize the mouse and keyboard structs.
 
 In case of error, the function will return false.
 
@@ -329,7 +332,9 @@ the pointers.
 
 \iniciocodigo
 @<Window Declarations@>=
-void _Wget_window_input(unsigned long long current_time);
+void _Wget_window_input(unsigned long long current_time,
+                       struct _Wkeyboard *keyboard,
+                       struct _Wmouse *mouse);
 @
 \fimcodigo
 
@@ -340,7 +345,8 @@ represent keyboard and mouse and that shall be updated.
 
 \iniciocodigo
 @<Window Declarations@>+=
-void _Wflush_window_input(void);
+void _Wflush_window_input(struct _Wkeyboard *keyboard,
+                          struct _Wmouse *mouse);
 @
 \fimcodigo
 
@@ -831,8 +837,8 @@ SDL_Init(SDL_INIT_VIDEO);
 Now we will create the window, which in practice means adjust the
 canvas size where we will draw and initialize it with SDL code. The
 HTML canvas should have the window inner size, except if
-macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} is defined and if
-macros \monoespaco{W\_WINDOW\_RESOLUTION\_X}
+macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN} is defined and both
+\monoespaco{W\_WINDOW\_RESOLUTION\_X}
 and \monoespaco{W\_WINDOW\_RESOLUTION\_Y} have positive values. We
 also ensure that the canvas is visible using Javascript, as it could
 be hidden (we do it when we execute the function to close the window).
@@ -1135,14 +1141,14 @@ unite all these previous code blocks in a single function:
 
 \iniciocodigo
 @<API Functions@>=
-bool _Wcreate_window(void){
+bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse){
   if(already_have_window == true)
     return false;
   @<X11: Create Window@>
   @<Web Assembly: Create Window@>
   @<Windows: Create Window@>
   @<Keyboard Initialization@>
-  _Wflush_window_input();
+  _Wflush_window_input(keyboard, mouse);
   already_have_window = true;
   return true;
 }
@@ -3435,7 +3441,7 @@ And the function \monoespaco{gettimeofday} requires the following
 header:
 
 \iniciocodigo
-@<Cabeçalhos@>+=
+@<Headers@>+=
 #if defined(__linux__) || defined(BSD)
 #include <sys/time.h>
 #endif
@@ -3669,25 +3675,15 @@ window has focus. We can detect events made by the keyboard and mouse.
 For us the keyboard will be the following global struct variable:
 
 \iniciocodigo
-@<Window Declarations@>+=
-extern struct __Wkeyboard{
+@<Window Data Structures@>=
+struct _Wkeyboard{
   long key[W_KEYBOARD_SIZE + 1]; // Key array: a timer for each key
-} _Wkeyboard;
+};
 @
 \fimcodigo
 
-And we will have a single structure of this kind to represent the user
-keyboard:
-
-\iniciocodigo
-@<Global Variables@>=
-struct __Wkeyboard _Wkeyboard;
-@
-\fimcodigo
-
-
-In the key aray above, we will have one position for each keyboard key
-where we will store a number to act as a timer for each key. The
+In the key array above, we will have one position for each keyboard
+key where we will store a number to act as a timer for each key. The
 meaning of the number stored in each position depends on the
 value. The options are:
 
@@ -3712,19 +3708,11 @@ different than zero.
 The mouse will be represented by the following struct:
 
 \iniciocodigo
-@<Window Declarations@>+=
-extern struct __Wmouse{
+@<Window Data Structures@>+=
+struct _Wmouse{
   long button[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
-} _Wmouse;
-@
-\fimcodigo
-
-And we will use this singleton struct to represent the user mouse:
-
-\iniciocodigo
-@<Global Variables@>+=
-struct __Wmouse _Wmouse;
+};
 @
 \fimcodigo
 
@@ -3744,7 +3732,9 @@ function to update them:
 
 \iniciocodigo
 @<API Functions@>+=
-void _Wget_window_input(unsigned long long current_time){
+void _Wget_window_input(unsigned long long current_time,
+                       struct _Wkeyboard *keyboard,
+                       struct _Wmouse *mouse){
   if(already_have_window == false)
     return;
   @<Before Reading Window Events@>
@@ -3842,7 +3832,7 @@ initialize or reinitialize the keyboard is:
     released_keys[i] = 0;
   }
   for(i = 0; i < W_KEYBOARD_SIZE + 1; i ++)
-    _Wkeyboard.key[i] = 0;
+    keyboard -> key[i] = 0;
 
 }
 @
@@ -3894,7 +3884,7 @@ While the above code manages correctly the keycodes, the user also
 needs to know what these keycodes represent. Knowing that the key
 0xff0d was pressed means very little. Knowing that the key ``Enter''
 was pressed is much more meaningful. The user should be able to check
-the content of \monoespaco{\_Wkeyboard.key[W\_ENTER]} without needing
+the content of \monoespaco{keyboard.key[W\_ENTER]} without needing
 to know the code for the key. For this, during the keyboard
 initialization, we should discover all the symbols supported by our
 keyboard, giving to them correct names. As this depends on the
@@ -4276,7 +4266,7 @@ list until finding a null key and replacing it by our new pressed key:
       pressed_keys[i].key = key;
       pressed_keys[i].time = current_time;
       // Updating keyboard:
-      _Wkeyboard.key[key] = 1;
+      keyboard -> key[key] = 1;
       break;
     }
   }
@@ -4316,12 +4306,12 @@ until we find an empty position, where we put our new released key:
       released_keys[i] = key;
   }
   if(i == 32) // Too many key releases, ignore and clean keyboard
-    _Wkeyboard.key[key] = 0;
+    keyboard -> key[key] = 0;
   else{
     // Updating keyboard struct:
-    _Wkeyboard.key[key] = - (long) (current_time - stored_time);
-    if(_Wkeyboard.key[key] == 0)
-      _Wkeyboard.key[key] = -1; // Press/release in the same frame
+    keyboard -> key[key] = - (long) (current_time - stored_time);
+    if(keyboard -> key[key] == 0)
+      keyboard -> key[key] = -1; // Press/release in the same frame
   }
 }
 @
@@ -4338,12 +4328,12 @@ they are being pressed:
 {
   int i;
   // Update the information if any key is being pressed:
-  _Wkeyboard.key[W_ANY] = (pressed_keys[0].key != 0);
+  keyboard -> key[W_ANY] = (pressed_keys[0].key != 0);
   for(i = 0; i < 32; i ++){
     if(pressed_keys[i].key == 0)
       break;
     if(current_time > pressed_keys[i].time)
-      _Wkeyboard.key[pressed_keys[i].key] = (current_time - pressed_keys[i].time);
+      keyboard -> key[pressed_keys[i].key] = (current_time - pressed_keys[i].time);
   }
 }
 @
@@ -4368,7 +4358,7 @@ released keys:
   for(i = 0; i < 32; i ++){
     if(released_keys[i] == 0)
       break;
-    _Wkeyboard.key[released_keys[i]] = 0;
+    keyboard -> key[released_keys[i]] = 0;
     released_keys[i] = 0;
   }
 }
@@ -4439,8 +4429,8 @@ velocity and acceleration as zero:
     released_buttons[i] = 0;
   }
   for(i = 0; i < W_MOUSE_SIZE; i ++)
-    _Wmouse.button[i] = 0;
-  _Wmouse.x = _Wmouse.y = _Wmouse.dx = _Wmouse.dy = _Wmouse.ddx = _Wmouse.ddy = 0;
+    mouse -> button[i] = 0;
+  mouse -> x = mouse -> y = mouse -> dx = mouse -> dy = mouse -> ddx = mouse -> ddy = 0;
   last_mouse_dx = last_mouse_dy = 0;
   mouse_initialization = 3;
   @<Get Mouse Position@>
@@ -4751,7 +4741,7 @@ where we mark the premature end of the list with a null button:
       pressed_buttons[i].button = button;
       pressed_buttons[i].time = current_time;
       // Updating mouse:
-      _Wmouse.button[button] = 1;
+      mouse -> button[button] = 1;
       break;
     }
   }
@@ -4787,12 +4777,12 @@ we do it, we add it to the list of released buttons:
       released_buttons[i] = button;
   }
   if(i == 4) // Too many button releases, ignore and clean mouse
-    _Wmouse.button[button] = 0;
+    mouse -> button[button] = 0;
   else{
     // Updating mouse struct:
-    _Wmouse.button[button] = - (long) (current_time - stored_time);
-    if(_Wmouse.button[button] == 0)
-      _Wmouse.button[button] = -1; // Press/release in the same frame
+    mouse -> button[button] = - (long) (current_time - stored_time);
+    if(mouse -> button[button] == 0)
+      mouse -> button[button] = -1; // Press/release in the same frame
   }
 }
 @
@@ -4807,12 +4797,12 @@ button is being pressed:
 {
   int i;
   // Update the information if any button is being pressed:
-  _Wmouse.button[W_ANY] = (pressed_buttons[0].button != 0);
+  mouse -> button[W_ANY] = (pressed_buttons[0].button != 0);
   for(i = 0; i < 4; i ++){
     if(pressed_buttons[i].button == 0)
       break;
     if(current_time > pressed_buttons[i].time)
-      _Wmouse.button[pressed_buttons[i].button] =
+      mouse -> button[pressed_buttons[i].button] =
         (current_time - pressed_buttons[i].time);
   }
 }
@@ -4830,7 +4820,7 @@ as not being pressed anymore:
   for(i = 0; i < 4; i ++){
     if(released_buttons[i] == 0)
       break;
-    _Wmouse.button[released_buttons[i]] = 0;
+    mouse -> button[released_buttons[i]] = 0;
     released_buttons[i] = 0;
   }
 }
@@ -4848,17 +4838,17 @@ during initialization.
 @<Correct Mouse Position 'x' and 'y' if Forcing Landscape Mode@>
 {
   if(mouse_initialization < 3){ // If we know previous position
-    _Wmouse.dx = (x - _Wmouse.x);
-    _Wmouse.dy = (y - _Wmouse.y);
+    mouse -> dx = (x - mouse -> x);
+    mouse -> dy = (y - mouse -> y);
   }
-  _Wmouse.x = x;
-  _Wmouse.y = y;
+  mouse -> x = x;
+  mouse -> y = y;
   if(mouse_initialization < 2){ // If we know previous velocity
-    _Wmouse.ddx = (_Wmouse.dx - last_mouse_dx);
-    _Wmouse.ddy = (_Wmouse.dy - last_mouse_dy);
+    mouse -> ddx = (mouse -> dx - last_mouse_dx);
+    mouse -> ddy = (mouse -> dy - last_mouse_dy);
   }
-  last_mouse_dx = _Wmouse.dx;
-  last_mouse_dy = _Wmouse.dy;
+  last_mouse_dx = mouse -> dx;
+  last_mouse_dy = mouse -> dy;
   if(mouse_initialization > 0)
     mouse_initialization --;
 }
@@ -4893,9 +4883,10 @@ best is ignore it. For this case, we will use the following function:
 
 \iniciocodigo
 @<API Functions@>+=
-void _Wflush_window_input(void){
+void _Wflush_window_input(struct _Wkeyboard *keyboard,
+                          struct _Wmouse *mouse){
   // Read accumulated input:
-  _Wget_window_input(~0x0);
+  _Wget_window_input(~0x0, keyboard, mouse);
   // Empty all input information about the keyboard:
   @<Initializing or Reinitializing Keyboard@>
   // Empty all input information abut the mouse:

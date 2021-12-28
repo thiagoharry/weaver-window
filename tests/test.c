@@ -25,6 +25,9 @@
 
 #include "../src/window.h"
 
+static struct _Wkeyboard keyboard;
+static struct _Wmouse mouse;
+
 int numero_de_testes = 0, acertos = 0, falhas = 0;
 void imprime_resultado(void){
   printf("\n%d tests: %d sucess, %d fails\n\n",
@@ -63,16 +66,16 @@ void assert(char *descricao, bool valor){
 
 void test_create_destroy_window(void){
   bool ret;
-  ret = _Wcreate_window();
+  ret = _Wcreate_window(&keyboard, &mouse);
   //SLEEP(1);
   assert("Creating window", ret);
-  ret = _Wcreate_window();
+  ret = _Wcreate_window(&keyboard, &mouse);
   assert("Not creating window if it exists", ret == false);
   ret = _Wdestroy_window();
   assert("Destroying window", ret);
   ret = _Wdestroy_window();
   assert("Do not try to destroy window twice", ret == false);
-  ret = _Wcreate_window();
+  ret = _Wcreate_window(&keyboard, &mouse);
   if(ret)
     ret = _Wdestroy_window();
   assert("Can create successive windows", ret);
@@ -86,7 +89,7 @@ void test_resolution(void){
   ret = _Wget_screen_resolution(&res_x, &res_y);
   snprintf(message, 128, "Getting screen resolution: %dx%d", res_x, res_y);
   assert(message, ret && (res_x > 0) && (res_y > 0));
-  _Wcreate_window();
+  _Wcreate_window(&keyboard, &mouse);
   _Wget_window_size(&size_x, &size_y);
   assert("Fullscreen window have same size than screen", size_x == res_x &&
 	 size_y == res_y);
@@ -96,7 +99,7 @@ void test_resolution(void){
 void test_resizing(void){
   int width, height;
   bool ret;
-  _Wcreate_window();
+  _Wcreate_window(&keyboard, &mouse);
   ret = _Wresize_window(800, 600);
   assert("Do not resize a fullscreen window", !ret);
   _Wtoggle_fullscreen();
@@ -119,7 +122,7 @@ void update_counter(int old_width, int old_height, int new_width, int new_height
 }
 void test_resizing_function(void){
   int counter0, counter1, counter2, counter3, counter4;
-  _Wcreate_window();
+  _Wcreate_window(&keyboard, &mouse);
   counter0 = counter;
   _Wset_resize_function(update_counter);
   _Wtoggle_fullscreen();
@@ -140,7 +143,7 @@ void test_resizing_function(void){
 void test_opengl_simple(void){
   char message[1024];
   time_t initial_time, current_time;
-  _Wcreate_window();
+  _Wcreate_window(&keyboard, &mouse);
   const GLubyte *version = glGetString(GL_VERSION);
   const GLubyte *vendor = glGetString(GL_VENDOR);
   const GLubyte *renderer = glGetString(GL_RENDERER);
@@ -204,7 +207,7 @@ void test_opengl_buffers(void){
     "void main() {\n"
     "  gl_FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
     "}\n";
-  _Wcreate_window();
+  _Wcreate_window(&keyboard, &mouse);
   _Wtoggle_fullscreen();
   _Wtoggle_fullscreen();
   glGenBuffers(1, &vbo);
@@ -286,7 +289,7 @@ void test_opengl_buffers(void){
 
 void test_opengl_shader(void){
   GLint shader_program, pos = 0;
-  _Wcreate_window();
+  _Wcreate_window(&keyboard, &mouse);
   _Wtoggle_fullscreen();
   _Wresize_window(800, 600);
   {
@@ -393,7 +396,7 @@ void test_opengl_shader(void){
 }
 
 void test_fullscreen(void){
-  _Wcreate_window();
+  _Wcreate_window(&keyboard, &mouse);
   bool full = _Wis_fullscreen();
   assert("Window begin in fullscreen mode", full);
   _Wtoggle_fullscreen();

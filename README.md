@@ -32,18 +32,21 @@ the LICENSE file.
     #include "window.h"
     #include <time.h>
 
+    static struct _Wkeyboard keyboard;
+    static struct _Wmouse mouse;
+
     int main(int argc, char **argv){
-      _Wcreate_window();
+      _Wcreate_window(&keyboard, &mouse);
       // Create a fullscreen window that exits if the user press the ESC key for
       // 2 or more seconds.
       do{
         // You can call OpenGL functions here.
-        _Wget_window_input(time(NULL));
+        _Wget_window_input(time(NULL), &keyboard, &mouse);
         _Wrender_window();
     #if defined(__EMSCRIPTEN__)
         emscripten_sleep(10);
     #endif
-      } while(_Wkeyboard.key[W_ESC] < 2);
+      } while(keyboard.key[W_ESC] < 2);
       _Wdestroy_window();
     }
 
@@ -75,12 +78,13 @@ OpenG usage.
 
 #### Keyboard Struct
 
-    struct __Wkeyboard{
+    struct _Wkeyboard{
       long key[W_KEYBOARD_SIZE + 1];
-    } _Wkeyboard;
+    };
 
 If you have a window, you can detect keyboard interactions with this
-structure. Each physical key is mapped to a position in the key
+structure. You should use a single keyboard struct for each
+window. Each physical key is mapped to a position in the key
 vector. The number in each position gives information about each key
 state:
 
@@ -106,15 +110,15 @@ none key is being pressed) or 1 (is some key is being pressed).
 
 #### Mouse Struct
 
-    struct __Wmouse{
+    struct _Wmouse{
       long button[W_MOUSE_SIZE];
       int x, y, dx, dy, ddx, ddy;
-    } _Wmouse;
+    };
 
 If you have a window, you can detect mouse interactions with this
-structure. Each physical button is mapped to a position in the button
-vector. The number in each position gives information about each key
-state:
+structure. You should use a single mouse struct for each window. Each
+physical button is mapped to a position in the button vector. The
+number in each position gives information about each key state:
 
 * If the number is 0, this means that the button is not being pressed.
 * If the number is 1, this means that the user began pessing this button now.
@@ -136,7 +140,7 @@ as the origin.
 
 #### Creating the Window
 
-    bool _Wcreate_window(void);
+    bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
 
 This creates a window and return if the opperation was
 successfull. Only 1 window can exist at a given moment, so this
@@ -145,6 +149,9 @@ previously created window.
 
 By default, the window will be in fullscreen mode. This can be changed
 defining the macro `W_WINDOW_NO_FULLSCREEN` (see below).
+
+The mouse and keyboard structures are initialized for the created
+window.
 
 #### Destroying the Window
 
@@ -179,15 +186,15 @@ if this was done successfully.
 
 #### Getting Window Input
 
-    void _Wget_window_input(unsigned long long current_time);
+    void _Wget_window_input(unsigned long long current_time, struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
 
-Updates the mouse and keyboard data sctructures (seen above). You
-should call this function in each iteration of your main loop. You
-should pass as argument the current time. In the sample code above in
-the beginning of this page, we chose to pass the current time in
-seconds as returned by the `time` function. We did so to keep the
-exampe simple. But in real programs probably you want to measure the
-time in more granularity than in seconds.
+Updates the mouse and keyboard data sctructures. You should call this
+function in each iteration of your main loop. You should pass as
+argument the current time. In the sample code above in the beginning
+of this page, we chose to pass the current time in seconds as returned
+by the `time` function. We did so to keep the exampe simple. But in
+real programs probably you want to measure the time in more
+granularity than in seconds.
 
 A good choice is measuring the time in microseconds using system
 libraries. This will give you more precision measuring the time spent
@@ -195,7 +202,7 @@ libraries. This will give you more precision measuring the time spent
 
 #### Flushing Window Input
 
-    void _Wflush_window_input(void);
+    void _Wflush_window_input(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
 
 This cleans the mouse and keyboard structures. You should call it
 before entering a new main loop. It is also useful to call it when you
