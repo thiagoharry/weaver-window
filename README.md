@@ -19,8 +19,8 @@ This is written in Literary Programming. And the code is tested on
 Linux, Open BSD, Windows 10 and Web Assembly. Therefore, if you plan
 to study how this library works, you can read the full source code
 with additional text explanations in
-[weaver-window_en.pdf](https://github.com/thiagoharry/weaver-window/blob/master/weaver-window.pdf)
-(engish version) or in
+[weaver-window_en.pdf](https://github.com/thiagoharry/weaver-window/blob/master/weaver-window_en.pdf)
+(english version) or in
 [weaver-window_en.pdf](https://github.com/thiagoharry/weaver-window/blob/master/weaver-window.pdf)
 (portuguese version).
 
@@ -58,9 +58,8 @@ packages ``libx11-dev'' and ``libgles2-mesa-dev''.
 
 ## OpenGL Version
 
-By default it enables OpenGL ES 3.0 on Linux and X11 based systems. On
-Web Browsers after compiling with Emscripten, it enables Open GL ES
-2.0 (WebGL 1.0).
+By default it enables OpenGL ES 3.0 on Linux and other X11 based
+systems and also in web browsers  after compiling with Emscripten.
 
 On Windows, as we do not have the same guarantee about the presence of
 OpenGL ES, it tries to create an OpenGL 4.1 context and enables only
@@ -69,8 +68,8 @@ the functions present in OpenGL ES 2.0.
 To create portable programs, you should use OpenGL ES 2.0 functions,
 even if you are running in a system with additional functions and
 extensions. If compiling to Web Assembly, also read the documentation
-to see if additional compilation flags are needed depending of your
-OpenG usage.
+to see the additional compilation flags needed depending of your
+OpenGL usage.
 
 ## Reference
 
