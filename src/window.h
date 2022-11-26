@@ -14,7 +14,7 @@ extern"C"{
 #line 829 "weaver-window.tex"
 
 #if defined(__EMSCRIPTEN__)
-#include <GLES2/gl2.h> 
+#include <GLES3/gl3.h> 
 #include <SDL/SDL.h> 
 #include <emscripten.h> 
 #endif
@@ -23,7 +23,7 @@ extern"C"{
 
 #if defined(__linux__) || defined(BSD)
 #include <EGL/egl.h> 
-#include <GLES2/gl2.h> 
+#include <GLES3/gl3.h> 
 #include <EGL/eglext.h> 
 #endif
 /*:50*//*59:*/

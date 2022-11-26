@@ -804,7 +804,7 @@ Now we include the Emscripten and SDL headers:
 \iniciocodigo
 @<OpenGL Header@>+=
 #if defined(__EMSCRIPTEN__)
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <SDL/SDL.h>
 #include <emscripten.h>
 #endif
@@ -1181,7 +1181,7 @@ its functions and macros are declared in the following header:
 @<OpenGL Header@>+=
 #if defined(__linux__) || defined(BSD)
 #include <EGL/egl.h>
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <EGL/eglext.h>
 #endif
 @
