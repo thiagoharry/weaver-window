@@ -447,6 +447,7 @@ header:
 #if defined(__linux__) || defined(BSD)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/X.h>
 #endif
 @
 \fimcodigo
@@ -800,10 +801,14 @@ things: the SDL library, presented by Emscripten as the graphical API
 and Javascript code to control the canvas where the SDL code is
 rendered.
 
-Now we include the Emscripten and SDL headers:
+Now we include the Emscripten and SDL headers, with additional headers
+needed by some macros that we will use:
 
 \iniciocodigo
 @<OpenGL Header@>+=
+#if defined(__linux__) || defined(BSD)
+#include <X11/X.h>
+#endif
 #if defined(__EMSCRIPTEN__)
 #include <GLES3/gl3.h>
 #include <SDL/SDL.h>

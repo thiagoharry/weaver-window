@@ -824,10 +824,15 @@ a biblioteca SDL, fornecida como interface para realizar ações
 gráficas pelo ambiente Emscripten e também código Javascript que
 poderemos executar para ajudar.
 
-Primeiro vamos inserir o cabeçalho do Emscripten com os cabeçalhos SDL:
+Primeiro vamos inserir o cabeçalho do Emscripten com os cabeçalhos SDL
+e também cabeçalhos adicionais necessários por algumas macros que
+iremos usar:
 
 \iniciocodigo
 @<Cabeçalho OpenGL@>+=
+#if defined(__linux__) || defined(BSD)
+#include <X11/X.h>
+#endif
 #if defined(__EMSCRIPTEN__)
 #include <GLES3/gl3.h>
 #include <SDL/SDL.h>
