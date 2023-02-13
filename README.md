@@ -11,9 +11,9 @@ was pressed before being released.
 
 Despite being part of the Weaver Game Engine, it can be integrated in
 other projects. This is only a library with two files:
-[weaver.c](https://github.com/thiagoharry/weaver-window/blob/master/src/window.c)
+[window.c](https://github.com/thiagoharry/weaver-window/blob/master/src/window.c)
 and
-[weaver.h](https://github.com/thiagoharry/weaver-window/blob/master/src/window.h).
+[window.h](https://github.com/thiagoharry/weaver-window/blob/master/src/window.h).
 
 This is written in Literary Programming. And the code is tested on
 Linux, Open BSD, Windows 10 and Web Assembly. Therefore, if you plan
