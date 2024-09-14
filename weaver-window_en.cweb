@@ -18,8 +18,6 @@
 \def\negrito#1{{\twelvebold#1}}
 \def\italico#1{{\twelveit#1}}
 \def\monoespaco#1{{\monodoze#1}}
-\def\iniciocodigo{\lineskip=0pt\parskip=0pt}
-\def\fimcodigo{\twelve\parskip=0pt plus 1pt\lineskip=1pt}
 
 \long\def\abstract#1{\parshape 10 0.8cm 13.4cm 0.8cm 13.4cm
 0.8cm 13.4cm 0.8cm 13.4cm 0.8cm 13.4cm 0.8cm 13.4cm 0.8cm 13.4cm
@@ -171,7 +169,6 @@
 
 4. Estrutura Final do Arquivo \indice{73}
 
-
 \secao{1. Introduction}
 
 A graphical computer program needs a space where it can draw in the
@@ -205,7 +202,6 @@ files: \monoespaco{window.c} and \monoespaco{window.h}. Both of them
 can be inserted statically in any project or compiled as a shared
 library. The content of \monoespaco{window.h} is:
 
-\iniciocodigo
 @(src/window.h@>=
 #ifndef WEAVER_WINDOW
 #define WEAVER_WINDOW
@@ -225,7 +221,6 @@ extern "C" {
 #endif
 #endif
 @
-\fimcodigo
 
 The two first lines and the last one are macros that ensure that the
 function declaration and variables from this file will always be
@@ -252,13 +247,11 @@ are in debug mode (when the macro \monoespaco{W\_DEBUG\_WINDOW} is
 declared) we will need the declaration of input/output functions, as
 our code will be more verbose:
 
-\iniciocodigo
 @<Headers@>=
 #if defined(W_DEBUG_WINDOW)
 #include <stdio.h>
 #endif
 @
-\fimcodigo
 
 Notice that we still did not define where this code section called
 ``Headers'' will be positioned. We can do this later.
@@ -267,11 +260,9 @@ Notice that we still did not define where this code section called
 
 In this article we will define the following functions:
 
-\iniciocodigo
 @<Window Declarations@>=
 bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
 @
-\fimcodigo
 
 This function will create a new window. By default, it will create a
 fullscreen window. If the macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN}
@@ -286,43 +277,35 @@ The function will initialize the mouse and keyboard structs.
 
 In case of error, the function will return false.
 
-\iniciocodigo
 @<Window Declarations@>=
 bool _Wdestroy_window(void);
 @
-\fimcodigo
 
 This function closes the window, freeing any resource allocated during
 the window creation by the previous function. This function must be
 invoked only after a window was created. In case of error, it returns
 false.
 
-\iniciocodigo
 @<Window Declarations@>+=
 bool _Wrender_window(void);
 @
-\fimcodigo
 
 This function will render in the screen all pending ommands since last
 rendering. It will return false in case of error. This function
 probably will be called in the end of each iteration in a main loop.
 
-\iniciocodigo
 @<Window Declarations@>=
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y);
 @
-\fimcodigo
 
 This function gets the screen resolution and store in the pointers
 passed as argument. If we have more than one screen, it will return
 data about the main window. In case of error, it returns false and
 stores zero as the resolution.
 
-\iniciocodigo
 @<Window Declarations@>=
 bool _Wget_window_size(int *width, int *height);
 @
-\fimcodigo
 
 This function gets the current window size in pixels and store the
 information in the pointers passed as argument. If we have no window
@@ -330,25 +313,21 @@ or in case of error, it returns false and store 0 in the
 pointers. Otherwise, it returns true and store the correct value in
 the pointers.
 
-\iniciocodigo
 @<Window Declarations@>=
 void _Wget_window_input(unsigned long long current_time,
                        struct _Wkeyboard *keyboard,
                        struct _Wmouse *mouse);
 @
-\fimcodigo
 
 This is the function that shall be called periodically to update the
 keyboard and mouse state. The first argument is the current time
 measured in some unit of time. The next arguments are structs that
 represent keyboard and mouse and that shall be updated.
 
-\iniciocodigo
 @<Window Declarations@>+=
 void _Wflush_window_input(struct _Wkeyboard *keyboard,
                           struct _Wmouse *mouse);
 @
-\fimcodigo
 
 This function cleans the state for keyboard and mouse structs. It
 should be called each time we interrupt our periodic invocation
@@ -356,39 +335,31 @@ of \monoespaco{\_Wget\_window\_input}. Calling these functions the
 structs are reset to the initial state. And we stop to consider as
 pressed or released any key or button.
 
-\iniciocodigo
 @<Window Declarations@>+=
 bool _Wis_fullscreen(void);
 @
-\fimcodigo
 
 This checks if we are in fullscreen mode or not. The result is
 undefined if a window was not created.
 
-\iniciocodigo
 @<Window Declarations@>+=
 void _Wtoggle_fullscreen(void);
 @
-\fimcodigo
 
 This function alternates between fullscreen mode and windowed
 mode. Depending on the environment, it could fail.
 
-\iniciocodigo
 @<Window Declarations@>+=
 bool _Wresize_window(int width, int height);
 @
-\fimcodigo
 
 This function changes the window size if it exists and if we are not i
 fullscreen mode. If this operation fails because these conditions are
 not met, the function returns false.
 
-\iniciocodigo
 @<Window Declarations@>+=
 void _Wset_resize_function(void (*func)(int, int, int, int));
 @
-\fimcodigo
 
 This function register a function to be executed always that our
 window changes its size. The function gets as arguments the old width
@@ -416,11 +387,9 @@ the origin usually is the lower left corner. To transform coordinates
 according with our convention, it is important to memorize the window
 height, so that we do not need to measure it all the time:
 
-\iniciocodigo
 @<Local Variables@>+=
 static int window_size_y = 0, window_size_x = 0;
 @
-\fimcodigo
 
 \subsubsecao{2.1.1. Getting Screen Resolution on X}
 
@@ -442,7 +411,6 @@ to Web Assembly, as both the Windows Operating System and web browsers
 do not have a X11 server. If we will use X11, we need the following
 header:
 
-\iniciocodigo
 @<Headers@>+=
 #if defined(__linux__) || defined(BSD)
 #include <X11/Xlib.h>
@@ -450,7 +418,6 @@ header:
 #include <X11/X.h>
 #endif
 @
-\fimcodigo
 
 In X11, as we need to communicate with a server, we assume that we
 have a variable with some data structure with information about this
@@ -460,7 +427,6 @@ Using such connection, that we assume being a static variable
 in \monoespaco{window.c}, we read the resolution using the function
 below:
 
-\iniciocodigo
 @<API Functions@>=
 #if defined(__linux__) || defined(BSD)
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
@@ -489,17 +455,14 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 }
 #endif
 @
-\fimcodigo
 
 Of course, we assume the existence of the following static variable:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__linux__) || defined(BSD)
 static Display *display = NULL; //Connection with server and info about screens
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.1.2. Getting Screen Resolution on Web Assembly}
 
@@ -508,7 +471,6 @@ If we are running Web Assembly, then we are in a web broser. Our
 need to run javascript code. We can do this with the help of
 Emscripten API:
 
-\iniciocodigo
 @<API Functions@>=
 #if defined(__EMSCRIPTEN__)
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
@@ -522,15 +484,12 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 }
 #endif
 @
-\fimcodigo
-
 
 \subsubsecao{2.1.3. Getting Screen Resolution on Windows}
 
 Finally, on Windows, we do this calling an API function that gives us
 this information:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
@@ -540,7 +499,6 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.2. Creating a Window}
 
@@ -571,7 +529,6 @@ the greatest value allowed given the screen resolution.
 
 The above steps are implemented using the functions and macros below:
 
-\iniciocodigo
 @<X11: Create Window@>=
 #if defined(__linux__) || defined(BSD)
 int screen_resolution_x, screen_resolution_y; //Screen resolution
@@ -600,18 +557,15 @@ window_size_x =  screen_resolution_x;
 window_size_y = screen_resolution_y;
 #endif
 @
-\fimcodigo
 
 This code assumes that we have the following declared variable to
 store and remember the created window:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__linux__) || defined(BSD)
 static Window window;    // Created window struct
 #endif
 @
-\fimcodigo
 
 The code defined above creates a window, but it does not mean that the
 created window is drawn in the screen. Before drawing the window in
@@ -623,7 +577,6 @@ manager do not interefere with the window creating decorations or
 limiting its size. But we do this only if the user did not disable
 fullscreen setting a macro:
 
-\iniciocodigo
 @<X11: Create Window@>+=
 #if defined(__linux__) || defined(BSD)
 #if !defined(W_WINDOW_NO_FULLSCREEN)
@@ -637,7 +590,6 @@ fullscreen setting a macro:
 #endif
 #endif
 @
-\fimcodigo
 
 But what if we are running outside the fullscreen mode and the user
 has defined macros that configure the window size to a different size
@@ -651,7 +603,6 @@ possible given the screen resolution. Otherwise, their values
 represent the size in pixels for the window. But this is true only
 outside fullscreen mode:
 
-\iniciocodigo
 @<X11: Create Window@>+=
 #if defined(__linux__) || defined(BSD)
 #if defined(W_WINDOW_NO_FULLSCREEN)
@@ -671,13 +622,11 @@ outside fullscreen mode:
 #endif
 #endif
 @
-\fimcodigo
 
 We also will warn the window manager to not allow window resizing. The
 window should be resized only using resizing functions that we will
 soon define:
 
-\iniciocodigo
 @<X11: Create Window@>+=
 #if defined(__linux__) || defined(BSD)
 {
@@ -697,17 +646,14 @@ soon define:
 }
 #endif
 @
-\fimcodigo
 
 The above resource needs the following header:
 
-\iniciocodigo
 @<Headers@>+=
 #if defined(__linux__) || defined(BSD)
 #include <X11/Xutil.h>
 #endif
 @
-\fimcodigo
 
 Another relevant information to adjust is what kind of events is
 relevant to pass to the program when something happen to the
@@ -722,7 +668,6 @@ releases a key in keyboard and if the user moves the mouse pointer. If
 we do not ask the server to send this information, our program would
 not be able to know if the user interacts with it pressing keys.
 
-\iniciocodigo
 @<X11: Create Window@>+=
 #if defined(__linux__) || defined(BSD)
 XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
@@ -730,39 +675,33 @@ XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
                               ButtonReleaseMask | PointerMotionMask);
 #endif
 @
-\fimcodigo
 
 Another important thing is choose the name for our window. Usually
 this name is presented by the window manager. We let the user choose
 the name setting the macro \monoespaco{W\_WINDOW\_NAME}:
 
-\iniciocodigo
 @<X11: Create Window@>+=
 #if defined(__linux__) || defined(BSD)
 XStoreName(display, window, W_WINDOW_NAME);
 #endif
 @
-\fimcodigo
 
 If this macro is not defined, we use an empty string:
 
-@<Macro Definition@>+=
+@<Macro Definition@>=
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
 @
-\fimcodigo
 
 Now we configure OpenGL ES. As this is sufficiently laborious, we
 write the necessary steps in the next session:
 
-\iniciocodigo
 @<X11: Create Window@>+=
 #if defined(__linux__) || defined(BSD)
 @<X11: Configure OpenGL ES@>
 #endif
 @
-\fimcodigo
 
 After adjusting all the configurations, we can draw the created
 window. For this, we send a request to the server X and wait in a loop
@@ -771,7 +710,6 @@ notified of this event when we passed
 flag \monoespaco{StructureNotifyMask} to
 function \monoespaco{XSelectInput} previously). The code for this is:
 
-\iniciocodigo
 @<X11: Create Window@>+=
 #if defined(__linux__) || defined(BSD)
 XMapWindow(display, window);
@@ -784,7 +722,6 @@ XMapWindow(display, window);
 XSetInputFocus(display, window, RevertToParent, CurrentTime);
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.2.2. Creating a Window on Web Assembly}
 
@@ -804,8 +741,7 @@ rendered.
 Now we include the Emscripten and SDL headers, with additional headers
 needed by some macros that we will use:
 
-\iniciocodigo
-@<OpenGL Header@>+=
+@<OpenGL Header@>=
 #if defined(__linux__) || defined(BSD)
 #include <X11/X.h>
 #endif
@@ -815,30 +751,25 @@ needed by some macros that we will use:
 #include <emscripten.h>
 #endif
 @
-\fimcodigo
 
 First we get the screen resolution with the function defined in
 Subsubsection 2.1.2:
 
-\iniciocodigo
 @<Web Assembly: Create Window@>=
 #if defined(__EMSCRIPTEN__)
 int screen_resolution_x, screen_resolution_y;
 _Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
-\fimcodigo
 
 The next step is initialize the video subsystem in SDL library. This
 is done with the following initialization:
 
-\iniciocodigo
 @<Web Assembly: Create Window@>+=
 #if defined(__EMSCRIPTEN__)
 SDL_Init(SDL_INIT_VIDEO);
 #endif
 @
-\fimcodigo
 
 Now we will create the window, which in practice means adjust the
 canvas size where we will draw and initialize it with SDL code. The
@@ -849,7 +780,6 @@ and \monoespaco{W\_WINDOW\_RESOLUTION\_Y} have positive values. We
 also ensure that the canvas is visible using Javascript, as it could
 be hidden (we do it when we execute the function to close the window).
 
-\iniciocodigo
 @<Web Assembly: Create Window@>+=
 #if defined(__EMSCRIPTEN__)
 {
@@ -902,7 +832,6 @@ be hidden (we do it when we execute the function to close the window).
 }
 #endif
 @
-\fimcodigo
 
 In the aove code, after creating our ``window'' (which is a canvas),
 we also set the viewport size. Usually it is not necessary to set its
@@ -915,13 +844,11 @@ explicitly here.
 Another necessary thing for the code above is declaring a static
 variable to memorize if we are in fullscreen mode or not:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__EMSCRIPTEN__)
 static bool fullscreen_mode = false;
 #endif
 @
-\fimcodigo
 
 This variable is necessary in Web Assembly because here we, and not
 some window manager, are responsible to make some adjusts in our
@@ -934,38 +861,32 @@ or not.
 
 The window in this case is considered a SDL surface:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__EMSCRIPTEN__)
 static SDL_Surface *window;
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.2.3. Creating a Window on (Microsoft) Windows}
 
 As in the previous code, we begin asking for the screen resolution:
 
-\iniciocodigo
-@<Windows: Create Window@>+=
+@<Windows: Create Window@>=
 #if defined(_WIN32)
 int screen_resolution_x, screen_resolution_y;
 _Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
-\fimcodigo
 
 Next we need to define a class for our window. First we need to give
 it an arbitrary name in a string format. We will call it
 ``WeaverWindow'':
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(_WIN32)
 static const char *class_name = "WeaverWindow";
 #endif
 @
-\fimcodigo
 
 Now our class need a function to handle signals and messages sent to
 the window. Such messages are sent when the window is created,
@@ -974,7 +895,6 @@ messages to function \monoespaco{DefWindowProc} to deal with them
 using default actions, but for some messages it is best to define
 ourselves the correct action to be taken. The function format is:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(_WIN32)
 LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2){
@@ -986,20 +906,17 @@ LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2)
 }
 #endif
 @
-\fimcodigo
 
 But when will we deal with the received message instead of just
 passing it to \monoespaco{DefWindowProc}? One of the cases is when the
 window get a message warning that it is being closed:
 
-\iniciocodigo
 @<Windows: Deal with Window Messages@>=
 case WM_DESTROY:
   PostQuitMessage(0);
   return 0;
   break;
 @
-\fimcodigo
 
 Now we need to create a class for our window. The class should have an
 unique non-conflicting name. We also pass an identifier with the
@@ -1008,7 +925,6 @@ with \monoespaco{GetModuleHandle}) and the function to deal with
 signals and messages for the window (in our case, the
 default \monoespaco{DefWindowProc}).
 
-\iniciocodigo
 @<Windows: Create Window@>+=
 #if defined(_WIN32)
 if(!already_created_a_class){
@@ -1032,36 +948,30 @@ if(!already_created_a_class){
 }
 #endif
 @
-\fimcodigo
 
 For convenince, we used the function \monoespaco{memset} to initialize
 the struct of our window class, as the majority of its elements can be
 set to zero to keep the default value. Because of this, we insert the
 following header:
 
-\iniciocodigo
 @<Cabeçalhos@>+=
 #if defined(_WIN32)
 #include <string.h>
 #endif
 @
-\fimcodigo
 
 The code above assumes that we have declared a boolean variable that
 stores if we already created a class:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(_WIN32)
 static bool already_created_a_class = false;
 #endif
 @
-\fimcodigo
 
 After defining the window class, we can create the window with the
 code below:
 
-\iniciocodigo
 @<Windows: Create Window@>+=
 #if defined(_WIN32)
 {
@@ -1099,32 +1009,26 @@ code below:
 }
 #endif
 @
-\fimcodigo
 
 We will store the handle to the created window in this variable:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(_WIN32)
 static HWND window;
 #endif
 @
-\fimcodigo
 
 Before showing the window on the screen we configure OpenGL on it:
 
-\iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
-@<Windows: Configurar OpenGL@>
+@<Windows: Configure OpenGL@>
 #endif
 @
-\fimcodigo
 
 Now we ask the system to show the window to the user and then wait in
 a loop until we get a message saying that the window was created:
 
-\iniciocodigo
 @<Windows: Create Window@>+=
 #if defined(_WIN32)
 {
@@ -1136,7 +1040,6 @@ a loop until we get a message saying that the window was created:
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.2.4. Defining the  Window Creation Function for All Environments}
 
@@ -1145,7 +1048,6 @@ different environments, and all code was placed inside conditional
 macros that uses each code only in the right environment. Now we can
 unite all these previous code blocks in a single function:
 
-\iniciocodigo
 @<API Functions@>=
 bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse){
   if(already_have_window == true)
@@ -1159,16 +1061,13 @@ bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse){
   return true;
 }
 @
-\fimcodigo
 
 The variable that stores if the window already was created will be
 declared here:
 
-\iniciocodigo
 @<Local Variables@>+=
 static bool already_have_window = false;
 @
-\fimcodigo
 
 \subsecao{2.3. Configuring OpenGL}
 
@@ -1183,7 +1082,6 @@ exists on OpenGL ES 2.0.
 In X11, the interface used to program in OpenGL ES is called EGL and
 its functions and macros are declared in the following header:
 
-\iniciocodigo
 @<OpenGL Header@>+=
 #if defined(__linux__) || defined(BSD)
 #include <EGL/egl.h>
@@ -1191,13 +1089,11 @@ its functions and macros are declared in the following header:
 #include <EGL/eglext.h>
 #endif
 @
-\fimcodigo
 
 Now we need to create a structure needed by OpenGL ES to store
 information about the graphical interface: a OpenGL display. Such
 display can be obtained from the X display that we already created:
 
-\iniciocodigo
 @<X11: Configure OpenGL ES@>=
 #if defined(__linux__) || defined(BSD)
 egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
@@ -1211,23 +1107,19 @@ if(egl_display == EGL_NO_DISPLAY){
 eglInitialize(egl_display, NULL, NULL);
 #endif
 @
-\fimcodigo
 
 This variable is declared here:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__linux__) || defined(BSD)
 static EGLDisplay *egl_display;
 #endif
 @
-\fimcodigo
 
 Now we need to obtain a configuration to the creation of a OpenGL
 context. We specify some requirements and get a configuration using
 the code below:
 
-\iniciocodigo
 @<X11: Configure OpenGL ES@>+=
 {
   bool ret;
@@ -1257,26 +1149,21 @@ the code below:
   }
 }
 @
-\fimcodigo
 
 The struct that stores which configuration we will use is declared
 here:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__linux__) || defined(BSD)
 EGLConfig egl_config;
 #endif
 @
-\fimcodigo
-
 
 Like how EGL needs its own display struct, it also needs its own
 window struct to store information about the window where it will
 draw. We can initialize such structure from the window struct used by
 the X library:
 
-\iniciocodigo
 @<X11: Configure OpenGL ES@>+=
 egl_window = eglCreateWindowSurface(egl_display, egl_config,
                                     window, NULL);
@@ -1287,18 +1174,14 @@ if(egl_window == EGL_NO_SURFACE){
   return false;
 }
 @
-\fimcodigo
 
 The EGL window is decared here:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__linux__) || defined(BSD)
 static EGLSurface egl_window;
 #endif
 @
-\fimcodigo
-
 
 Now we can create the OpenGL context. We choose the major and minor
 OpenGL version using
@@ -1306,7 +1189,6 @@ macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} and
 \monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. With this information,
 we create the context:
 
-\iniciocodigo
 @<X11: Configure OpenGL ES@>+=
 {
   int context_attribs[] = {
@@ -1325,18 +1207,15 @@ we create the context:
   eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
 }
 @
-\fimcodigo
 
 The variable that stores the handle to the OpenGL context is declared
 here:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(__linux__) || defined(BSD)
 static EGLContext egl_context;
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.3.2. Configuring OpenGL on Web Assembly}
 
@@ -1354,7 +1233,6 @@ necessary libraries, so that we do not need to pass them explicitly
 during the linking, and then we include the default library and the
 OpenGL library:
 
-\iniciocodigo
 @<OpenGL Header@>+=
 #if defined(_WIN32)
 #pragma comment(lib, "Opengl32.lib")
@@ -1365,27 +1243,22 @@ OpenGL library:
 #include <GL/gl.h>
 #endif
 @
-\fimcodigo
 
 We also need an struct with information about the device where we will
 draw. In our case, a window:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>=
 device_context = GetDC(window);
 @
-\fimcodigo
 
 This struct is declared here with the context that we will soon initialize:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(_WIN32)
 static HGLRC wgl_context;
 static HDC device_context;
 #endif
 @
-\fimcodigo
 
 Besides this, configuring OpenGL on Windows is a little messy. To
 start, the default function that creates an OpenGL
@@ -1412,7 +1285,6 @@ not possible to associate more than one OpenGL context to a single
 window. So to load our function we need to create a dummy window and
 dummy context before:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>=
 {
 @<Windows: Create Dummy Window@>
@@ -1421,13 +1293,11 @@ dummy context before:
 @<Windows: Remove Dummy Context and Window@>
 }
 @
-\fimcodigo
 
 First let's create our dummy window. As this will not be our rendering
 window, we do not need to create it using all the specifications from
 the real window:
 
-\iniciocodigo
 @<Windows: Create Dummy Window@>=
 HWND dummy_window;
 {
@@ -1454,13 +1324,11 @@ HWND dummy_window;
   }
 }
 @
-\fimcodigo
 
 Now to create a dummy context first we ned to choose an existing pixel
 format similar to what we specify and then we set the pixel format in
 our dummy window:
 
-\iniciocodigo
 @<Windows: Create Dummy Context@>=
 HGLRC dummy_context;
 HDC dummy_device_context = GetDC(dummy_window);
@@ -1493,12 +1361,10 @@ HDC dummy_device_context = GetDC(dummy_window);
   }
   // ...
 @
-\fimcodigo
 
 And after configuring the pixel format, we can get the dummy OpenGL
 context:
 
-\iniciocodigo
 @<Windows: Create Dummy COntext@>+=
   // ...
   dummy_context = wglCreateContext(dummy_device_context);
@@ -1518,7 +1384,6 @@ context:
   }
 }
 @
-\fimcodigo
 
 Now we need to load the functions that we need. Loading existing
 functions that are not normally accessible because they are considered
@@ -1526,8 +1391,7 @@ extensions, can be done using the
 function \monoespaco{wglGetProcAddress} as in the loading function
 below that returns a pointer to the desired function:
 
-\iniciocodigo
-@<Local Functions@>+=
+@<Local Functions@>=
 #if defined(_WIN32)
 static void *load_function(const char *name){
   void *ret = wglGetProcAddress(name);
@@ -1542,7 +1406,6 @@ static void *load_function(const char *name){
 }
 #endif
 @
-\fimcodigo
 
 Notice that as revealed by the code above, the
 function \monoespaco{wglGetProcAddress} can return up to 5 different
@@ -1560,7 +1423,6 @@ position where are our new loaded functions. In the case of the two
 functions that we want now, their ponters are declared
 on \monoespaco{window.h} with the code below:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *,
@@ -1568,12 +1430,9 @@ extern BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *
 extern HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 #endif
 @
-\fimcodigo
-
 
 We also place the real declaration on file \monoespaco{window.c}:
 
-\iniciocodigo
 @<Global Variables@>=
 #if defined(_WIN32)
 BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
@@ -1581,13 +1440,11 @@ BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
 HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 #endif
 @
-\fimcodigo
 
 Once we have the pointers, we can initialize them loading and storing
 in them the functions in which we are interested:
 
-\iniciocodigo
-@<Windows: Load Initial OpenGL Functions@>+=
+@<Windows: Load Initial OpenGL Functions@>=
 wglChoosePixelFormatARB = (BOOL (__stdcall *)(HDC, const int *, const FLOAT *,
                                               UINT, int *, UINT *))
                           load_function("wglChoosePixelFormatARB");
@@ -1596,24 +1453,20 @@ wglCreateContextAttribsARB = (HGLRC (*)(HDC, HGLRC, const int *))
                                load_function("wglCreateContextAttribsARB");
 if(wglCreateContextAttribsARB == NULL) return false;
 @
-\fimcodigo
 
 And finally, after loading these two functions, we do not need anymore
 the dummy window and context:
 
-\iniciocodigo
 @<Windows: Remove Dummy Context and Window@>=
 wglMakeCurrent(dummy_device_context, 0);
 wglDeleteContext(dummy_context);
 ReleaseDC(dummy_window, dummy_device_context);
 DestroyWindow(dummy_window);
 @
-\fimcodigo
 
 Now we are ready to choose our pixel format (the OpenGL configuration)
 in the modern way with our new function:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 {
   PIXELFORMATDESCRIPTOR pixel_format_descriptor;
@@ -1655,14 +1508,11 @@ in the modern way with our new function:
   } 
 }
 @
-\fimcodigo
-
 
 Now we will specify that we want a context with OpenGL version
 specified by two macros. And then use the funtion that creates a
 modern OpenGL context:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 {
   const int opengl_attributes[] = {
@@ -1685,13 +1535,11 @@ modern OpenGL context:
   }
 }
 @
-\fimcodigo
 
 While creating a real OpenGL context, we used some macros that are not
 defined. As we use them locally, we declare them in the header of file
 \monoespaco{window.c}:
 
-\iniciocodigo
 @<Headers@>+=
 #define WGL_TYPE_RGBA_ARB                      0x202B
 #define WGL_PIXEL_TYPE_ARB                     0x2013
@@ -1708,7 +1556,6 @@ defined. As we use them locally, we declare them in the header of file
 #define WGL_CONTEXT_MINOR_VERSION_ARB          0x2092
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
 @
-\fimcodigo
 
 But we want to support in our API the functions compatible with OpenGL
 ES 2.0. Lots of such functions also are not part of the API presented
@@ -1716,7 +1563,6 @@ by WGL n Windows. What we need to do is load such functions as
 extensions. For example, we start declaring the pointers for functions
 related with shader creation and management:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern GLuint (__stdcall *glCreateShader)(GLenum shaderType);
@@ -1727,12 +1573,10 @@ extern void (__stdcall *glReleaseShaderCompiler)(void);
 extern void (__stdcall *glDeleteShader)(GLuint);
 #endif
 @
-\fimcodigo
 
 Next we position he pointers as global variables in our
 file \monoespaco{window.c}:
 
-\iniciocodigo
 @<Global Variables@>=
 #if defined(_WIN32)
 GLuint (__stdcall *glCreateShader)(GLenum shaderType);
@@ -1743,13 +1587,11 @@ void (__stdcall *glReleaseShaderCompiler)(void);
 void (__stdcall *glDeleteShader)(GLuint);
 #endif
 @
-\fimcodigo
 
 Next we load for each of these pointers the corresponding function
 using the function that we defined a little above, before all the
 pointer declarations:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glCreateShader = (GLuint (__stdcall *)(GLenum)) load_function("glCreateShader");
 if(glCreateShader == NULL)
@@ -1770,38 +1612,31 @@ glDeleteShader = (void (*)(GLuint)) load_function("glDeleteShader");
 if(glDeleteShader == NULL)
   return false;
 @
-\fimcodigo
 
 When we create a shader with \monoespaco{glCreateShader}, we need to
 choose what kind of shader should be created passing one of the
 following macros as argument:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_VERTEX_SHADER          0x8B31
 #define GL_FRAGMENT_SHADER        0x8B30
 #endif
 @
-\fimcodigo
 
 The type \monoespaco{GLchar} also must be defined on Windows:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 typedef char GLchar;
 #endif
 @
-\fimcodigo
-
 
 After compiling a shader, usually the user wants to check if the
 compilation was successful. This is done using functions that make
 queries about shaders, \monoespaco{glGetShaderiv} in particular. We
 define all functions related with queries about shaders here:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern GLboolean (__stdcall *glIsShader)(GLuint);
@@ -1819,11 +1654,9 @@ extern void (__stdcall *glGetUniformfv)(GLuint, GLint, GLfloat *);
 extern void (__stdcall *glGetUniformiv)(GLuint, GLint, GLint *);
 #endif
 @
-\fimcodigo
 
 The pointers are positioned here:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 GLboolean (__stdcall *glIsShader)(GLuint);
@@ -1839,11 +1672,9 @@ void (__stdcall *glGetUniformfv)(GLuint, GLint, GLfloat *);
 void (__stdcall *glGetUniformiv)(GLuint, GLint, GLint *);
 #endif
 @
-\fimcodigo
 
 Each function is loaded to its respective pointer with:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glIsShader = (GLboolean (__stdcall *)(GLuint)) load_function("glIsShader");
 if(glIsShader == NULL) return false;
@@ -1879,13 +1710,11 @@ glGetUniformiv = (void (__stdcall *)(GLuint, GLint, GLint *))
                      load_function("glGetUniformiv");
 if(glGetUniformiv == NULL) return false;
 @
-\fimcodigo
 
 When the function \monoespaco{glGetShaderiv} is used, we can select
 which information about the shader we want to know passing one of the
 following macros:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_SHADER_TYPE          0x8B4F
@@ -1895,13 +1724,11 @@ following macros:
 #define GL_SHADER_SOURCE_LENGTH 0x8B88
 #endif
 @
-\fimcodigo
 
 When the function \monoespaco{glGetShaderPrecisionFormat} is used to
 check for the precision of a given type, the chosen type is defined
 passing one of these macros:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_LOW_FLOAT    0x8DF0
@@ -1912,14 +1739,12 @@ passing one of these macros:
 #define GL_HIGH_INT     0x8DF5
 #endif
 @
-\fimcodigo
 
 When the function \monoespaco{glGetVertexAttribfv}
 or \monoespaco{glGetVertexAttribiv} are used to obtain information
 about vertices, the wanted information is informed passing as argument
 one of the following macros:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
@@ -1931,36 +1756,30 @@ one of the following macros:
 #define GL_CURRENT_VERTEX_ATTRIB              0x8626
 #endif
 @
-\fimcodigo
 
 When using function \monoespaco{glGetVertexzAttribPointerv}, we must
 pass as one of the arguments the following macro:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_VERTEX_ATTRIB_ARRAY_POINTER 0x8645
 #endif
 @
-\fimcodigo
 
 Let's also define this macro that is useful to query about which GLSL
 implementation we have:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_SHADING_LANGUAGE_VERSION 0x8B8C
 #endif
 @
-\fimcodigo
 
 Once the user created and compiled shaders, usually she would need to
 create a program and link the shaders to the program. To enable this,
 we declare below the pointer for all functions about program
 management:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern GLuint (__stdcall *glCreateProgram)(void);
@@ -1971,11 +1790,9 @@ extern void (__stdcall *glUseProgram)(GLuint);
 extern void (__stdcall *glDeleteProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 These declared ponters are effectively positioned here:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 GLuint (__stdcall *glCreateProgram)(void);
@@ -1986,11 +1803,9 @@ void (__stdcall *glUseProgram)(GLuint);
 void (__stdcall *glDeleteProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 And we initialize them with the correct functions:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glCreateProgram = (GLuint (__stdcall *)(void)) load_function("glCreateProgram");
 if(glCreateProgram == NULL) return false;
@@ -2007,13 +1822,11 @@ if(glUseProgram == NULL) return false;
 glDeleteProgram = (void (__stdcall *)(GLuint)) load_function("glDeleteProgram");
 if(glDeleteProgram == NULL) return false;
 @
-\fimcodigo
 
 After finishing the program creation, usually the user wants to know
 if it was successful.  For this, we need to prepare the pointers for
 functions that deal with program queries:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern GLboolean (__stdcall *glIsProgram)(GLuint);
@@ -2023,11 +1836,9 @@ extern void (__stdcall *glGetProgramInfoLog)(GLuint, GLsizei, GLsizei *,
 extern void (__stdcall *glValidadeProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 We place the real pointers here:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 GLboolean (__stdcall *glIsProgram)(GLuint);
@@ -2036,11 +1847,9 @@ void (__stdcall *glGetProgramInfoLog)(GLuint, GLsizei, GLsizei *, GLchar *);
 void (__stdcall *glValidadeProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 And we initialize them with the real functions:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glIsProgram = (GLboolean (__stdcall *)(GLuint)) load_function("glIsProgram");
 if(glIsProgram == NULL) return false;
@@ -2054,13 +1863,11 @@ glValidadeProgram = (void (__stdcall *)(GLuint))
                      load_function("glValidateProgram");
 if(glValidadeProgram == NULL) return false;
 @
-\fimcodigo
 
 When we use \monoespaco{glGetProgramiv} to obtain information about a
 program, we pass one of the following macros as argument to select
 which information we want to know:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_DELETE_STATUS               0x8B80
@@ -2074,12 +1881,10 @@ which information we want to know:
 #define GL_ACTIVE_UNIFORM_MAX_LENGTH   0x8B87
 #endif
 @
-\fimcodigo
 
 To obtain and set vertices attributes in a shader, we can use
 functions that will be associated with the following pointers:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *,
@@ -2088,11 +1893,9 @@ extern GLint (__stdcall *glGetAttribLocation)(GLuint, const GLchar *);
 extern void (__stdcall *glBindAttribLocation)(GLuint, GLuint, const GLchar *);
 #endif
 @
-\fimcodigo
 
 The pointers are positioned here:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
@@ -2101,11 +1904,9 @@ GLint (__stdcall *glGetAttribLocation)(GLuint, const GLchar *);
 void (__stdcall *glBindAttribLocation)(GLuint, GLuint, const GLchar *);
 #endif
 @
-\fimcodigo
 
 And they are initialized here:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glGetActiveAttrib = (void (__stdcall *)(GLuint, GLuint, GLsizei, GLsizei *,
                                         GLint *, GLenum *, GLchar *))
@@ -2118,12 +1919,10 @@ glBindAttribLocation = (void (__stdcall *)(GLuint, GLuint, const GLchar *))
                               load_function("glBindAttribLocation");
 if(glBindAttribLocation == NULL) return false;
 @
-\fimcodigo
 
 The type of each vertex attribute returned
 by \monoespaco{glGetActiveAttrib} can be:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_FLOAT      0x1406
@@ -2135,12 +1934,10 @@ by \monoespaco{glGetActiveAttrib} can be:
 #define GL_FLOAT_MAT4 0x8B5C
 #endif
 @
-\fimcodigo
 
 And finally, the last functions related with shaders are the ones
 responsible to deal with uniform variables:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern GLint (__stdcall *glGetUniformLocation)(GLuint, const GLchar *);
@@ -2170,11 +1967,9 @@ extern void (__stdcall *glUniformMatrix4fv)(GLint, GLsizei, GLboolean,
                                             const GLfloat *);
 #endif
 @
-\fimcodigo
 
 These 21 pointers are positioned here:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 GLint (__stdcall *glGetUniformLocation)(GLuint, const GLchar *);
@@ -2201,11 +1996,9 @@ void (__stdcall *glUniformMatrix3fv)(GLint, GLsizei, GLboolean, const GLfloat *)
 void (__stdcall *glUniformMatrix4fv)(GLint, GLsizei, GLboolean, const GLfloat *);
 #endif
 @
-\fimcodigo
 
 And now we need to initialize all these 21 pointers:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glGetUniformLocation = (GLint (__stdcall *)(GLuint, const GLchar *))
                             load_function("glGetUniformLocation");
@@ -2273,12 +2066,10 @@ glUniformMatrix4fv = (void (__stdcall *)(GLint, GLsizei, GLboolean,
                       load_function("glUniformMatrix4fv");
 if(glUniformMatrix4fv == NULL) return false;
 @
-\fimcodigo
 
 The uniform variables can have the same types than vertex attributes
 and also these new types:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_INT         0x1404
@@ -2293,14 +2084,12 @@ and also these new types:
 #define GL_SAMPER_CUBE 0x8B60
 #endif
 @
-\fimcodigo
 
 The last thing necessary to render simple images is send vertices to
 the video card. One of the ways to do this is sending a pointer
 instead of the entire vertex list. This can be done using the
 following functions related to vertices:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glVertexAttrib1f)(GLuint, GLfloat);
@@ -2318,11 +2107,9 @@ extern void (__stdcall *glEnableVertexAttribArray)(GLuint);
 extern void (__stdcall *glDisableVertexAttribArray)(GLuint);
 #endif
 @
-\fimcodigo
 
 These pointers are positioned as global variables:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glVertexAttrib1f)(GLuint, GLfloat);
@@ -2339,11 +2126,9 @@ void (__stdcall *glEnableVertexAttribArray)(GLuint);
 void (__stdcall *glDisableVertexAttribArray)(GLuint);
 #endif
 @
-\fimcodigo
 
 And initialize them:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glVertexAttrib1f = (void (__stdcall *)(GLuint, GLfloat))
                     load_function("glVertexAttrib1f");
@@ -2381,23 +2166,19 @@ glDisableVertexAttribArray = (void (__stdcall *)(GLuint))
                                load_function("glDisableVertexAttribArray");
 if(glDisableVertexAttribArray == NULL) return false;
 @
-\fimcodigo
 
 And besides the types that are already defined, we also need to define
 the following type for vertex attributes:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_FIXED          0x140C
 #endif
 @
-\fimcodigo
 
 Now we will define the pointers for functions related to buffer
 objects. The pointers are:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
@@ -2410,11 +2191,9 @@ extern void (__stdcall *glIsBuffer)(GLuint);
 extern void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
 #endif
 @
-\fimcodigo
 
 And the declarations:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
@@ -2426,11 +2205,9 @@ void (__stdcall *glIsBuffer)(GLuint);
 void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
 #endif
 @
-\fimcodigo
 
 And the initialization:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glGenBuffers = (void (__stdcall *)(GLsizei, GLuint *))
                  load_function("glGenBuffers");
@@ -2452,24 +2229,20 @@ glGetBufferParameteriv = (void (__stdcall *)(GLenum, GLenum, GLint *))
                            load_function("glGetBufferParameteriv");
 if(glGetBufferParameteriv == NULL) return false;
 @
-\fimcodigo
 
 When we bind a buffer with \monoespaco{glBindBuffer}, it can have one
 of the following types:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_ARRAY_BUFFER         0x8892
 #define GL_ELEMENT_ARRAY_BUFFER 0x8893
 #endif
 @
-\fimcodigo
 
 When we pass data to a buffer with \monoespaco{glBufferData}, we can
 choose between the following usages for the data:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_STATIC_DRAW  0x88E4
@@ -2477,27 +2250,23 @@ choose between the following usages for the data:
 #define GL_DYNAMIC_DRAW 0x88E8
 #endif
 @
-\fimcodigo
 
 When we ask information about a buffer
 with \monoespaco{glGetBufferParameteriv}, we can ask for the following
 data:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_BUFFER_SIZE  0x8764
 #define GL_BUFFER_USAGE 0x8765
 #endif
 @
-\fimcodigo
 
 And these new functions require the following new types that should be
 large enough to store a pointer, even not being necessarily
 pointers. The difference between them is that one is signed and the
 other is unsigned:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 // This includes a signed size_t definition:
@@ -2506,53 +2275,43 @@ typedef size_t GLsizeiptr;
 typedef SSIZE_T GLintptr;
 #endif
 @
-\fimcodigo
 
 The two functions about setting the viewport and the clipping are:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 Their declarations:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 And the initialization:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glDepthRangef = (void (__stdcall *)(GLclampf, GLclampf))
                    load_function("glDepthRangef");
 if(glDepthRangef == NULL) return false;
 @
-\fimcodigo
 
 A type \monoespaco{GLclampf} represents a floating point number that
 should be in the range between 0 and 1. We can represent it by a
 regular floating point number.
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 typedef float GLclampf;
 #endif
 @
-\fimcodigo
 
 Now wee will prepare the functions about texturing:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glActiveTexture)(GLenum); // TEXTURE0..TEXTURE1...
@@ -2564,11 +2323,9 @@ extern void (__stdcall *glCompressedTexSubImage2D)(GLenum, int, int, int, GLsize
 extern void (__stdcall *glGenerateMipmap)(GLenum);
 #endif
 @
-\fimcodigo
 
 And we declare these functions in \monoespaco{window.c}:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glActiveTexture)(GLenum); // TEXTURE0..TEXTURE1...
@@ -2580,11 +2337,9 @@ void (__stdcall *glCompressedTexSubImage2D)(GLenum, int, int, int, GLsizei,
 void (__stdcall *glGenerateMipmap)(GLenum);
 #endif
 @
-\fimcodigo
 
 Here we initialize these 17 functions making them usable:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glActiveTexture = (void (__stdcall *)(GLenum)) load_function("glActiveTexture");
 if(glActiveTexture == NULL) return false;
@@ -2599,12 +2354,10 @@ if(glCompressedTexSubImage2D == NULL) return false;
 glGenerateMipmap = (void (__stdcall *)(GLenum)) load_function("glGenerateMipmap");
 if(glGenerateMipmap == NULL) return false;
 @
-\fimcodigo
 
 The above functions require the following macros to be used in the
 enumerations:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_RGB                              0x1907
@@ -2664,14 +2417,12 @@ x#define GL_TEXTURE31                        0x84DF
 #define GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS 0x8B4D
 #endif
 @
-\fimcodigo
 
 The per fragment OpenGL ES functions are a series of tests and
 operations that modify the color of each pixel before it is drawn in a
 surface. Tipically if one of these tests fail, the pixel is
 discarded. The functions related with these operations are:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glSampleCoverage)(GLclampf, bool);
@@ -2683,11 +2434,9 @@ extern void (__stdcall *glBlendFuncSeparate)(GLenum, GLenum);
 extern void (__stdcall *glBlendColor)(GLclampf, GLclampf, GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 And these functions are declared on \monoespaco{window.c}:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glSampleCoverage)(GLclampf, bool);
@@ -2699,11 +2448,9 @@ void (__stdcall *glBlendFuncSeparate)(GLenum, GLenum);
 void (__stdcall *glBlendColor)(GLclampf, GLclampf, GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 And their initialization:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glSampleCoverage = (void (__stdcall *)(GLclampf, bool))
                         load_function("glSampleCoverage");
@@ -2726,13 +2473,10 @@ glBlendColor = (void (__stdcall *)(GLclampf, GLclampf, GLclampf, GLclampf))
                    load_function("glBlendColor");
 if(glBlendColor == NULL) return false;
 @
-\fimcodigo
-
 
 The use of the above functions require the following macros to be used
 as enumerations:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_ONE                      1
@@ -2773,34 +2517,28 @@ as enumerations:
 #define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
 #endif
 @
-\fimcodigo
 
 About the functions that affect all the framebuffer, we have 2
 functions to prepare:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
 extern void (__stdcall *glClearDepthf)(GLclampf);
 #endif
 @
-\fimcodigo
 
 And their declarations in \monoespaco{window.c}:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
 void (__stdcall *glClearDepthf)(GLclampf);
 #endif
 @
-\fimcodigo
 
 The initialization:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glStencilMaskSeparate = (void (__stdcall *)(GLenum, unsigned int))
                             load_function("glStencilMaskSeparate");
@@ -2808,12 +2546,10 @@ if(glStencilMaskSeparate == NULL) return false;
 glClearDepthf = (void (__stdcall *)(GLclampf)) load_function("glClearDepthf");
 if(glClearDepthf == NULL) return false;
 @
-\fimcodigo
 
 The last set of functions that we must prepare are the ones that
 manage framebuffer objects:
 
-\iniciocodigo
 @<Window Declarations@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glBindFramebuffer)(GLenum, unsigned int);
@@ -2835,11 +2571,9 @@ extern boolean (__stdcall *glIsRenderbuffer)(unsigned int);
 extern void (__stdcall *glGetRenderbufferParameteriv)(GLenum, GLenum, int *);
 #endif
 @
-\fimcodigo
 
 We declare these 14 functions also in \monoespaco{window.c}:
 
-\iniciocodigo
 @<Global Variables@>+=
 #if defined(_WIN32)
 void (__stdcall *glBindFramebuffer)(GLenum, unsigned int);
@@ -2861,11 +2595,9 @@ boolean (__stdcall *glIsRenderbuffer)(unsigned int);
 void (__stdcall *glGetRenderbufferParameteriv)(GLenum, GLenum, int *);
 #endif
 @
-\fimcodigo
 
 And the initialization:
 
-\iniciocodigo
 @<Windows: Configure OpenGL@>+=
 glBindFramebuffer = (void (__stdcall *)(GLenum, unsigned int))
                        load_function("glBindFramebuffer");
@@ -2913,11 +2645,9 @@ glGetRenderbufferParameteriv = (void (__stdcall *)(GLenum, GLenum, int *))
                                   load_function("glGetRenderbufferParameteriv");
 if(glGetRenderbufferParameteriv == NULL) return false;
 @
-\fimcodigo
 
 The necessary macros to use these functions are:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define GL_RGBA4                                        0x8056
@@ -2946,8 +2676,6 @@ The necessary macros to use these functions are:
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE 0x8CD3
 #endif
 @
-\fimcodigo
-
 
 \subsubsecao{2.3.4. Choosing OpenGL Version}
 
@@ -2975,7 +2703,6 @@ by OpenGL ES.
 
 Our macro that sets the OpenGL version, because of this, is:
 
-\iniciocodigo
 @<Headers@>+=
 #if defined(_WIN32) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 4
@@ -2988,7 +2715,6 @@ Our macro that sets the OpenGL version, because of this, is:
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
 @
-\fimcodigo
 
 \subsecao{2.4. Closing a Window}
 
@@ -3004,7 +2730,6 @@ server. This is done calling respectively \monoespaco{XDestroyWindow}
 and \monoespaco{XCloseDisplay}. We also check if we really have an
 existing window before trying to close and destroy it.
 
-\iniciocodigo
 @<API Functions@>=
 #if defined(__linux__) || defined(BSD)
 bool _Wdestroy_window(void){
@@ -3023,7 +2748,6 @@ bool _Wdestroy_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.4.2. Closing a Window in Web Assembly}
 
@@ -3031,7 +2755,6 @@ Closing a window when running in a web browser means finalize the SDL
 structures and hide the canvas where we were drawing. We do this with
 the following function:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -3047,14 +2770,12 @@ bool _Wdestroy_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.4.3. Closing a Window on Windows}
 
 Closing a window in Windows means calling a function to destroy the
 window:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -3068,7 +2789,6 @@ bool _Wdestroy_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.5. Rendering the Window}
 
@@ -3085,7 +2805,6 @@ swap the window buffers. The back buffer where we were drawing became
 the front buffer, what is shown in the screen, and vice-versa. This is
 achieved with the following code:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wrender_window(void){
@@ -3093,7 +2812,6 @@ bool _Wrender_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.5.2. Rendering Window on Web Assembly}
 
@@ -3108,7 +2826,6 @@ to ensure that all OpenGL calls are sent. But we do not need to make
 anything to update the screen, assuming that the program do not follow
 a bad practice:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -3117,7 +2834,6 @@ bool _Wrender_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.5.3. Rendering Window on Windows}
 
@@ -3125,7 +2841,6 @@ In Windows, the WGL function responsible for swapping buffers in the
 window making our drawings visible is
 called \monoespaco{wglSwapLayerBuffers}:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(_WIN32)
 bool _Wrender_window(void){
@@ -3133,7 +2848,6 @@ bool _Wrender_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.6. Getting Window Size}
 
@@ -3147,7 +2861,6 @@ that gets information about some window or pixmap (image). This
 function returns a lot of information that we are not interested. But
 also returns the window width and height that we need:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wget_window_size(int *width, int *height){
@@ -3167,7 +2880,6 @@ bool _Wget_window_size(int *width, int *height){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.6.2. Getting Window Size on Web Assembly}
 
@@ -3176,7 +2888,6 @@ convention, the canvas that we use as a window have the ID
 ``canvas''. If we want to know its size, we need to use Javascript to
 get the canvas and obtain its width and height.
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wget_window_size(int *width, int *height){
@@ -3203,14 +2914,12 @@ bool _Wget_window_size(int *width, int *height){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.6.3. Getting Window Size on Windows}
 
 On Windows we use a call to \monoespaco{GetWindowRect} to obtain the
 window size. Which is stored in a \monoespaco{RECT} structure:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(_WIN32)
 bool _Wget_window_size(int *width, int *height){
@@ -3232,7 +2941,6 @@ bool _Wget_window_size(int *width, int *height){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.7. Checking Fullscreen Mode}
 
@@ -3246,7 +2954,6 @@ make the window override any window manager configuration and occupy
 the whole screen. To check if we are in fullscreen mode, we just check
 if such attribute is marked or not:
 
-\iniciocodigo
 @<API Functions@>=
 #if defined(__linux__) || defined(BSD)
 bool _Wis_fullscreen(void){
@@ -3267,7 +2974,6 @@ be able to set fullscreen mode, as this depends on the browser
 configuration. The function below will be a way to test if we succeed
 or not in entering fullscreen mode.
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wis_fullscreen(void){
@@ -3290,7 +2996,6 @@ function \monoespaco{SHQueryUserNotificationState} to obtain the state
 of the screen. If we are in a fullscreen window, we will know getting
 as result \monoespaco{QUNS\_BUSY}:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(_WIN32)
 bool _Wis_fullscreen(void){
@@ -3313,7 +3018,6 @@ below. The initial values for these variables can be controlled by
 some macros if them exist. If not, we set their values to zero,
 meaning that we have no previous stored value for the window size:
 
-\iniciocodigo
 @<Local Variables@>+=
 #if defined(W_WINDOW_SIZE_X) && defined(W_WINDOW_SIZE_Y)
 static unsigned last_window_size_x = W_WINDOW_SIZE_X;
@@ -3323,7 +3027,6 @@ static unsigned last_window_size_x = 0;
 static unsigned last_window_size_y = 0;
 #endif
 @
-\fimcodigo
 
 Also when we enter or exit fullscreen, or if we change the size of our
 window, it could be necessary for the user to recompute the position
@@ -3332,22 +3035,18 @@ define a funtion to be executed when this happens. If no function is
 passed by the user, then nothing additional is executed. The pointer
 that will store the user-defined function, if it exists, is:
 
-\iniciocodigo
 @<Local Variables@>+=
 static void (*resizing_function)(int, int, int, int) = NULL;
 @
-\fimcodigo
 
 To register a new function and store its addresss in the above
 pointer, we invoke the following function:
 
-\iniciocodigo
 @<API Functions@>+=
 void _Wset_resize_function(void (*func)(int, int, int, int)){
   resizing_function = func;
 }
 @
-\fimcodigo
 
 \subsubsecao{2.8.1. Changing Between Fullscreen and Windowed Mode on X}
 
@@ -3364,7 +3063,6 @@ our window again, making it appear with or without window
 decorators. If we are entering now in fullscreen mode, we must also
 move and resize the window to make it occupy the whole screen again.
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__linux__) || defined(BSD)
 void _Wtoggle_fullscreen(void){
@@ -3427,9 +3125,8 @@ waiting time. The code below shows how we implement the waiting
 code. It waits until our window have the new size, but if this does
 not happen in 0.1 seconds, it halts the waiting:
 
-\iniciocodigo
 @<X11: Wait for Resizing@>=
-{ // Wait at most 0.1 for the resizing
+{ // Wait at most 0.5 seconds for the resizing
   struct timeval begin_time, now;
   int new_width, new_height;
   gettimeofday(&begin_time, NULL);
@@ -3438,21 +3135,18 @@ not happen in 0.1 seconds, it halts the waiting:
     gettimeofday(&now, NULL);
   } while((new_width != new_size_x || new_height != new_size_y) &&
           (now.tv_sec - begin_time.tv_sec) * 1000000 +
-          (now.tv_usec - begin_time.tv_usec) < 100000);
+          (now.tv_usec - begin_time.tv_usec) < 500000);
 }
 @
-\fimcodigo
 
 And the function \monoespaco{gettimeofday} requires the following
 header:
 
-\iniciocodigo
 @<Headers@>+=
 #if defined(__linux__) || defined(BSD)
 #include <sys/time.h>
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.8.2. Changing Between Fullscreen and Windowed Mode on Web Assembly}
 
@@ -3474,7 +3168,6 @@ the changes according with the static variable. Even if we cannot
 enter a real fullscreen, we toggle between the windowed mode and the
 simulated fullscreen mode:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 void _Wtoggle_fullscreen(void){
@@ -3528,7 +3221,6 @@ On Windows we controll the fullscreen mode changing between styles for
 our window. We can read and write new information about a style with
 the functions \monoespaco{GetWindowLongA} and \monoespaco{SetWindowLongA}:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(_WIN32)
 void _Wtoggle_fullscreen(void){
@@ -3568,7 +3260,7 @@ false. Otherwise, it returns true.
 
 \subsubsecao{2.9.1. Resizing the Window on X}
 
-Resize on X11 means uusing the function \monoespaco{XResizeWindow},
+Resize on X11 means using the function \monoespaco{XResizeWindow},
 which we already used in other functions. Besides this, we also need
 to update the new maximum and minimum size for our window to be equal
 the new size using \monoespaco{XSetWMNormalHints}. We do this becaus
@@ -3580,7 +3272,6 @@ toggled the fullscreen mode, here we also update the OpenGL viewport
 dize and run the function passed by the user associated with the
 window resize, if it exists.
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wresize_window(int width, int height){
@@ -3614,7 +3305,6 @@ fullscreen mode (the real one or the simulated one), we just access
 our canvas by its ID and edit its CSS properties and attributes about
 its size:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wresize_window(int width, int height){
@@ -3646,7 +3336,6 @@ calling \monoespaco{SetWindowPos}. We do it only if we are not on
 fullscreen mode. And after resizing, if it exists, we execute the user
 custom function to be run when the window size changes:
 
-\iniciocodigo
 @<API Functions@>+=
 #if defined(_WIN32)
 bool _Wresize_window(int width, int height){
@@ -3680,13 +3369,11 @@ window has focus. We can detect events made by the keyboard and mouse.
 
 For us the keyboard will be the following global struct variable:
 
-\iniciocodigo
 @<Window Data Structures@>=
 struct _Wkeyboard{
   long key[W_KEYBOARD_SIZE + 1]; // Key array: a timer for each key
 };
 @
-\fimcodigo
 
 In the key array above, we will have one position for each keyboard
 key where we will store a number to act as a timer for each key. The
@@ -3713,14 +3400,12 @@ different than zero.
 
 The mouse will be represented by the following struct:
 
-\iniciocodigo
 @<Window Data Structures@>+=
 struct _Wmouse{
   long button[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
 };
 @
-\fimcodigo
 
 The buttons follow the same convention than the keys in a keyboars. We
 can detect if a button is pressed, for how long it is being pressed,
@@ -3736,7 +3421,6 @@ the pointer acceleration in pixels per unit of time squared.
 Given these structs, we need to periodically call the following
 function to update them:
 
-\iniciocodigo
 @<API Functions@>+=
 void _Wget_window_input(unsigned long long current_time,
                        struct _Wkeyboard *keyboard,
@@ -3748,13 +3432,11 @@ void _Wget_window_input(unsigned long long current_time,
   @<After Reading Window Events@>
 }
 @
-\fimcodigo
 
 This function works reading in a loop the list of events received by
 the window and then updating the mouse and keyboard structs. For
 example, on X11, the reading of events is done this way:
 
-\iniciocodigo
 @<Get Window Events@>=
 #if defined(__linux__) || defined(BSD)
 XEvent event;
@@ -3764,12 +3446,10 @@ while(XPending(display)){
 }
 #endif
 @
-\fimcodigo
 
 If we are in a Web Assembly environment, we use SDL API to read the
 events:
 
-\iniciocodigo
 @<Get Window Events@>+=
 #if defined(__EMSCRIPTEN__)
 SDL_Event event;
@@ -3778,12 +3458,10 @@ while(SDL_PollEvent(&event)){
 }
 #endif
 @
-\fimcodigo
 
 On Windows the events are called ``messages''. And we read them in the
 following way:
 
-\iniciocodigo
 @<Get Window Events@>+=
 #if defined(_WIN32)
 MSG event;
@@ -3795,7 +3473,6 @@ while(PeekMessage(&event, window, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)){
 }
 #endif
 @
-\fimcodigo
 
 In the Windows case we can filter the events and then we can treat
 separatelly the mouse and keyboard events, ignoring all others.
@@ -3811,7 +3488,6 @@ pressed. We need to store and deduce this information. For this, we
 will need an array of keys being pressed and released at the present
 time. In the event loop we just update this array:
 
-\iniciocodigo
 @<Local Variables@>=
 static struct{
   unsigned key; // Which key was pressed?
@@ -3819,7 +3495,6 @@ static struct{
 } pressed_keys[32];
 unsigned released_keys[32]; // Which keys were released?
 @
-\fimcodigo
 
 As a part of the keyboard initialization, and also to reset its
 status, we should always call code to mark all positions in the array
@@ -3829,7 +3504,6 @@ like the null character is used to mark the end of a string. We also
 need to set as zero all keys oin the keyboard key array. The code to
 initialize or reinitialize the keyboard is:
 
-\iniciocodigo
 @<Initializing or Reinitializing Keyboard@>=
 {
   int i;
@@ -3842,7 +3516,6 @@ initialize or reinitialize the keyboard is:
 
 }
 @
-\fimcodigo
 
 \subsubsecao{3.2.1. Reading the Keyboard on X}
 
@@ -3855,36 +3528,30 @@ with the key, we need to translate the code to a symbol
 we need to store information about a potential number of almost 256
 keys.
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(__linux__) || defined(BSD)
 #define W_KEYBOARD_SIZE 257
 #endif
 @
-\fimcodigo
 
 To detect if a key was pressed on X11, we use the following code:
 
-\iniciocodigo
 @<X11: Manage Events@>=
 if(event.type == KeyPress){
   unsigned key = event.xkey.keycode;
   @<Add 'key' to List of Pressed Keys@>
 }
 @
-\fimcodigo
 
 To detect a key release before removing the key from list of pressed
 keys and adding it to list of removen keys:
 
-\iniciocodigo
 @<X11: Manage Events@>+=
 if(event.type == KeyRelease){
   unsigned key = event.xkey.keycode;
   @<Remove 'key' from Pressed Keys and Add to Released Keys@>
 }
 @
-\fimcodigo
 
 While the above code manages correctly the keycodes, the user also
 needs to know what these keycodes represent. Knowing that the key
@@ -3898,7 +3565,6 @@ keyboard mapping, we can discover this only during the program
 execution. The code to discover the position for all supported keys
 are:
 
-\iniciocodigo
 @<Keyboard Initialization@>=
 #if defined(__linux__) || defined(BSD)
 {
@@ -3961,23 +3627,19 @@ are:
 }
 #endif
 @
-\fimcodigo
 
 The use of function \monoespaco{XkbKeycodeToKeysym} requires the
 header:
 
-\iniciocodigo
 @<Headers@>+=
 #if defined(__linux__) || defined(BSD)
 #include <X11/XKBlib.h>
 #endif
 @
-\fimcodigo
 
 All these variables that represent positions in our array of keys need
 to be declared:
 
-\iniciocodigo
 @<Window Declarations@>+=
 extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
@@ -3988,15 +3650,12 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_R, W_S, W_T, W_U, W_V, W_W, W_X, W_Y, W_Z, W_INSERT, W_HOME,
            W_PAGE_UP, W_DELETE, W_END, W_PAGE_DOWN, W_ESC, W_ANY;
 @
-\fimcodigo
-
 
 And we should initialize them
 with \monoespaco{W\_KEYBOARD\_SIZE}. This value represents a
 non-assigned key that never will be pressed or released. Only after
 the keyboard initialization we assign them correct values:
 
-\iniciocodigo
 @<Global Variables@>+=
 int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_ENTER = W_KEYBOARD_SIZE, W_UP = W_KEYBOARD_SIZE, W_DOWN = W_KEYBOARD_SIZE,
@@ -4027,7 +3686,6 @@ int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_END = W_KEYBOARD_SIZE, W_PAGE_DOWN = W_KEYBOARD_SIZE,
     W_ESC = W_KEYBOARD_SIZE, W_ANY = 0;
 @
-\fimcodigo
 
 \subsecao{3.2.2. Reading the Keyboard on Web Assembly}
 
@@ -4037,13 +3695,11 @@ macro \monoespaco{SDL\_NUM\_SCANCODES} which, at the time of this
 writting is equalo 512 different keys. Probably this value will not
 change in the next future.
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
 @
-\fimcodigo
 
 In X11, we presented in the last subsection that there is a difference
 between the phisical key and the symbol associated with it. The same
@@ -4055,31 +3711,26 @@ here is called \monoespaco{Scancode}. Yes, the terms are confusing
 because a scancode means totally different things in both APIs. Using
 the SDL naming, we detect with the following code if a key was pressed:
 
-\iniciocodigo
 @<Web Assembly: Manage Events@>=
 if(event.type == SDL_KEYDOWN){
   unsigned key = event.key.keysym.scancode;
   @<Add 'key' to List of Pressed Keys@>
 }
 @
-\fimcodigo
 
 To detect that a key is released, we use the following code:
 
-\iniciocodigo
 @<Web Assembly: Manage Events@>+=
 if(event.type == SDL_KEYUP){
   unsigned key = event.key.keysym.scancode;
   @<Remove 'key' from Pressed Keys and Add to Released Keys@>
 }
 @
-\fimcodigo
 
 The above code is identical to what was present in the X11 version. We
 just had to update the names to match SDL structs. Now we need the
 code that initializes correctly the name for our supported keys:
 
-\iniciocodigo
 @<Keyboard Initialization@>=
 #if defined(__EMSCRIPTEN__)
 {
@@ -4139,7 +3790,6 @@ code that initializes correctly the name for our supported keys:
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{3.2.3. Reading the Keyboard on Windows}
 
@@ -4147,45 +3797,38 @@ On windows the phisical keys are represented by
 a \monoespaco{Scancode} and the symbol associated with it is called a
 ``virtual-key code''. The number of different scancodes is always 256.
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
 @
-\fimcodigo
 
 Detecting keys being pressed is done using exactly he same code that
 for X11 and SDL, just with some minor changes and also using different
 names, as Windows calls differently its functions and structs:
 
-\iniciocodigo
 @<Windows: Manage Keyboard Events@>=
 if(event.message == WM_KEYDOWN){
   unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Add 'key' to List of Pressed Keys@>
 }
 @
-\fimcodigo
 
 Note that on Windows, to get the scancode of a given key, we need to
 use some bit manipulation. Other than this, the code is the same than
 what was already presented for X11 and SDL. The code to detect a key
 being released is:
 
-\iniciocodigo
 @<Windows: Manage Keyboard Events@>+=
 if(event.message == WM_KEYUP){
   unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Remove 'key' from Pressed Keys and Add to Released Keys@>
 }
 @
-\fimcodigo
 
 And finally, we initialize the names for each key, making them point
 to the right position in our key array:
 
-\iniciocodigo
 @<Keyboard Initialization@>=
 #if defined(_WIN32)
 {
@@ -4244,7 +3887,6 @@ to the right position in our key array:
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{3.2.4. Additional Code for Keyboard Support}
 
@@ -4261,7 +3903,6 @@ represent the end of the list as a position where a null key is
 stored. Knowing this, adding a key to the list means iterating in the
 list until finding a null key and replacing it by our new pressed key:
 
-\iniciocodigo
 @<Add 'key' to List of Pressed Keys@>=
 {
   int i;
@@ -4279,7 +3920,6 @@ list until finding a null key and replacing it by our new pressed key:
   if(i == 32) continue; // Ignoring: too many keypresses
 }
 @
-\fimcodigo
 
 Now to remove a key from the list of pressed keys and add it to the
 list of relesed keys, we first need to iterated over pressed keys
@@ -4288,7 +3928,6 @@ to one position in the left. This erases a key from the list of
 pressed keys, After this, we iterate over the list of released keys
 until we find an empty position, where we put our new released key:
 
-\iniciocodigo
 @<Remove 'key' from Pressed Keys and Add to Released Keys@>=
 {
   int i;
@@ -4321,7 +3960,6 @@ until we find an empty position, where we put our new released key:
   }
 }
 @
-\fimcodigo
 
 But how should we use the information of our list of pressed and
 released keys to update our keyboard struct? First, in each frame,
@@ -4329,7 +3967,6 @@ after updating our list of pressed keys, we should iterate over the
 list and for each key, update in the keyboard struct for how much time
 they are being pressed:
 
-\iniciocodigo
 @<After Reading Window Events@>=
 {
   int i;
@@ -4343,7 +3980,6 @@ they are being pressed:
   }
 }
 @
-\fimcodigo
 
 Now the timer for pressed keys will keep updating, not remaining
 always with the number 1.
@@ -4357,7 +3993,6 @@ their timers to zero, as the keys now are not being pressed or
 released. Doing this we also should remove all keys from the list of
 released keys:
 
-\iniciocodigo
 @<Before Reading Window Events@>=
 {
   int i;
@@ -4369,7 +4004,6 @@ released keys:
   }
 }
 @
-\fimcodigo
 
 \subsecao{3.3. Reading the Mouse}
 
@@ -4378,7 +4012,6 @@ buttons and released buttons. But the number of buttons are much
 smaller. Our list will only store at most 4 buttons. It is unrealistic
 to give meaning for more than 4 button presses in a mouse:
 
-\iniciocodigo
 @<Local Variables@>+=
 static struct{
   unsigned button; // Which button was pressed?
@@ -4386,18 +4019,15 @@ static struct{
 } pressed_buttons[4];
 static unsigned released_buttons[4]; // Which buttons were released?
 @
-\fimcodigo
 
 But unlike a keyboard, a mouse can move and produce movements in the
 mouse pointer. If we want to know not only the mouse pointer position,
 but also its velocity and acceleration, we should store the previous
 velocity. We use these variables for this:
 
-\iniciocodigo
 @<Local Variables@>+=
 static int last_mouse_dx = 0, last_mouse_dy = 0;
 @
-\fimcodigo
 
 But when we read or the first time the mouse position, we have no way
 to compute its velocity, as we do not have a previous position. It
@@ -4415,18 +4045,14 @@ we know only the current position. The value 1 means that we now can
 compute velocity. And zero means that the initialization is over and
 we know all values. We store this in the following variable:
 
-\iniciocodigo
 @<Local Variables@>+=
 static int mouse_initialization = 3;
 @
-\fimcodigo
-
 
 And we initialize the mouse making the list of released and pressed
 buttons empty and also we initialize all buttons, the position,
 velocity and acceleration as zero:
 
-\iniciocodigo
 @<Initializing or Reinitializing Mouse@>=
 {
   int i;
@@ -4442,7 +4068,6 @@ velocity and acceleration as zero:
   @<Get Mouse Position@>
 }
 @
-\fimcodigo
 
 \subsubsecao{3.3.1. Reading the Mouse on X}
 
@@ -4453,7 +4078,6 @@ mappings giving different meanings for the buttons. Therefore, we can
 define the number of buttons in the mouse and their positions in the
 button array with the following macros:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(__linux__) || defined(BSD)
 #define W_MOUSE_SIZE 6
@@ -4464,39 +4088,33 @@ button array with the following macros:
 #define W_MOUSE_X2     Button5
 #endif
 @
-\fimcodigo
 
 About the button presses, to detect them we should search for an event
 called \monoespaco{ButtonPress}. And then we discover the button
 pressed, adding it to our list of pressed buttons:
 
-\iniciocodigo
 @<X11: Manage Events@>+=
 if(event.type == ButtonPress){
   unsigned button = event.xbutton.button;
   @<Add 'button' to List of Pressed Buttons@>
 }
 @
-\fimcodigo
 
 To detect a button being released, we should check for events of
 type \monoespaco{ButtonRelease} and read in the event which button was
 reeased. Then, we remove such button from the list of pressed buttons
 and add it to the list of released buttons:
 
-\iniciocodigo
 @<X11: Manage Events@>+=
 if(event.type == ButtonRelease){
   unsigned button = event.xbutton.button;
   @<Remove 'button' from Pressed Buttons and Add to Released Buttons@>
 }
 @
-\fimcodigo
 
 And we also need to detect mouse movements. For this, we check for
 events about mouse movement:
 
-\iniciocodigo
 @<X11: Manage Events@>+=
 if(event.type == MotionNotify){
   int x, y;
@@ -4505,7 +4123,6 @@ if(event.type == MotionNotify){
   @<Update Mouse Position 'x' and 'y'@>
 }
 @
-\fimcodigo
 
 Notice that we had to transform the coordinate $y$. Beause Xlib treats
 the top of the window as coordinate zero and we want to consider the
@@ -4519,7 +4136,6 @@ relative to the current window, but relative to parent and child
 windows. We ignore most of these informations, keeping only
 information about mouse position relative to our current window.
 
-\iniciocodigo
 @<Get Mouse Position@>=
 #if defined(__linux__) || defined(BSD)
 {
@@ -4535,7 +4151,6 @@ information about mouse position relative to our current window.
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{3.3.2. Reading the Mouse on Web Assembly}
 
@@ -4543,7 +4158,6 @@ Using the SDL API from Emscripten, we also support on Web Assembly a
 total of five different mouse buttons, each one numbered between 1 and
 5. We can also use the position 0 to mean ``any key'':
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -4554,33 +4168,27 @@ total of five different mouse buttons, each one numbered between 1 and
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
 @
-\fimcodigo
 
 We detect that some mouse button was pressed with the code below:
 
-\iniciocodigo
 @<Web Assembly: Manage Events@>+=
 if(event.type == SDL_MOUSEBUTTONDOWN){
   unsigned button = event.button.button;
   @<Add 'button' to List of Pressed Buttons@>
 }
 @
-\fimcodigo
 
 We detect that a button was released with the code below:
 
-\iniciocodigo
 @<Web Assembly: Manage Events@>+=
 if(event.type == SDL_MOUSEBUTTONUP){
   unsigned button = event.button.button;
   @<Remove 'button' from Pressed Buttons and Add to Released Buttons@>
 }
 @
-\fimcodigo
 
 And we detect below the mouse movement:
 
-\iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_MOUSEMOTION){
   int x, y;
@@ -4589,12 +4197,10 @@ if(event.type == SDL_MOUSEMOTION){
   @<Update Mouse Position 'x' and 'y'@>
 }
 @
-\fimcodigo
 
 To get the initial mouse position, even if the mouse pinter is not
 moving, we use the following code:
 
-\iniciocodigo
 @<Get Mouse Position@>+=
 #if defined(__EMSCRIPTEN__)
 {
@@ -4606,8 +4212,6 @@ moving, we use the following code:
 }
 #endif
 @
-\fimcodigo
-
 
 \subsubsecao{3.3.3. Reading the Mouse on Windows}
 
@@ -4617,7 +4221,6 @@ instead of a single ``button press'' event. But we still need to
 associate each button with a position in our mouse button
 array. Therefore, we create our own numbers with the macros below:
 
-\iniciocodigo
 @<Macro Definition@>+=
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -4628,13 +4231,11 @@ array. Therefore, we create our own numbers with the macros below:
 #define W_MOUSE_X2     5
 #endif
 @
-\fimcodigo
 
 As Windoews generate a different event for each button press, and also
 treats differently the buttons X1 and X2, this gives us more work to
 treat te different button pressings:
 
-\iniciocodigo
 @<Windows: Manage Mouse Events@>=
 if(event.message == WM_LBUTTONDOWN){
   unsigned button = W_MOUSE_LEFT;
@@ -4656,13 +4257,11 @@ else if(event.message == WM_XBUTTONDOWN){
   @<Add 'button' to List of Pressed Buttons@>
 }
 @
-\fimcodigo
 
 To detect when a mouse button is released, we also need to check for
 all different events that each button generate, treating buttons X1
 and X2 differently:
 
-\iniciocodigo
 @<Windows: Manage Mouse Events@>+=
 if(event.message == WM_LBUTTONUP){
   unsigned button = W_MOUSE_LEFT;
@@ -4684,11 +4283,9 @@ else if(event.message == WM_XBUTTONUP){
   @<Remove 'button' from Pressed Buttons and Add to Released Buttons@>
 }
 @
-\fimcodigo
 
 And here is how we detect the event in which the mouse pointer moves:
 
-\iniciocodigo
 @<Windows: Manage Mouse Events@>+=
 if(event.message == WM_MOUSEMOVE){
   int x, y;
@@ -4697,7 +4294,6 @@ if(event.message == WM_MOUSEMOVE){
   @<Update Mouse Position 'x' and 'y'@>
 }
 @
-\fimcodigo
 
 Like in all other environments, we change the coordinate to make it
 relative with thew lower-left corner, not with the upper-left corner
@@ -4706,7 +4302,6 @@ as is more usual.
 And to get the initial mouse position, even if the mouse pointer is
 not moving, we use the code:
 
-\iniciocodigo
 @<Get Mouse Position@>=
 #if defined(_WIN32)
 {
@@ -4723,8 +4318,6 @@ not moving, we use the code:
 }
 #endif
 @
-\fimcodigo
-
 
 \subsecao{3.3.4. Additional Code for Mouse Support}
 
@@ -4736,7 +4329,6 @@ First we will show the code to add a button to the list of pressed
 buttons; Recall that the list is an array with at most 4 elements
 where we mark the premature end of the list with a null button:
 
-\iniciocodigo
 @<Add 'button' to List of Pressed Buttons@>=
 {
   int i;
@@ -4754,12 +4346,10 @@ where we mark the premature end of the list with a null button:
   if(i == 4) continue; // Ignoring: too many button presses
 }
 @
-\fimcodigo
 
 And we also can remove a button from the list of pressed buttons. When
 we do it, we add it to the list of released buttons:
 
-\iniciocodigo
 @<Remove 'button' from Pressed Buttons and Add to Released Buttons@>=
 {
   int i;
@@ -4792,13 +4382,11 @@ we do it, we add it to the list of released buttons:
   }
 }
 @
-\fimcodigo
 
 And as we did for the keyboard, after updating the list of pressed
 buttons, we update in the mouse struct for how long each pressed
 button is being pressed:
 
-\iniciocodigo
 @<After Reading Window Events@>+=
 {
   int i;
@@ -4813,13 +4401,11 @@ button is being pressed:
   }
 }
 @
-\fimcodigo
 
 And before we updte the list of pressed buttons, we empty the list of
 released buttons and clean the position in the button array marking it
 as not being pressed anymore:
 
-\iniciocodigo
 @<After Reading Window Events@>=
 {
   int i;
@@ -4831,7 +4417,6 @@ as not being pressed anymore:
   }
 }
 @
-\fimcodigo
 
 Now the code that update the mouse position, velocity and acceleration
 (depending on the state of mouse initialization). We run this code
@@ -4839,7 +4424,6 @@ after we read a new $x$ and $y$ coordinate for the mouse when we
 detect a movement and also when we get these values for the first time
 during initialization.
 
-\iniciocodigo
 @<Update Mouse Position 'x' and 'y'@>=
 @<Correct Mouse Position 'x' and 'y' if Forcing Landscape Mode@>
 {
@@ -4859,7 +4443,6 @@ during initialization.
     mouse_initialization --;
 }
 @
-\fimcodigo
 
 We also will correct above the mouse coordinate if the
 macro \monoespaco{W\_FORCE\_LANDSCAPE} is defined and if the window
@@ -4867,7 +4450,6 @@ height is greater than the window width. In this case, we will rotate
 the axis $x$ and $y$ of our coordinate system. We do the correction
 using this code:
 
-\iniciocodigo
 @<Correct Mouse Position 'x' and 'y' if Forcing Landscape Mode@>=
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y > window_size_x){
@@ -4877,7 +4459,6 @@ if(window_size_y > window_size_x){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{3.4. Additional Input Functions}
 
@@ -4887,7 +4468,6 @@ lot of user input can be accumulated. In such cases, we will not be
 able to treat such delayed input in aan appropriate manner and the
 best is ignore it. For this case, we will use the following function:
 
-\iniciocodigo
 @<API Functions@>+=
 void _Wflush_window_input(struct _Wkeyboard *keyboard,
                           struct _Wmouse *mouse){
@@ -4899,15 +4479,12 @@ void _Wflush_window_input(struct _Wkeyboard *keyboard,
   @<Initializing or Reinitializing Mouse@>
 }
 @
-\fimcodigo
-
 
 \subsecao{4. Final File Sctructure}
 
 The file with all the necessary source code for the functions defined
 in this article will have the following organization:
 
-\iniciocodigo
 @(src/window.c@>=
 #include "window.h"
 @<Headers@>
@@ -4916,7 +4493,5 @@ in this article will have the following organization:
 @<Local Variables@>
 @<API Functions@>
 @
-\fimcodigo
-
 
 \fim

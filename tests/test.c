@@ -110,6 +110,7 @@ void test_resizing(void){
   ret = _Wresize_window(100, 200);
   _Wtoggle_fullscreen();
   _Wget_window_size(&width, &height);
+  // In EXWM sometimes this fails. Width becomes 904 for unknown reasons.
   assert("Window remembers its size when toggling fullscreen",
 	 width == 900 && height == 700);
   _Wdestroy_window();

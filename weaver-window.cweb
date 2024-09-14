@@ -17,8 +17,6 @@
 \def\negrito#1{{\twelvebold#1}}
 \def\italico#1{{\twelveit#1}}
 \def\monoespaco#1{{\monodoze#1}}
-\def\iniciocodigo{\lineskip=0pt\parskip=0pt}
-\def\fimcodigo{\twelve\parskip=0pt plus 1pt\lineskip=1pt}
 
 \long\def\abstract#1{\parshape 10 0.8cm 13.4cm 0.8cm 13.4cm
 0.8cm 13.4cm 0.8cm 13.4cm 0.8cm 13.4cm 0.8cm 13.4cm 0.8cm 13.4cm
@@ -54,7 +52,6 @@
   resize it, use OpenGL commands and get input from mouse and
   keyboard. All this can be achieved by the portable API defined in
   this work.}
-
 
 \vskip 0.5cm plus 3pt minus 3pt
 
@@ -218,7 +215,6 @@ podem ser inseridos estaticamente em qualquer projeto, ou compilados
 como uma biblioteca compartilhada. O conteúdo de \monoespaco{window.h}
 é:
 
-\iniciocodigo
 @(src/window.h@>=
 #ifndef WEAVER_WINDOW
 #define WEAVER_WINDOW
@@ -238,7 +234,6 @@ extern "C" {
 #endif
 #endif
 @
-\fimcodigo
 
 As duas primeiras linhas assim como a última são macros que impedem
 que garantem que as funções e variáveis declaradas ali serão inseridas
@@ -266,13 +261,11 @@ macro \monoespaco{W\_DEBUG\_WINDOW} está definida) iremos precisar das
 declarações de funções de entrada e saída padrão, já que nosso código
 se tornará mais verboso:
 
-\iniciocodigo
 @<Cabeçalhos@>=
 #if defined(W_DEBUG_WINDOW)
 #include <stdio.h>
 #endif
 @
-\fimcodigo
 
 Note que ainda não informamos onde exatamente o código denominado
 ``Cabeçalho'' será colocado. Faremos isso posteriormente.
@@ -281,11 +274,9 @@ Note que ainda não informamos onde exatamente o código denominado
 
 Neste artigo iremos definir as seguintes funções:
 
-\iniciocodigo
 @<Declarações de Janela@>=
 bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse);
 @
-\fimcodigo
 
 Esta é a função que irá criar uma nova janela. Por padrão, uma janela
 em tela cheia. Se a macro \monoespaco{W\_WINDOW\_NO\_FULLSCREEN}
@@ -301,44 +292,36 @@ A função irá inicializar as estruturas de dado do mouse e teclado.
 
 Em caso de erro, a função retornará falso.
 
-\iniciocodigo
 @<Declarações de Janela@>=
 bool _Wdestroy_window(void);
 @
-\fimcodigo
 
 Esta função vai fechar a janela aberta, liberando qualquer recurso que
 tenha sido alocado pela função anterior ao criar janela. A função deve
 ser invocada sempre após a janela já ter sido criada. Em caso de erro,
 retorna falso.
 
-\iniciocodigo
 @<Declarações de Janela@>=
 bool _Wrender_window(void);
 @
-\fimcodigo
 
 Esta função irá efetivamente renderizar na tela todos os comandos
 OpenGL pendentes desde a última renderização. Retornará falso em caso
 de erro. Esta função provavelmente será chamada no fim de cada
 iteração de um laço principal.
 
-\iniciocodigo
 @<Declarações de Janela@>=
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y);
 @
-\fimcodigo
 
 Esta função obtém a resolução da tela e a armazena nos ponteiros
 passados. Se houver mais de uma, retornará aquela que o sistema
 identifica como sendo a principal. Se um erro ocorrer, ela retornará
 falso e a resolução será armazenada como zero.
 
-\iniciocodigo
 @<Declarações de Janela@>=
 bool _Wget_window_size(int *width, int *height);
 @
-\fimcodigo
 
 Esta função obtém o tamanho em pixels da janela atual e armazena a
 informação nos ponteiros passados como argumento. Se nós não temos
@@ -346,25 +329,21 @@ nenhuma janela, ou em caso de erro, a função retorna falso e armazena
 zero nos ponteiros. Já em caso de sucesso, ela retorna verdadeiro e
 armazena o resultado correto nos ponteiros.
 
-\iniciocodigo
 @<Declarações de Janela@>=
 void _Wget_window_input(unsigned long long current_time,
                        struct _Wkeyboard *keyboard,
                        struct _Wmouse *mouse);
 @
-\fimcodigo
 
 Esta função periodicamente deve ser chamada para atualizar o estado do
 teclado e mouse. O primeiro argumento é o tempo atual medido em alguma
 unidade de tempo. Os próximos argumentos são estruturas que
 representam teclado e mouse a serem atualizadas.
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 void _Wflush_window_input(struct _Wkeyboard *keyboard,
                           struct _Wmouse *mouse);
 @
-\fimcodigo
 
 Esta função limpa o estado de nosso teclado e mouse. Ela deve ser
 chamada toda vez que pararmos de ler periodicamente o mouse e teclado
@@ -373,39 +352,31 @@ chamar esta função é que reiniciamos o estado de nosso mouse e
 teclado, parando de considerar qualquer tecla como pressionada ou
 solta.
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 bool _Wis_fullscreen(void);
 @
-\fimcodigo
 
 Esta função retorna se estamos em modo de tela-cheia ou não. O
 resultado é indefinido se uma janela não foi criada.
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 void _Wtoggle_fullscreen(void);
 @
-\fimcodigo
 
 Esta função alterna entre o modo de tela cheia e modo em
 janela. Dependendo do ambiente ela pode falhar.
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 bool _Wresize_window(int width, int height);
 @
-\fimcodigo
 
 Esta função muda o tamanho da janela se ela existir e se não
 estivermos no modo de tela-cheia. Caso a operação falhe devido a estas
 condições não estiverem satisfeitas, a função retorna falso.
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 void _Wset_resize_function(void (*func)(int, int, int, int));
 @
-\fimcodigo
 
 Esta função registra uma função para que seja executada toda vez que
 ocorrer uma mudança no tamanho de nossa janela. A função recebe como
@@ -435,11 +406,9 @@ inferior esquerdo para estar mais de acordo com a convenção
 matemática. Para fazer a transformação de coordenada, é importante
 memorizar o tamanho da janela para não termos que medi-la toda hora:
 
-\iniciocodigo
 @<Variáveis Locais@>=
 static int window_size_y = 0, window_size_x = 0;
 @
-\fimcodigo
 
 \subsubsecao{2.1.1. Obtendo a Resolução da Tela no X}
 
@@ -462,14 +431,12 @@ o fornece) e nem estivermos compilando Web Assembly (navegadores de
 Internet também não o implementam). Antes de usar o X11, precisamos
 inserir seu cabeçalho relevante:
 
-\iniciocodigo
 @<Cabeçalhos@>=
 #if defined(__linux__) || defined(BSD)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
 @
-\fimcodigo
 
 No X11, como temos que nos comunicar com um servidor, assumimos que
 temos uma variável com algum tipo de estrutura de dados com informação
@@ -480,7 +447,6 @@ Usando tal conexão, que assumimos ser uma variável estática
 em \monoespaco{window.c}, ler a resolução da tela é feito com a função
 abaixo:
 
-\iniciocodigo
 @<Funções da API@>=
 #if defined(__linux__) || defined(BSD)
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
@@ -509,17 +475,14 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 }
 #endif
 @
-\fimcodigo
 
 Claro, temos que assumir a existência da seguinte variável estática:
 
-\iniciocodigo
 @<Variáveis Locais@>=
 #if defined(__linux__) || defined(BSD)
 static Display *display = NULL; //Conexão com servidor e info sobre tela
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.1.2. Obtendo a Resolução da Tela no Web Assembly}
 
@@ -528,7 +491,6 @@ Navegador de Internet. A nossa ``janela'' será um ``canvas'' HTML. E
 nesse caso para obter o tamanho da tela, temos que recorrer à
 invocação de Javascript. Fazemos isso com ajuda da API do Emscripten:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
@@ -542,15 +504,12 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 }
 #endif
 @
-\fimcodigo
-
 
 \subsubsecao{2.1.3. Obtendo a Resolução da Tela no Windows}
 
 Finalmente, no Windows, isso é feito simplesmente chamando uma função
 da API que nos dá esta informação:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
@@ -560,7 +519,6 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.2. Criando uma Janela}
 
@@ -591,7 +549,6 @@ permitido dada a resolução da tela.
 Estes passos são implementados por meio das seguintes funções e
 macros:
 
-\iniciocodigo
 @<X11: Criar Janela@>=
 #if defined(__linux__) || defined(BSD)
 int screen_resolution_x, screen_resolution_y; // Resolução da tela
@@ -620,18 +577,15 @@ window_size_x =  screen_resolution_x;
 window_size_y =  screen_resolution_y;
 #endif
 @
-\fimcodigo
 
 Este código assume que temos as seguintes variável declarada para
 armazenar e memorizar a janela criada:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(__linux__) || defined(BSD)
 static Window window;    // Estrutura da janela criada
 #endif
 @
-\fimcodigo
 
 O código que temos até agora cria a janela. Mas não a desenha na
 tela. Não desenhar ela na tela automaticamente permite que nós
@@ -643,7 +597,6 @@ de janelas não interferir na criação da janela, colocando bordas ou
 tentando limitar seu tamanho que iremos ajustar. Mas faremos isso só
 se realmente formos iniciar no modo tela-cheia:
 
-\iniciocodigo
 @<X11: Criar Janela@>+=
 #if defined(__linux__) || defined(BSD)
 #if !defined(W_WINDOW_NO_FULLSCREEN)
@@ -657,7 +610,6 @@ se realmente formos iniciar no modo tela-cheia:
 #endif
 #endif
 @
-\fimcodigo
 
 Mas e se estivermos fora do modo de tela cheia e o usuário definiu
 macros que dizem que o tamanho padrão da janela deve ser diferente de
@@ -670,7 +622,6 @@ menos, isso significa que o tamanho deve ser igual o da resolução da
 tela. Caso contrário, seu valor representará o tamanho em pixels da
 janela. Mas isso só se aplica quando não estamos em tela cheia:
 
-\iniciocodigo
 @<X11: Criar Janela@>+=
 #if defined(__linux__) || defined(BSD)
 #if defined(W_WINDOW_NO_FULLSCREEN)
@@ -690,12 +641,10 @@ janela. Mas isso só se aplica quando não estamos em tela cheia:
 #endif
 #endif
 @
-\fimcodigo
 
 Vamos também fixar o tamanho da janela para o atual para impedir que
 ela de alguma forma seja redimencionada:
 
-\iniciocodigo
 @<X11: Criar Janela@>+=
 #if defined(__linux__) || defined(BSD)
 {
@@ -715,17 +664,14 @@ ela de alguma forma seja redimencionada:
 }
 #endif
 @
-\fimcodigo
 
 O recurso acima requer o seguinte cabeçalho:
 
-\iniciocodigo
 @<Headers@>+=
 #if defined(__linux__) || defined(BSD)
 #include <X11/Xutil.h>
 #endif
 @
-\fimcodigo
 
 Outra coisa relevante a ajustar é em que tipo de eventos nosso
 programa quer prestar atenção quando estiver executando. Exemplo de
@@ -741,7 +687,6 @@ informados disso, nenhum evento será informado para nosso programa e
 ele não saberá quando o usuário interage com ele por meio de mouse e
 teclado.
 
-\iniciocodigo
 @<X11: Criar Janela@>+=
 #if defined(__linux__) || defined(BSD)
 XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
@@ -749,40 +694,34 @@ XSelectInput(display, window, StructureNotifyMask | KeyPressMask |
                               ButtonReleaseMask | PointerMotionMask);
 #endif
 @
-\fimcodigo
 
 Outra coisa importante é definir o nome da janela que será
 criada. Geralmetne essa informação é apresentada de alguma forma pelo
 gerenciador de janelas. Podemos deixar que o usuário escolha isso
 ajustando a macro \monoespaco{W\_WINDOW\_NAME}:
 
-\iniciocodigo
 @<X11: Criar Janela@>+=
 #if defined(__linux__) || defined(BSD)
 XStoreName(display, window, W_WINDOW_NAME);
 #endif
 @
-\fimcodigo
 
-Se essta macro não estiver definida, deixamos apenas uma string vazia:
+Se esta macro não estiver definida, deixamos apenas uma string vazia:
 
 @<Define Macros@>=
 #if !defined(W_WINDOW_NAME)
 #define W_WINDOW_NAME ""
 #endif
 @
-\fimcodigo
 
 Agora vamos configurar o OpenGL ES. Como isso é suficientemente
 trabalhoso, colocamos os passos de como fazer isso na próxima sessão:
 
-\iniciocodigo
 @<X11: Criar Janela@>+=
 #if defined(__linux__) || defined(BSD)
 @<X11: Configurar OpenGL ES@>
 #endif
 @
-\fimcodigo
 
 Uma vez que tenhamos ajustado as configurações de nossa janela,
 podemos enfim começar a desenhar ela. Para isso enviamos uma
@@ -792,7 +731,6 @@ sermos avisados deste evento passando a
 flag \monoespaco{StructureNotifyMask} para a
 função \monoespaco{XSelectInput} anteriormente). O código para isso é:
 
-\iniciocodigo
 @<X11: Criar Janela@>+=
 #if defined(__linux__) || defined(BSD)
 XMapWindow(display, window);
@@ -805,7 +743,6 @@ XMapWindow(display, window);
 XSetInputFocus(display, window, RevertToParent, CurrentTime);
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.2.2. Criando uma Janela com Web Assembly}
 
@@ -828,8 +765,7 @@ Primeiro vamos inserir o cabeçalho do Emscripten com os cabeçalhos SDL
 e também cabeçalhos adicionais necessários por algumas macros que
 iremos usar:
 
-\iniciocodigo
-@<Cabeçalho OpenGL@>+=
+@<Cabeçalho OpenGL@>=
 #if defined(__linux__) || defined(BSD)
 #include <X11/X.h>
 #endif
@@ -839,30 +775,25 @@ iremos usar:
 #include <emscripten.h>
 #endif
 @
-\fimcodigo
 
 Agora vamos ler a resolução da tela com a função definida na Subsubseção 2.1.2:
 
-\iniciocodigo
 @<Web Assembly: Criar Janela@>=
 #if defined(__EMSCRIPTEN__)
 int screen_resolution_x, screen_resolution_y;
 _Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
-\fimcodigo
 
 A próxima coisa que temos a fazer é inicializar o sub-sistema de vídeo
 da biblioteca SDL. Fazer isso é simplesmente chamar a função de
 inicialização:
 
-\iniciocodigo
 @<Web Assembly: Criar Janela@>+=
 #if defined(__EMSCRIPTEN__)
 SDL_Init(SDL_INIT_VIDEO);
 #endif
 @
-\fimcodigo
 
 Agora vamos efetivamente criar a janela, o que na prática ajusta o
 tamanho do canvas HTML onde iremos desenhar e o inicializa. O
@@ -874,7 +805,6 @@ valores como tamanho. Também iremos nos certificar de que o canvas
 está realmente visível, pois ele pode ter sido oculto (é o que fazemos
 com ele se executarmos a função de fechar janela).
 
-\iniciocodigo
 @<Web Assembly: Criar Janela@>+=
 #if defined(__EMSCRIPTEN__)
 {
@@ -927,7 +857,6 @@ com ele se executarmos a função de fechar janela).
 }
 #endif
 @
-\fimcodigo
 
 No código acima, depois de criar a ``janela'' (que é um ``canvas'') também
 especificamos o tamanho de nossa área de exibição, ou ``viewport''. Na
@@ -941,13 +870,11 @@ nestes casos.
 Outra coisa necessária para o código acima é uma variável estática
 booleana que mantém se estamos em modo tela-cheia ou não:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(__EMSCRIPTEN__)
 static bool fullscreen_mode = false;
 #endif
 @
-\fimcodigo
 
 A variável é necessária caso estejamos rodando em um navegador porque
 neste caso, somos nós e não um gerenciador de janelas externo que
@@ -963,38 +890,32 @@ estar ou não em tela-cheia.
 O que chamamos de ``janela'' neste caso é considerada uma superfície
 SDL mapeada para um canvas HTML:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(__EMSCRIPTEN__)
 static SDL_Surface *window;
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.2.3. Criando uma Janela no Windows}
 
 Como nos códigos anteriores, começamos lendo a resolução da tela:
 
-\iniciocodigo
-@<Windows: Criar Janela@>+=
+@<Windows: Criar Janela@>=
 #if defined(_WIN32)
 int screen_resolution_x, screen_resolution_y;
 _Wget_screen_resolution(&screen_resolution_x, &screen_resolution_y);
 #endif
 @
-\fimcodigo
 
 A próxima coisa a fazer é definir uma classe para a janela que iremos
 criar. Primeiro vamos precisar dar um nome arbitrário para ela no
 formato de uma string qualquer. Iremos chamá-la de ``WeaverWindow'':
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(_WIN32)
 static const char *class_name = "WeaverWindow";
 #endif
 @
-\fimcodigo
 
 Agora precisamos para nossa classe uma função que irá tratar todos os
 sinais e mensagens enviada para nossa janela. Mensagens são enviadas e
@@ -1005,7 +926,6 @@ padrão \monoespaco{DefWindowProc}, mas algumas coisas nós mesmos
 teremos que definir. O formato da função que tratará as mensagens
 recebidas pela janela é:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2){
@@ -1017,20 +937,17 @@ LRESULT CALLBACK WindowProc(HWND window, UINT msg, WPARAM param1, LPARAM param2)
 }
 #endif
 @
-\fimcodigo
 
 Mas em quais casos iremos tratar as mensagens ao invés de apenas
 passá-las adiante para o \monoespaco{DefWindowProc}? Um dos casos é
 quando a janela receber uma mensagem para ser fechada:
 
-\iniciocodigo
 @<Windows: Trata Mensagens para Janela@>=
 case WM_DESTROY:
   PostQuitMessage(0);
   return 0;
   break;
 @
-\fimcodigo
 
 Agora temos que criar uma classe para a janela que iremos criar. Ela
 deve apenas ter um nome único que não conflite com nomes padrão usados
@@ -1040,7 +957,6 @@ com \monoespaco{GetModuleHandle} e a função que irá lidar com
 mensagens e sinais recebidos pela janela (no
 caso, o padrão \monoespaco{DefWindowProc}).
 
-\iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
 if(!already_created_a_class){
@@ -1064,36 +980,30 @@ if(!already_created_a_class){
 }
 #endif
 @
-\fimcodigo
 
 Por conveniência usamos a função \monoespaco{memset} para inicializar
 a estrutura da classe da janela, já que a maior parte de seus
 elementos pode ser mantida como zero, que é o padrão. Por isso,
 inserimos o cabeçalho abaixo:
 
-\iniciocodigo
 @<Cabeçalhos@>+=
 #if defined(_WIN32)
 #include <string.h>
 #endif
 @
-\fimcodigo
 
 O código acima presume que temos declarada a seguinte variável que
 armazena se nossa classe já foi criada:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(_WIN32)
 static bool already_created_a_class = false;
 #endif
 @
-\fimcodigo
 
 Após termos a classe da janela, criamos a janela com o código
 abaixo:
 
-\iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
 {
@@ -1131,35 +1041,29 @@ abaixo:
 }
 #endif
 @
-\fimcodigo
 
 Iremos armazenar o identificador da janela criada na seguinte
 variável:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(_WIN32)
 static HWND window;
 #endif
 @
-\fimcodigo
 
 Antes de exibir a janela na tela, vamos configurar o OpenGL para
 funcionar nela:
 
-\iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
 @<Windows: Configurar OpenGL@>
 #endif
 @
-\fimcodigo
 
 Agora pedimos para que o sistema passe a exibir a janela e esperamos
 em um laço até o sistema avisar por meio de uma mensagem que a janela
 foi criada:
 
-\iniciocodigo
 @<Windows: Criar Janela@>+=
 #if defined(_WIN32)
 {
@@ -1171,7 +1075,6 @@ foi criada:
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.2.4. Definindo a Função de Criação de Janelas para Todo Ambiente}
 
@@ -1181,7 +1084,6 @@ ficava dentro de macros condicionais para ser executado somente no
 ambiente correto.Agora podemos unir todos estes trechos de código
 anteriores em uma só função:
 
-\iniciocodigo
 @<Funções da API@>=
 bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse){
   if(already_have_window == true)
@@ -1195,16 +1097,13 @@ bool _Wcreate_window(struct _Wkeyboard *keyboard, struct _Wmouse *mouse){
   return true;
 }
 @
-\fimcodigo
 
 A variável que armazena se a janela já está criada será declarada
 aqui:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 static bool already_have_window = false;
 @
-\fimcodigo
 
 \subsecao{2.3. Configurando o OpenGL}
 
@@ -1220,7 +1119,6 @@ No X11, a interface por meio da qual programamos usando OpenGL ES se
 chama EGL e suas funções e macros são declaradas no seguinte
 cabeçalho:
 
-\iniciocodigo
 @<Cabeçalho OpenGL@>+=
 #if defined(__linux__) || defined(BSD)
 #include <EGL/egl.h>
@@ -1228,15 +1126,13 @@ cabeçalho:
 #include <EGL/eglext.h>
 #endif
 @
-\fimcodigo
 
 Agora precisamos criar uma estrutura que armazena as informações sobre
 nossa interface gráfica para o OpenGL ES. Assim como com o servidor X,
 isso é armazenado em uma estrutura chamada \monoespaco{display}. E
 podemos obter ela à partir do \monoespaco{display} da biblioteca X:
 
-\iniciocodigo
-@<X11: Configurar OpenGL ES@>+=
+@<X11: Configurar OpenGL ES@>=
 egl_display = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, display,
                                     NULL);
 if(egl_display == EGL_NO_DISPLAY){
@@ -1247,23 +1143,19 @@ if(egl_display == EGL_NO_DISPLAY){
 }
 eglInitialize(egl_display, NULL, NULL);
 @
-\fimcodigo
 
 Essa variável é declarada aqui:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(__linux__) || defined(BSD)
 static EGLDisplay *egl_display;
 #endif
 @
-\fimcodigo
 
 Agora obtemos uma configuração possível para o contexto OpenGL ES a
 ser criado. Primeiro especificamos uma série de exigências e em
 seguida obtemos da biblioteca uma configuração possível:
 
-\iniciocodigo
 @<X11: Configurar OpenGL ES@>+=
 {
   bool ret;
@@ -1293,25 +1185,20 @@ seguida obtemos da biblioteca uma configuração possível:
   }
 }
 @
-\fimcodigo
 
 A estrutura que armazena a configuração que usaremos é declarada aqui:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(__linux__) || defined(BSD)
 EGLConfig egl_config;
 #endif
 @
-\fimcodigo
-
 
 Assim como o EGL precisa de sua própria estrutura de display, ele
 também precisará de uma estrutura própria para armazenar informações
 sobre a janela na qual iremos desenhar. Podemos inicializar a
 estrutura EGL para a janela à partir da estrutura de janela do X:
 
-\iniciocodigo
 @<X11: Configurar OpenGL ES@>+=
 egl_window = eglCreateWindowSurface(egl_display, egl_config, window,
                                     NULL);
@@ -1322,25 +1209,20 @@ if(egl_window == EGL_NO_SURFACE){
   return false;
 }
 @
-\fimcodigo
 
 A janela EGL é declarada aqui:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(__linux__) || defined(BSD)
 static EGLSurface egl_window;
 #endif
 @
-\fimcodigo
-
 
 Agora criaremos o contexto OpenGL ES. Deixaremos que o usuário escolha
 qual a versão do OpenGL por meio das
 macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} e
 \monoespaco{W\_WINDOW\_OPENGL\_MINOR\_VERSION}. Usando tal informação, o código abaixo cria o contexto:
 
-\iniciocodigo
 @<X11: Configurar OpenGL ES@>+=
 {
   int context_attribs[] = {
@@ -1359,17 +1241,14 @@ macros \monoespaco{W\_WINDOW\_OPENGL\_MAJOR\_VERSION} e
   eglMakeCurrent(egl_display, egl_window, egl_window, egl_context);
 }
 @
-\fimcodigo
 
 O contexto OpenGL é declarado aqui:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(__linux__) || defined(BSD)
 static EGLContext egl_context;
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.3.2. Configurando OpenGL no Web Assembly}
 
@@ -1387,7 +1266,6 @@ compilador das bibliotecas necessárias para não precisar declará-las
 durante o processo de ligação do programa e em seguida inserimos o
 cabeçalho padrão e o do OpenGL:
 
-\iniciocodigo
 @<Cabeçalho OpenGL@>+=
 #if defined(_WIN32)
 #pragma comment(lib, "Opengl32.lib")
@@ -1398,29 +1276,23 @@ cabeçalho padrão e o do OpenGL:
 #include <GL/gl.h>
 #endif
 @
-\fimcodigo
 
 Também precisaremos de uma estrutura com informações sobre o
 dispositivo em que iremos desenhar. No nosso caso, uma janela:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>=
 device_context = GetDC(window);
 @
-\fimcodigo
 
 Esta estrutura é declarada aqui junto com o contexto OpenGL a ser
 inicializado:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(_WIN32)
 static HGLRC wgl_context;
 static HDC device_context;
 #endif
 @
-\fimcodigo
-
 
 Além disso, configurar o OpenGL no Windows é uma tarefa um bocado
 trabahosa. Pra começar, a função que cria contexto OpenGL definida por
@@ -1447,7 +1319,6 @@ problema é que não é possível carregar mais de um contexto OpenGL por
 janela. Então, para fazer isso, precisamos usar uma janela descartável
 e temporária na qual criaremos o contexto temporário e descartável:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 {
 @<Windows: Criar uma Janela Temporária@>
@@ -1456,13 +1327,11 @@ e temporária na qual criaremos o contexto temporário e descartável:
 @<Windows: Remover Contexto e Janela Temporários@>
 }
 @
-\fimcodigo
 
 Primeiro vamos criar nossa janela descartável. Como só usaremos ela
 para inicializar o OpenGL, não há necesidade de criar ela seguindo
 todas as especificações de nossa janela verdadeira:
 
-\iniciocodigo
 @<Windows: Criar uma Janela Temporária@>=
 HWND dummy_window;
 {
@@ -1489,13 +1358,11 @@ HWND dummy_window;
   }
 }
 @
-\fimcodigo
 
 Agora vamos criar o contexto OpenGL temporário. Primeiro começamos
 obtendo o contexto de dispositivo e configurando o formato de pixel
 dele:
 
-\iniciocodigo
 @<Windows: Criar um Contexto Temporário@>=
 HGLRC dummy_context;
 HDC dummy_device_context = GetDC(dummy_window);
@@ -1528,12 +1395,10 @@ HDC dummy_device_context = GetDC(dummy_window);
   }
   // ...
 @
-\fimcodigo
 
 Após termos configurado o formato de pixel que queremos, podemos obter
 o contexto OpenGL temporário que queríamos:
 
-\iniciocodigo
 @<Windows: Criar um Contexto Temporário@>+=
   // ...
   dummy_context = wglCreateContext(dummy_device_context);
@@ -1553,15 +1418,13 @@ o contexto OpenGL temporário que queríamos:
   }
 }
 @
-\fimcodigo
 
 Agora temos que carregar as funções que queremos. Carregar uma função
 existente, mas que não está declarada e acessível por ser considerada
 uma extensão, é feito pela função definida abaixo que usa
 \monoespaco{wglGetProcAddress} para obter um ponteiro para a função desejada:
 
-\iniciocodigo
-@<Funções Locais@>+=
+@<Funções Locais@>=
 #if defined(_WIN32)
 static void *load_function(const char *name){
   void *ret = wglGetProcAddress(name);
@@ -1576,7 +1439,6 @@ static void *load_function(const char *name){
 }
 #endif
 @
-\fimcodigo
 
 Note que como indicado pelo código acima, a
 função \monoespaco{wglGetProcAddress} na prática pode indicar erro ou
@@ -1594,7 +1456,6 @@ com a posição de memória onde a nova função carregada será
 armazenada. No caso das duas novas funções que queremos, declaramos o
 ponteiro delas no cabeçalho \monoespaco{window.h} com o código abaixo:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *,
@@ -1602,11 +1463,9 @@ extern BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *
 extern HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 #endif
 @
-\fimcodigo
 
 Também colocamos a declaração real no arquivo \monoespaco{window.c}:
 
-\iniciocodigo
 @<Variáveis Globais@>=
 #if defined(_WIN32)
 BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
@@ -1614,14 +1473,12 @@ BOOL (__stdcall *wglChoosePixelFormatARB)(HDC, const int *, const FLOAT *, UINT,
 HGLRC (*wglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 #endif
 @
-\fimcodigo
 
 Uma vez que tenhamos a declaração dos ponteiros, podemos
 inicializá-los carregando para eles as funções nas quais estamos
 interessados:
 
-\iniciocodigo
-@<Windows: Carregar Funções OpenGL Iniciais@>+=
+@<Windows: Carregar Funções OpenGL Iniciais@>=
 wglChoosePixelFormatARB = (BOOL (__stdcall *)(HDC, const int *, const FLOAT *,
                                               UINT, int *, UINT *))
                           load_function("wglChoosePixelFormatARB");
@@ -1630,24 +1487,20 @@ wglCreateContextAttribsARB = (HGLRC (*)(HDC, HGLRC, const int *))
                                load_function("wglCreateContextAttribsARB");
 if(wglCreateContextAttribsARB == NULL) return false;
 @
-\fimcodigo
 
 E finalmente, após termos carregado as duas funções acima, não temos
 mais nenhuma necessidade da janela e do contexto temporários:
 
-\iniciocodigo
 @<Windows: Remover Contexto e Janela Temporários@>=
 wglMakeCurrent(dummy_device_context, 0);
 wglDeleteContext(dummy_context);
 ReleaseDC(dummy_window, dummy_device_context);
 DestroyWindow(dummy_window);
 @
-\fimcodigo
 
 Agora estamos prontos para escolher o formato de pixel (a configuração
 do OpenGL) da forma moderna com nossa nova função:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 {
   PIXELFORMATDESCRIPTOR pixel_format_descriptor;
@@ -1689,14 +1542,12 @@ do OpenGL) da forma moderna com nossa nova função:
   }
 }
 @
-\fimcodigo
 
 Agora vamos especificar que queremos criar um contexto OpenGL cuja
 versão do OpenGL é definida pelas macros que usamos para escolher a
 versão. E em seguida usamos nossa função de criação de contexto
 moderno:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 {
   const int opengl_attributes[] = {
@@ -1719,13 +1570,11 @@ moderno:
   }
 }
 @
-\fimcodigo
 
 Durante a criação de nosso contexto OpenGL verdadeiro, fizemos uso de
 uma série de macros que por padrão não estão definidas. Como o uso
 delas é local, declaramos elas no cabeçalho do \monoespaco{window.c}:
 
-\iniciocodigo
 @<Cabeçalhos@>+=
 #define WGL_TYPE_RGBA_ARB                      0x202B
 #define WGL_PIXEL_TYPE_ARB                     0x2013
@@ -1742,7 +1591,6 @@ delas é local, declaramos elas no cabeçalho do \monoespaco{window.c}:
 #define WGL_CONTEXT_MINOR_VERSION_ARB          0x2092
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
 @
-\fimcodigo
 
 Mas queremos suportar com nossa API as funções presentes no OpenGL ES
 2.0. E tais funções também não fazem parte da API padrão oferecida
@@ -1750,7 +1598,6 @@ pelo WGL no Windows. O que faremos então é carregar tais funções como
 extensões. Por exemplo, começando com as funções relacionadas à
 criação e gerenciamento de shaders, vamos declarar seus ponteiros:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern GLuint (__stdcall *glCreateShader)(GLenum shaderType);
@@ -1761,12 +1608,10 @@ extern void (__stdcall *glReleaseShaderCompiler)(void);
 extern void (__stdcall *glDeleteShader)(GLuint);
 #endif
 @
-\fimcodigo
 
 Em seguida posicionamos os ponteiros como variáveis globais em nosso
 arquivo \monoespaco{window.c}:
 
-\iniciocodigo
 @<Variáveis Globais@>=
 #if defined(_WIN32)
 GLuint (__stdcall *glCreateShader)(GLenum shaderType);
@@ -1777,13 +1622,11 @@ void (__stdcall *glReleaseShaderCompiler)(void);
 void (__stdcall *glDeleteShader)(GLuint);
 #endif
 @
-\fimcodigo
 
 Em seguida carregamos para cada um dos ponteiros a função
 correspondente usando a função definida um pouco acima de nossa
 declaração de ponteiros:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glCreateShader = (GLuint (__stdcall *)(GLenum)) load_function("glCreateShader");
 if(glCreateShader == NULL)
@@ -1804,29 +1647,24 @@ glDeleteShader = (void (__stdcall *)(GLuint)) load_function("glDeleteShader");
 if(glDeleteShader == NULL)
   return false;
 @
-\fimcodigo
 
 Quando usamos \monoespaco{glCreateShader}, precisamos passar uma
 destas macros como argumento para escolher o tipo de shader criado:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_VERTEX_SHADER          0x8B31
 #define GL_FRAGMENT_SHADER        0x8B30
 #endif
 @
-\fimcodigo
 
 O tipo \monoespaco{GLchar} também precisa ser criado no Windows:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 typedef char  GLchar;
 #endif
 @
-\fimcodigo
 
 Após compilar um shader, a ação típica desempenhada é checar se a
 compilação fo bem-sucedida. Isso é feito usando funções que fazem
@@ -1834,7 +1672,6 @@ consultas com relação à shaders. Em particular, a
 função \monoespaco{glGetShaderiv}. Declaramos abaixo o ponteiro das
 funções relacionadas à consultas a shaders:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern GLboolean (__stdcall *glIsShader)(GLuint);
@@ -1852,11 +1689,9 @@ extern void (__stdcall *glGetUniformfv)(GLuint, GLint, GLfloat *);
 extern void (__stdcall *glGetUniformiv)(GLuint, GLint, GLint *);
 #endif
 @
-\fimcodigo
 
 E posicionamos os ponteiros aqui::
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 GLboolean (__stdcall *glIsShader)(GLuint);
@@ -1872,12 +1707,10 @@ void (__stdcall *glGetUniformfv)(GLuint, GLint, GLfloat *);
 void (__stdcall *glGetUniformiv)(GLuint, GLint, GLint *);
 #endif
 @
-\fimcodigo
 
 Carregamos cada uma das funções a seus respectivos ponteiros com o
 código:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glIsShader = (GLboolean (__stdcall *)(GLuint)) load_function("glIsShader");
 if(glIsShader == NULL) return false;
@@ -1913,13 +1746,11 @@ glGetUniformiv = (void (__stdcall *)(GLuint, GLint, GLint *))
                      load_function("glGetUniformiv");
 if(glGetUniformiv == NULL) return false;
 @
-\fimcodigo
 
 Quando a função \monoespaco{glGetShaderiv} é usada, podemos selecionar
 qual informação sobre o shader estamos consultando passando uma das
 macros abaixo:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_SHADER_TYPE          0x8B4F
@@ -1929,13 +1760,11 @@ macros abaixo:
 #define GL_SHADER_SOURCE_LENGTH 0x8B88
 #endif
 @
-\fimcodigo
 
 Quando a função \monoespaco{glGetShaderPrecisionFormat} é usada para
 consultar a precisão de algum tipo, o tipo a ser consultado é definido
 passando uma das seguintes macros:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_LOW_FLOAT    0x8DF0
@@ -1946,14 +1775,12 @@ passando uma das seguintes macros:
 #define GL_HIGH_INT     0x8DF5
 #endif
 @
-\fimcodigo
 
 Quando a função \monoespaco{glGetVertexAttribfv}
 ou \monoespaco{glGetVertexAttribiv} é usada para obter informações
 sobre vértices, o tipo de informação desejada é informada passando
 como argumento uma destas macros abaixo:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
@@ -1965,36 +1792,30 @@ como argumento uma destas macros abaixo:
 #define GL_CURRENT_VERTEX_ATTRIB              0x8626
 #endif
 @
-\fimcodigo
 
 Já quando usamos a função \monoespaco{glGetVertexzAttribPointerv},
 precisamos passar como um de seus argumentos a macro abaixo:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_VERTEX_ATTRIB_ARRAY_POINTER 0x8645
 #endif
 @
-\fimcodigo
 
 Vamos definir também esta macro que serve para consultar qual
 implementação do GLSL temos:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_SHADING_LANGUAGE_VERSION 0x8B8C
 #endif
 @
-\fimcodigo
 
 Uma vez que criamos e compilamos shaders, geralmente é desejado criar
 um programa, ligar os shaders a ele e passar a usá-lo. Para permitir
 isso, vamos declarar o ponteiro para cada uma das funções responsáveis
 por lidar com programas:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern GLuint (__stdcall *glCreateProgram)(void);
@@ -2005,11 +1826,9 @@ extern void (__stdcall *glUseProgram)(GLuint);
 extern void (__stdcall *glDeleteProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 Após declarar, os ponteiros são efetivamente posicionados aqui:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 GLuint (__stdcall *glCreateProgram)(void);
@@ -2020,11 +1839,9 @@ void (__stdcall *glUseProgram)(GLuint);
 void (__stdcall *glDeleteProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 E inicializamos os ponteiros com as funções adequadas:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glCreateProgram = (GLuint (__stdcall *)(void)) load_function("glCreateProgram");
 if(glCreateProgram == NULL) return false;
@@ -2041,13 +1858,11 @@ if(glUseProgram == NULL) return false;
 glDeleteProgram = (void (__stdcall *)(GLuint)) load_function("glDeleteProgram");
 if(glDeleteProgram == NULL) return false;
 @
-\fimcodigo
 
 Terminada a geração de um programa GLSL, geralmente o usuário irá
 checar se deu tudo certo na criação do programa. E para isso é
 importante prepararmos as funções que fazem consultas a programas:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern GLboolean (__stdcall *glIsProgram)(GLuint);
@@ -2057,11 +1872,9 @@ extern void (__stdcall *glGetProgramInfoLog)(GLuint, GLsizei, GLsizei *,
 extern void (__stdcall *glValidadeProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 Posicionamos os ponteiros reais aqui:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 GLboolean (__stdcall *glIsProgram)(GLuint);
@@ -2070,11 +1883,9 @@ void (__stdcall *glGetProgramInfoLog)(GLuint, GLsizei, GLsizei *, GLchar *);
 void (__stdcall *glValidadeProgram)(GLuint);
 #endif
 @
-\fimcodigo
 
 E os inicializamos com as funções reais:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glIsProgram = (GLboolean (__stdcall *)(GLuint)) load_function("glIsProgram");
 if(glIsProgram == NULL) return false;
@@ -2088,13 +1899,11 @@ glValidadeProgram = (void (__stdcall *)(GLuint))
                      load_function("glValidateProgram");
 if(glValidadeProgram == NULL) return false;
 @
-\fimcodigo
 
 Quando usamos \monoespaco{glGetProgramiv} para obter informação sobre
 um programa, passamos como argumento uma destas macros a seguir para
 selecionar qual informação queremos saber:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_DELETE_STATUS               0x8B80
@@ -2108,12 +1917,10 @@ selecionar qual informação queremos saber:
 #define GL_ACTIVE_UNIFORM_MAX_LENGTH   0x8B87
 #endif
 @
-\fimcodigo
 
 Já para obter e escolher aributos de vértices dentro de um shader,
 usaremos funções que serão ligadas aos seguintes ponteiros:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *,
@@ -2122,11 +1929,9 @@ extern GLint (__stdcall *glGetAttribLocation)(GLuint, const GLchar *);
 extern void (__stdcall *glBindAttribLocation)(GLuint, GLuint, const GLchar *);
 #endif
 @
-\fimcodigo
 
 Que serão posicionados aqui:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glGetActiveAttrib)(GLuint, GLuint, GLsizei, GLsizei *, GLint *,
@@ -2135,11 +1940,9 @@ GLint (__stdcall *glGetAttribLocation)(GLuint, const GLchar *);
 void (__stdcall *glBindAttribLocation)(GLuint, GLuint, const GLchar *);
 #endif
 @
-\fimcodigo
 
 E eles são inicializados aqui:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glGetActiveAttrib = (void (__stdcall *)(GLuint, GLuint, GLsizei, GLsizei *,
                                         GLint *, GLenum *, GLchar *))
@@ -2152,12 +1955,10 @@ glBindAttribLocation = (void (__stdcall *)(GLuint, GLuint, const GLchar *))
                               load_function("glBindAttribLocation");
 if(glBindAttribLocation == NULL) return false;
 @
-\fimcodigo
 
 O tipo de um atributo de vértice, que é retornado
 por \monoespaco{glGetActiveAttrib} pode ser:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_FLOAT      0x1406
@@ -2169,12 +1970,10 @@ por \monoespaco{glGetActiveAttrib} pode ser:
 #define GL_FLOAT_MAT4 0x8B5C
 #endif
 @
-\fimcodigo
 
 E finalmente, as últimas funções relacionadas aos shaders são as
 responsáveis por lidar com variáveis uniformes:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern GLint (__stdcall *glGetUniformLocation)(GLuint, const GLchar *);
@@ -2204,11 +2003,9 @@ extern void (__stdcall *glUniformMatrix4fv)(GLint, GLsizei, GLboolean,
                                             const GLfloat *);
 #endif
 @
-\fimcodigo
 
 Estes 21 ponteiros para funções são posicionados aqui:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 GLint (__stdcall *glGetUniformLocation)(GLuint, const GLchar *);
@@ -2235,11 +2032,9 @@ void (__stdcall *glUniformMatrix3fv)(GLint, GLsizei, GLboolean, const GLfloat *)
 void (__stdcall *glUniformMatrix4fv)(GLint, GLsizei, GLboolean, const GLfloat *);
 #endif
 @
-\fimcodigo
 
 E agora temos que inicializar todos estes ponteiros com suas funções:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glGetUniformLocation = (GLint (__stdcall *)(GLuint, const GLchar *))
                             load_function("glGetUniformLocation");
@@ -2306,12 +2101,10 @@ glUniformMatrix4fv = (void (__stdcall *)(GLint, GLsizei, GLboolean,
                       load_function("glUniformMatrix4fv");
 if(glUniformMatrix4fv == NULL) return false;
 @
-\fimcodigo
 
 As variávei uniformes podem ter o mesmo tipo que atributos de vértice,
 mas podem ter também alguns destes novos tipos:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_INT         0x1404
@@ -2326,7 +2119,6 @@ mas podem ter também alguns destes novos tipos:
 #define GL_SAMPER_CUBE 0x8B60
 #endif
 @
-\fimcodigo
 
 A última coisa que precisamos para renderizar imagens simples é enviar
 vértices para a placa de vídeo. Uma das formas de fazer isso é enviar
@@ -2334,7 +2126,6 @@ ponteiro para os vértices na placa de vídeo ao invés de enviá-los
 diretamente para acesso mais rápido. Essa opção pode ser feita com as
 funções abaixo:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glVertexAttrib1f)(GLuint, GLfloat);
@@ -2352,11 +2143,9 @@ extern void (__stdcall *glEnableVertexAttribArray)(GLuint);
 extern void (__stdcall *glDisableVertexAttribArray)(GLuint);
 #endif
 @
-\fimcodigo
 
 Posicionamos os ponteiros como variáveis globais:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glVertexAttrib1f)(GLuint, GLfloat);
@@ -2373,11 +2162,9 @@ void (__stdcall *glEnableVertexAttribArray)(GLuint);
 void (__stdcall *glDisableVertexAttribArray)(GLuint);
 #endif
 @
-\fimcodigo
 
 E as inicializamos:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glVertexAttrib1f = (void (__stdcall *)(GLuint, GLfloat))
                      load_function("glVertexAttrib1f");
@@ -2415,24 +2202,20 @@ glDisableVertexAttribArray = (void (__stdcall *)(GLuint))
                                load_function("glDisableVertexAttribArray");
 if(glDisableVertexAttribArray == NULL) return false;
 @
-\fimcodigo
 
 Os atributos de vétices podem ter tipos específicos. Além de tipos que
 já foram definidos (\monoespaco{GL\_FLOAT}), é necessário definir
 também:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_FIXED          0x140C
 #endif
 @
-\fimcodigo
 
 Agora definiremos os ponteiros para as funções relacionadas a objetos
 do tipo buffer. Os ponteiros são:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
@@ -2445,11 +2228,9 @@ extern void (__stdcall *glIsBuffer)(GLuint);
 extern void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
 #endif
 @
-\fimcodigo
 
 E a declaração:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glGenBuffers)(GLsizei, GLuint *);
@@ -2461,11 +2242,9 @@ void (__stdcall *glIsBuffer)(GLuint);
 void (__stdcall *glGetBufferParameteriv)(GLenum, GLenum, GLint *);
 #endif
 @
-\fimcodigo
 
 A inicialização:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glGenBuffers = (void (__stdcall *)(GLsizei, GLuint *))
                  load_function("glGenBuffers");
@@ -2487,24 +2266,20 @@ glGetBufferParameteriv = (void (__stdcall *)(GLenum, GLenum, GLint *))
                            load_function("glGetBufferParameteriv");
 if(glGetBufferParameteriv == NULL) return false;
 @
-\fimcodigo
 
 Quando escolhemos ativar um buffer com \monoespaco{glBindBuffer}, ele
 pode ser dos seguintes tipos:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_ARRAY_BUFFER         0x8892
 #define GL_ELEMENT_ARRAY_BUFFER 0x8893
 #endif
 @
-\fimcodigo
 
 Quando passamos dados em um buffer com \monoespaco{glBufferData},
 podemos escolher dentre os seguintes modos de uso para os dados:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_STATIC_DRAW  0x88E4
@@ -2512,26 +2287,22 @@ podemos escolher dentre os seguintes modos de uso para os dados:
 #define GL_DYNAMIC_DRAW 0x88E8
 #endif
 @
-\fimcodigo
 
 Quando escolhemos pedir informações sobre um buffer
 com \monoespaco{glGetBufferParameteriv}, a informação pedida pode ser:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_BUFFER_SIZE  0x8764
 #define GL_BUFFER_USAGE 0x8765
 #endif
 @
-\fimcodigo
 
 E as novas funções requerem também que definamos os tipos de dados
 abaixo que devem ser grandes o bastante para armazenar ponteiros,
 mesmo não necessariamente sendo ponteiros. A diferença entre eles é
 somente ter ou não ter sinal.
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 // Isso inclui um signed size_t:
@@ -2540,54 +2311,44 @@ typedef size_t GLsizeiptr;
 typedef SSIZE_T GLintptr;
 #endif
 @
-\fimcodigo
 
 As duas funções da API referentes à janela de exibição (``viewport'')
 e recortte (``clipping'') são:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 Suas declarações:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glDepthRangef)(GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 E inicialização:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glDepthRangef = (void (__stdcall *)(GLclampf, GLclampf))
                    load_function("glDepthRangef");
 if(glDepthRangef == NULL) return false;
 @
-\fimcodigo
 
 O tipo \monoespaco{GLclampf} representa um número em ponto flutuante
 que deve estar no intervalo entre 0 e 1. Podemos representá-los como
 números em ponto flutuante mesmo:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 typedef float GLclampf;
 #endif
 @
-\fimcodigo
 
 Agora vamos preparar as funções do OpenGL relacionadas à textura:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glActiveTexture)(GLenum);
@@ -2599,11 +2360,9 @@ extern void (__stdcall *glCompressedTexSubImage2D)(GLenum, int, int, int, GLsize
 extern void (__stdcall *glGenerateMipmap)(GLenum);
 #endif
 @
-\fimcodigo
 
 E as declaramos no arquivo \monoespaco{window.c}:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glActiveTexture)(GLenum); // TEXTURE0..TEXTURE1...
@@ -2615,11 +2374,9 @@ void (__stdcall *glCompressedTexSubImage2D)(GLenum, int, int, int, GLsizei,
 void (__stdcall *glGenerateMipmap)(GLenum);
 #endif
 @
-\fimcodigo
 
 Vamos agora inizializar estas 17 funções para que possam ser usadas:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glActiveTexture = (void (__stdcall *)(GLenum)) load_function("glActiveTexture");
 if(glActiveTexture == NULL) return false;
@@ -2634,12 +2391,10 @@ if(glCompressedTexSubImage2D == NULL) return false;
 glGenerateMipmap = (void (__stdcall *)(GLenum)) load_function("glGenerateMipmap");
 if(glGenerateMipmap == NULL) return false;
 @
-\fimcodigo
 
 As funções acima também requerem que as seguintes macros sejam
 definidas para serem usadas nas enumerações:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_RGB                              0x1907
@@ -2699,14 +2454,12 @@ definidas para serem usadas nas enumerações:
 #define GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS 0x8B4D
 #endif
 @
-\fimcodigo
 
 As funções OpenGL ES por fragmento são uma série de testes e operações
 que podem modificar a cor de um pixel antes que ele seja efetivamente
 desenhado em uma superfíce. Geralmente. se um dos testes falhar, o
 pixel será descarado. As funções relacionadas a isso são:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glSampleCoverage)(GLclampf, bool);
@@ -2718,11 +2471,9 @@ extern void (__stdcall *glBlendFuncSeparate)(GLenum, GLenum);
 extern void (__stdcall *glBlendColor)(GLclampf, GLclampf, GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 E a declaração destas funções no \monoespaco{window.c}:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glSampleCoverage)(GLclampf, bool);
@@ -2734,11 +2485,9 @@ void (__stdcall *glBlendFuncSeparate)(GLenum, GLenum);
 void (__stdcall *glBlendColor)(GLclampf, GLclampf, GLclampf, GLclampf);
 #endif
 @
-\fimcodigo
 
 E a inicialização:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glSampleCoverage = (void (__stdcall *)(GLclampf, bool))
                         load_function("glSampleCoverage");
@@ -2761,13 +2510,10 @@ glBlendColor = (void (__stdcall *)(GLclampf, GLclampf, GLclampf, GLclampf))
                    load_function("glBlendColor");
 if(glBlendColor == NULL) return false;
 @
-\fimcodigo
-
 
 O uso das funções acima requer também a definição das seguintes macros
 a serem usadas como enumerações:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_ONE                      1
@@ -2808,34 +2554,28 @@ a serem usadas como enumerações:
 #define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
 #endif
 @
-\fimcodigo
 
 Com relação à funções que afetam todo o ``framebuffer'', temos que
 preparar estas 2 funções:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
 extern void (__stdcall *glClearDepthf)(GLclampf);
 #endif
 @
-\fimcodigo
 
 A declaração delas em \monoespaco{window.c}:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glStencilMaskSeparate)(GLenum, unsigned int);
 void (__stdcall *glClearDepthf)(GLclampf);
 #endif
 @
-\fimcodigo
 
 E a inicialização:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glStencilMaskSeparate = (void (__stdcall *)(GLenum, unsigned int))
                             load_function("glStencilMaskSeparate");
@@ -2843,12 +2583,10 @@ if(glStencilMaskSeparate == NULL) return false;
 glClearDepthf = (void (__stdcall *)(GLclampf)) load_function("glClearDepthf");
 if(glClearDepthf == NULL) return false;
 @
-\fimcodigo
 
 O último conjunto de funções faltantes são as funções que gerenciam
 objetos de framebufer:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 #if defined(_WIN32)
 extern void (__stdcall *glBindFramebuffer)(GLenum, unsigned int);
@@ -2870,11 +2608,9 @@ extern boolean (__stdcall *glIsRenderbuffer)(unsigned int);
 extern void (__stdcall *glGetRenderbufferParameteriv)(GLenum, GLenum, int *);
 #endif
 @
-\fimcodigo
 
 A declaração destas 14 funções em \monoespaco{window.c}:
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 #if defined(_WIN32)
 void (__stdcall *glBindFramebuffer)(GLenum, unsigned int);
@@ -2896,11 +2632,9 @@ boolean (__stdcall *glIsRenderbuffer)(unsigned int);
 void (__stdcall *glGetRenderbufferParameteriv)(GLenum, GLenum, int *);
 #endif
 @
-\fimcodigo
 
 E a inicialização:
 
-\iniciocodigo
 @<Windows: Configurar OpenGL@>+=
 glBindFramebuffer = (void (__stdcall *)(GLenum, unsigned int))
                        load_function("glBindFramebuffer");
@@ -2948,11 +2682,9 @@ glGetRenderbufferParameteriv = (void (__stdcall *)(GLenum, GLenum, int *))
                                   load_function("glGetRenderbufferParameteriv");
 if(glGetRenderbufferParameteriv == NULL) return false;
 @
-\fimcodigo
 
 E as macros necessárias para o uso destas funções:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define GL_RGBA4                                        0x8056
@@ -2981,9 +2713,6 @@ E as macros necessárias para o uso destas funções:
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE 0x8CD3
 #endif
 @
-\fimcodigo
-
-
 
 \subsubsecao{2.3.4. Escolhendo a Versão do OpenGL}
 
@@ -3016,7 +2745,6 @@ funções mais modernas do OpenGL Es.
 
 Sendo assim, a nossa macro que define a versão OpenGL é:
 
-\iniciocodigo
 @<Cabeçalhos@>+=
 #if defined(_WIN32) && !defined(W_WINDOW_OPENGL_MAJOR_VERSION)
 #define W_WINDOW_OPENGL_MAJOR_VERSION 4
@@ -3029,7 +2757,6 @@ Sendo assim, a nossa macro que define a versão OpenGL é:
 #define W_WINDOW_OPENGL_MINOR_VERSION 0
 #endif
 @
-\fimcodigo
 
 \subsecao{2.4. Fechando uma Janela}
 
@@ -3046,7 +2773,6 @@ respectivamente \monoespaco{XDestroyWindow}
 e \monoespaco{XCloseDisplay}. Também fazemos uma checagem para ver se
 realmente existe uma janela a serfechada e destruída.
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wdestroy_window(void){
@@ -3065,7 +2791,6 @@ bool _Wdestroy_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.4.2. Fechando uma Janela em Web Assembly}
 
@@ -3074,7 +2799,6 @@ graças ao Web Assembly significa finalizar todas as estruturas SDL e
 esconder o canvas onde estávamos desenhando. Fazemos isso com a
 seguinte função:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wdestroy_window(void){
@@ -3090,14 +2814,12 @@ bool _Wdestroy_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.4.3. Fechando uma Janela no Windows}
 
 Fechar a janela no Windows significa chamar a  função que irá
 encerrá-la:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wdestroy_window(void){
@@ -3111,7 +2833,6 @@ bool _Wdestroy_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.5. Renderizando a Janela}
 
@@ -3129,7 +2850,6 @@ após eles terem sido feitos, devemos fazer com que o buffer traseiro,
 onde estávamos desenhando, se torne o buffer dianteiro que é exibido
 na tela e vice-versa:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wrender_window(void){
@@ -3137,7 +2857,6 @@ bool _Wrender_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.5.2. Renderizando a Janela no Emscripten} 
 
@@ -3155,7 +2874,6 @@ todos os comandos OpenGL. Mas não usamos nada para pedir para a tela
 ser atualizada, já que assumimos que o programa não irá seguir a
 má-prática:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wrender_window(void){
@@ -3164,7 +2882,6 @@ bool _Wrender_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.5.3. Renderizando a Janela no Windows}
 
@@ -3172,7 +2889,6 @@ No Windows, a função WGL responsável por trocar os buffers da janela e
 assim tornar visíveis os desenhos feitos é
 chamada \monoespaco{wglSwapLayerBuffers}:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wrender_window(void){
@@ -3180,7 +2896,6 @@ bool _Wrender_window(void){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.6. Obtendo o Tamanho da Janela}
 
@@ -3195,7 +2910,6 @@ retorna uma grande quantidade de informação em diferentes
 ponteiros. Mas a informação que importa para nós é apenas a altura e
 largura da janela:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wget_window_size(int *width, int *height){
@@ -3215,7 +2929,6 @@ bool _Wget_window_size(int *width, int *height){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.6.2. Obtendo o Tamanho da Janela no Web Assembly}
 
@@ -3225,7 +2938,6 @@ HTML. Por convenção, o canvas que usamos como janela tem o ID
 Javascript para obter o elemento e em seguida ler sua altura e
 largura.
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wget_window_size(int *width, int *height){
@@ -3252,7 +2964,6 @@ bool _Wget_window_size(int *width, int *height){
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.6.3. Obtendo o Tamanho da Janela no Windows}
 
@@ -3260,7 +2971,6 @@ No Windows nós usamos uma chamada a \monoespaco{GetWindowRect} para
 obter o tamanho da janela. o qual é armazenado em uma
 estrutura \monoespaco{RECT}:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wget_window_size(int *width, int *height){
@@ -3282,7 +2992,6 @@ bool _Wget_window_size(int *width, int *height){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{2.7. Checando o modo de tela cheia}
 
@@ -3298,7 +3007,6 @@ tela cheia, precisamos checar com a
 função \monoespaco{XGetWindowAttributes} se a nossa janela tem tal
 atributo marcado ou não:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wis_fullscreen(void){
@@ -3319,7 +3027,6 @@ nem sempre conseguiremos entrar em tela cheia, já que isso depende das
 configurações do navegador. A fução abaixo então será uma forma de
 verificar se estamos ou não em tal modo de tela cheia.
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wis_fullscreen(void){
@@ -3342,7 +3049,6 @@ função \monoespaco{SHQueryUserNotificationState} para obter o estado
 da tela. Se tivermos uma janela em tela-cheia, saberemos disso se
 obtiveros como resultado \monoespaco{QUNS\_BUSY}:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wis_fullscreen(void){
@@ -3351,7 +3057,6 @@ bool _Wis_fullscreen(void){
 }
 #endif
 @
-
 
 \subsecao{2.8. Alternando entre Tela Cheia e Janela}
 
@@ -3368,7 +3073,6 @@ apenas armazenamos zero nas variáveis significando que não temos
 memória alguma de qual deve ser o tamanho da janela fora da tela
 cheia:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 #if defined(W_WINDOW_SIZE_X) && defined(W_WINDOW_SIZE_Y)
 static unsigned last_window_size_x = W_WINDOW_SIZE_X;
@@ -3378,7 +3082,6 @@ static unsigned last_window_size_x = 0;
 static unsigned last_window_size_y = 0;
 #endif
 @
-\fimcodigo
 
 Além disso, quando entramos, saímos da tela-cheia ou quando mudamos o
 tamanho da janela, pode ser necessário para o usuário recalcular a
@@ -3388,22 +3091,18 @@ que isso acontecer. Se nenhuma função for passada pelo usuário, nada
 adicional será executado. O ponteiro que armazena a função definida
 pelo usuário, se ela existir, será:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 static void (*resizing_function)(int, int, int, int) = NULL;
 @
-\fimcodigo
 
 Para registrar uma função e armazenar o endereço dela neste ponteiro,
 invoca-se a seguinte função:
 
-\iniciocodigo
 @<Funções da API@>+=
 void _Wset_resize_function(void (*func)(int, int, int, int)){
   resizing_function = func;
 }
 @
-\fimcodigo
 
 \subsubsecao{2.8.1. Alternando entre Tela Cheia e Janela no X11}
 
@@ -3422,7 +3121,6 @@ os decoradores característicos do gerenciador de janela. Caso
 estejamos entrando na tela cheia, tambem será necessário mover nossa
 janela e ajustar o tamanho dela para o tamanho da tela.
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 void _Wtoggle_fullscreen(void){
@@ -3464,6 +3162,13 @@ void _Wtoggle_fullscreen(void){
   glViewport(0, 0, new_size_x, new_size_y);
   if(resizing_function != NULL)
     resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
+  {
+    //Window w;
+    //int t;
+    //XGetInputFocus(display, &w, &t);
+    //if(w != window)
+    //  XSetInputFocus(display, window, RevertToParent, CurrentTime);
+  }
 }
 #endif
 @
@@ -3485,7 +3190,6 @@ tempo de espera máximo de 0,1 segundos.
 O trecho de código que nos permite esperar a mudança de tamanho surtir
 efeito é:
 
-\iniciocodigo
 @<X11: Esperar Redimencionamento Surtir Efeito@>=
 { // Espera no máximo 0.5 segundos para que a mudança surta efeito
   struct timeval begin_time, now;
@@ -3496,21 +3200,18 @@ efeito é:
     gettimeofday(&now, NULL);
   } while((new_width != new_size_x || new_height != new_size_y) &&
           (now.tv_sec - begin_time.tv_sec) * 1000000 +
-          (now.tv_usec - begin_time.tv_usec) < 100000);
+          (now.tv_usec - begin_time.tv_usec) < 500000);
 }
 @
-\fimcodigo
 
 E como usamos a função de obter o tempo, precisamos inserir o seguinte
 cabeçalho:
 
-\iniciocodigo
 @<Cabeçalhos@>+=
 #if defined(__linux__) || defined(BSD)
 #include <sys/time.h>
 #endif
 @
-\fimcodigo
 
 \subsubsecao{2.8.2. Alternando entre Tela Cheia e Janela no Web Assembly}
 
@@ -3534,7 +3235,6 @@ então na informação presente na variável estática. E mesmo que não
 possamos entrar em tela-cheia verdadeira,  alternaremos entre o modo de
 janela e o de tela-cheia simulada:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 void _Wtoggle_fullscreen(void){
@@ -3588,7 +3288,6 @@ No Windows controlamos a tela-cheia alternando entre os estilos da
 janela. Podemos ler e escrever informações sobre um estilo de janela
 por meio de \monoespaco{GetWindowLongPtrA} e \monoespaco{SetWindowLongPtrA}:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 void _Wtoggle_fullscreen(void){
@@ -3642,7 +3341,6 @@ desistimos e continuamos de qualquer forma, executando a função
 personalizada escolhida pelo usuário relacionada ao redimencionamento
 da janela, caso ela exista.
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wresize_window(int width, int height){
@@ -3676,7 +3374,6 @@ estejamos nem em tela-cheia e nem simulando uma tela-cheia, apenas
 acessamos o nosso ``canvas'' por meio de seu ID e editamos suas
 propriedades CSS e atributos de tamanho:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(__EMSCRIPTEN__)
 bool _Wresize_window(int width, int height){
@@ -3709,7 +3406,6 @@ estivermos em modo de tela-cheia. Em seguida, se existir, executamos a
 função personalizada pelo usuário a ser usada sempre que o tamanho da
 janela muda:
 
-\iniciocodigo
 @<Funções da API@>+=
 #if defined(_WIN32)
 bool _Wresize_window(int width, int height){
@@ -3731,7 +3427,6 @@ bool _Wresize_window(int width, int height){
 #endif
 @
 
-
 \secao{3. Gerenciando Entrada}
 
 Nesta seção trataremos a detecção de eventos de entrada de um
@@ -3746,13 +3441,11 @@ eventos feitos pelo mouse e teclado.
 Para nós, um teclado será representado pela seguinte estrutura de
 dados:
 
-\iniciocodigo
 @<Estruturas de Dados de Janela@>=
 struct _Wkeyboard{
   long key[W_KEYBOARD_SIZE + 1]; // Vetor de teclas: contador de tempo para elas
 };
 @
-\fimcodigo
 
 No vetor de teclas acima, nós reservamos uma posição para cada tecla
 diferente com o propósito de contar o tempo que leva para serem
@@ -3783,14 +3476,12 @@ diferente de zero.
 
 O mouse será representado pela seguinte estrutura:
 
-\iniciocodigo
 @<Estruturas de Dados de Janela@>+=
 struct _Wmouse{
   long button[W_MOUSE_SIZE];
   int x, y, dx, dy, ddx, ddy;
 };
 @
-\fimcodigo
 
 Os botões do mouse seguem as mesmas convenções das teclas de um
 teclado. Nós podemos detectar se elas estão sendo pressionadas, por
@@ -3807,7 +3498,6 @@ do ponteiro em pixels por unidade de tempo ao quadrado.
 Dadas estas estruturas, precisamos chamar a seguinte função
 periodicamente para atualizá-las:
 
-\iniciocodigo
 @<Funções da API@>+=
 void _Wget_window_input(unsigned long long current_time,
                        struct _Wkeyboard *keyboard,
@@ -3819,14 +3509,12 @@ void _Wget_window_input(unsigned long long current_time,
   @<Depois de Obter Eventos da Janela@>
 }
 @
-\fimcodigo
 
 A função basicamente entra em um laço para ler todos os eventos que a
 janela recebe. Dependendo do evento, ela atualiza de maneira adequada
 o estado das estruturas da janela e mouse. Por exemplo, no X11, a
 leitura de eventos acontece assim:
 
-\iniciocodigo
 @<Obter Eventos da Janela@>=
 #if defined(__linux__) || defined(BSD)
 XEvent event;
@@ -3836,12 +3524,10 @@ while(XPending(display)){
 }
 #endif
 @
-\fimcodigo
 
 Se estamos em ambiente Web Assembly, usamos a API SDL para ler os
 eventos:
 
-\iniciocodigo
 @<Obter Eventos da Janela@>+=
 #if defined(__EMSCRIPTEN__)
 SDL_Event event;
@@ -3850,12 +3536,10 @@ while(SDL_PollEvent(&event)){
 }
 #endif
 @
-\fimcodigo
 
 No Windows, os eventos são chamados de ``mensagens''. E a forma de ler
 eles é dada abaixo:
 
-\iniciocodigo
 @<Obter Eventos da Janela@>+=
 #if defined(_WIN32)
 MSG event;
@@ -3867,7 +3551,6 @@ while(PeekMessage(&event, window, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE)){
 }
 #endif
 @
-\fimcodigo
 
 No caso do Windows, nós podemos filtrar o tipo de evento que queremos
 tratar. Então separamos os eventos relacionados ao mouse e teclado,
@@ -3886,7 +3569,6 @@ teclas e o tempo no qual recebemos a informação de que elas foram
 pressionadas ou soltas. No laço em que lemos os eventos, é esse vetor
 de teclas que iremos atualizar:
 
-\iniciocodigo
 @<Variáveis Locais@>=
 static struct{
   unsigned key; // Qual tecla foi pressionada?
@@ -3894,7 +3576,6 @@ static struct{
 } pressed_keys[32];
 static unsigned released_keys[32]; // Que teclas foram soltas?
 @
-\fimcodigo
 
 Como parte da inicialização de nosso teclado, e também para reiniciar
 o estado dele, devemos chamar sempre um código que percorre a lista e
@@ -3906,7 +3587,6 @@ reinicializar o teclado, também temos que percorrer o seu vetor de
 teclas e ajustar todos para zero. O código de inicialização e
 reinicialização do teclado é:
 
-\iniciocodigo
 @<Iniciando ou Reiniciando Teclado@>=
 {
   int i;
@@ -3918,7 +3598,6 @@ reinicialização do teclado é:
     keyboard -> key[i] = 0;
 }
 @
-\fimcodigo
 
 \subsubsecao{3.2.1. Lendo o Teclado no X}
 
@@ -3931,38 +3610,32 @@ símbolo (\monoespaco{keycode} para \monoespaco{keysym}). De qualquer
 forma, isso significa que teremos que acompanhar um número potencial
 de quase 256 teclas diferentes.
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(__linux__) || defined(BSD)
 #define W_KEYBOARD_SIZE 256
 #endif
 @
-\fimcodigo
 
 Para detectar se uma tecla foi pressionada, antes de adicioná-la à
 lista de teclas pressionadas, usamos o seguinte código:
 
-\iniciocodigo
 @<X11: Tratar Eventos@>=
 if(event.type == KeyPress){
   unsigned key = event.xkey.keycode;
   @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
 @
-\fimcodigo
 
 Para detectar se uma tecla foi solta, antes de podermos removê-la da
 lista de teclas pressionadas e adicionar à lista de teclas soltas,
 usamos o código abaixo:
 
-\iniciocodigo
 @<X11: Tratar Eventos@>+=
 if(event.type == KeyRelease){
   unsigned key = event.xkey.keycode;
   @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
 }
 @
-\fimcodigo
 
 Embora o código acima trate corretamente os códigos de teclas, um
 usuário também deve saber o que os códigos representam. Ser informado
@@ -3977,9 +3650,6 @@ informação depende de como o teclado está mapeado, então só podemos
 obtê-la durante a execução de um programa. O código para descobrirmos
 a posição de cada tecla que suportamos é:
 
-
-
-\iniciocodigo
 @<Inicialização de Teclado@>=
 #if defined(__linux__) || defined(BSD)
 {
@@ -4040,22 +3710,18 @@ a posição de cada tecla que suportamos é:
 }
 #endif
 @
-\fimcodigo
 
 O uso da função \monoespaco{XkbKeycodeToKeysym} requer o cabeçalho:
 
-\iniciocodigo
 @<Cabeçalhos@>+=
 #if defined(__linux__) || defined(BSD)
 #include <X11/XKBlib.h>
 #endif
 @
-\fimcodigo
 
 Todas estas variáveis que representam posições no nosso vetor de
 teclas de teclado precisam ser declaradas:
 
-\iniciocodigo
 @<Declarações de Janela@>+=
 extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_MINUS, W_PLUS, W_F1, W_F2,
@@ -4066,7 +3732,6 @@ extern int W_BACKSPACE, W_TAB, W_ENTER, W_UP, W_DOWN, W_LEFT, W_RIGHT, W_0, W_1,
            W_X, W_Y, W_Z, W_INSERT, W_HOME, W_PAGE_UP, W_DELETE, W_END,
            W_PAGE_DOWN, W_ESC, W_ANY;
 @
-\fimcodigo
 
 E elas são inicializadas como sendo o
 valor \monoespaco{W\_KEYBOARD\_SIZE}, reservado para representar
@@ -4074,7 +3739,6 @@ teclas desconhecidas. Somente depois da inicialização do teclado as
 variáveis que representam teclas reconhecidas são mapeadas para sua
 verdadeira posição.
 
-\iniciocodigo
 @<Variáveis Globais@>+=
 int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_ENTER = W_KEYBOARD_SIZE, W_UP = W_KEYBOARD_SIZE, W_DOWN = W_KEYBOARD_SIZE,
@@ -4104,7 +3768,6 @@ int W_BACKSPACE = W_KEYBOARD_SIZE, W_TAB = W_KEYBOARD_SIZE,
     W_END = W_KEYBOARD_SIZE, W_PAGE_DOWN = W_KEYBOARD_SIZE,
     W_ESC = W_KEYBOARD_SIZE, W_ANY = 0;
 @
-\fimcodigo
 
 \subsubsecao{3.2.2. Lendo o Teclado no Web Assembly}
 
@@ -4114,13 +3777,11 @@ macro \monoespaco{SDL\_NUM\_SCANCODES}, que na épóca de escrita deste
 texto corresponde a 512 teclas diferentes. Provavelmente o valor não
 mudará no futuro próximo.
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
 @
-\fimcodigo
 
 No X11, vimos que há uma diferença entre a tecla física pressionada e
 o síbolo que ela representa. A mesma diferença aparece aqui. A tecla
@@ -4132,33 +3793,28 @@ o \monoespaco{Scancode} significa coisas completamente diferentes nas
 duas APIs. Usando a nomenclatura do SDL, é assim que detectamos uma
 tecla sendo pressionada:
 
-\iniciocodigo
 @<Web Assembly: Tratar Eventos@>=
 if(event.type == SDL_KEYDOWN){
   unsigned key = event.key.keysym.scancode;
   @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
 @
-\fimcodigo
 
 Já para tratar o caso de estarmos soltando uma tecla, usamos o código
 abaixo:
 
-\iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_KEYUP){
   unsigned key = event.key.keysym.scancode;
   @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
 }
 @
-\fimcodigo
 
 O código acima é idêntico ao usado no X11, apenas foi necessário mudar
 os nomes de variáveis seguindo a nomenclatura da estrutura do
 SDL. Agora precisamos do código que inicializa corretamente o nome de
 cada uma destas teclas:
 
-\iniciocodigo
 @<Inicialização de Teclado@>+=
 #if defined(__EMSCRIPTEN__)
 {
@@ -4218,7 +3874,6 @@ cada uma destas teclas:
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{3.2.3. Lendo o Teclado no Windows}
 
@@ -4227,13 +3882,11 @@ de \monoespaco{Scancode} e o símbolo associado a ela é chamado de
 ``código de tecla virtural''. O número de diferentes ``scancodes'' é
 sempre 256:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
 @
-\fimcodigo
 
 Detectar teclas sendo pressionadas é feito de maneira idêntica ao
 código que já vimos para o X11 e SDL, apenas com modificações menores
@@ -4241,33 +3894,28 @@ para abarcar algumas diferenças, e também tendo que mudar o nome das
 coisas, já que o Windows nomeia de maniera diferente as funções e
 estruturas:
 
-\iniciocodigo
 @<Windows: Tratar Eventos de Teclado@>=
 if(event.message == WM_KEYDOWN){
   unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Adiciona 'key' à Lista de Teclas Pressionadas@>
 }
 @
-\fimcodigo
 
 Note que uma das diferenças aqui é que para extrair o ``scancode'' da
 tecla física, precisamos fazer um pouco de manipulação de bits. Fora
 isso, o código é o mesmo que já foi visto nas subsubseções anteriores
 para X11 e SDL. Já o código que detecta se uma tecla foi solta é:
 
-\iniciocodigo
 @<Windows: Tratar Eventos de Teclado@>+=
 if(event.message == WM_KEYUP){
   unsigned key = (event.lParam & 0x00ff0000) >> 16;
   @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>
 }
 @
-\fimcodigo
 
 E finalmente, inicializamos aqui os nomes das teclas para que eles
 apontem para a posição correta no nosso vetor de teclas:
 
-\iniciocodigo
 @<Inicialização de Teclado@>+=
 #if defined(_WIN32)
 {
@@ -4326,7 +3974,6 @@ apontem para a posição correta no nosso vetor de teclas:
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{3.2.4. Código Adicional para Suporte de Teclado}
 
@@ -4346,7 +3993,6 @@ pressionadas representa o fim da lista por uma tecla nula
 armazenada. Sabendo disso, adicionar uma tecla na lista significa
 iterar sobre ela até achar uma teclas nula e fazer a substituição:
 
-\iniciocodigo
 @<Adiciona 'key' à Lista de Teclas Pressionadas@>=
 {
   int i;
@@ -4364,7 +4010,6 @@ iterar sobre ela até achar uma teclas nula e fazer a substituição:
   if(i == 32) continue; // Ignoring: too many keypresses
 }
 @
-\fimcodigo
 
 Agora para removermos uma tecla da lista de teclas pressionadas e
 adicioná-las à lista de teclas soltas, primeiro iteramos sobre s
@@ -4374,7 +4019,6 @@ anterior, o que efetivamente apaga a tecla desejada da lista. Depois
 disso, iteramos sobre a lista de teclas soltas até achar uma posição
 vaga e inserimos nossa nova tecla ali:
 
-\iniciocodigo
 @<Remove 'key' da Lista de Teclas Pressionadas e Adiciona às Teclas Soltas@>=
 {
   int i;
@@ -4407,7 +4051,6 @@ vaga e inserimos nossa nova tecla ali:
   }
 }
 @
-\fimcodigo
 
 Mas como usar a informação da lista de teclas pressionadas e soltas
 para atualizar nossa estrutura de teclado? Primeiro, a cada frame,
@@ -4416,7 +4059,6 @@ teclas pressionadas. E para cada uma das teclas, devemos atualizar a
 contagem de tempo que elas estão sendo pressionadas na nossa estrutura
 de teclado:
 
-\iniciocodigo
 @<Depois de Obter Eventos da Janela@>=
 {
   int i;
@@ -4430,7 +4072,6 @@ de teclado:
   }
 }
 @
-\fimcodigo
 
 Agora o contador de tempo de teclas pressionadas vai atualizar a cada
 frame, nao só ficar sempre no valor de 1.
@@ -4444,7 +4085,6 @@ lista de teclas que foram soltas no último frame e para cada uma
 delas ajustar o número de cada tecla para zero e esvaziar a lista de
 teclas soltas:
 
-\iniciocodigo
 @<Antes de Obter Eventos da Janela@>=
 {
   int i;
@@ -4456,7 +4096,6 @@ teclas soltas:
   }
 }
 @
-\fimcodigo
 
 \subsecao{3.3. Lendo o Mouse}
 
@@ -4466,7 +4105,6 @@ botões é muito menor. Nossas listas irão apenas armazenar no máximo 4
 botões. É pouco realista dar significado a ações que envolvem
 pressionar mais do que quatro botões de teclado:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 static struct{
   unsigned button; // Which button was pressed?
@@ -4474,18 +4112,15 @@ static struct{
 } pressed_buttons[4];
 static unsigned released_buttons[4]; // Which buttons were released?
 @
-\fimcodigo
 
 Mas ao contrário do teclado, um mouse pode se mover. E se queremos
 saber não apenas a posição do mouse, mas sua velocidade e aceleração,
 devemos armazenar como informação adicional a sua última
 velocidade. Vamos usar estas variáveis para isso:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 static int last_mouse_dx = 0, last_mouse_dy = 0;
 @
-\fimcodigo
 
 Por fim, quando lemos pela primeira vez a posição do mouse, não temos
 uma leitura anterior de sua posição e velocidade. Então não faz sentido
@@ -4503,17 +4138,14 @@ temos como saber a velocidade. O valor 1 indica que nã há ainda como
 obter aceleração. E o valor 0 indica que a inicialização terminou. A
 variável que armazenará isso é:
 
-\iniciocodigo
 @<Variáveis Locais@>+=
 static int mouse_initialization = 3;
 @
-\fimcodigo
 
 Quando inicializamos o mouse, iremos tornar vazia nossa lista de
 botões pressionados e soltos e também inicializamos como zero todos os
 botões, bem como a posição, velocidade e aceleração.
 
-\iniciocodigo
 @<Inicializando ou Reinicializando o Mouse@>=
 {
   int i;
@@ -4529,7 +4161,6 @@ botões, bem como a posição, velocidade e aceleração.
   @<Obtém Posição do Mouse@>
 }
 @
-\fimcodigo
 
 \subsubsecao{3.3.1. Lendo o Mouse no X}
 
@@ -4541,7 +4172,6 @@ significados diferentes para cada botão. Assim, podemos definir o
 número de botões existentes e suas respectivas posições no vetor de
 botões por meio das seguintes macros:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(__linux__) || defined(BSD)
 #define W_MOUSE_SIZE 6
@@ -4552,40 +4182,34 @@ botões por meio das seguintes macros:
 #define W_MOUSE_X2     Button5
 #endif
 @
-\fimcodigo
 
 Sobre o pressionar de botões, para detectá-los devemos detectar
 eventos to tipo \monoespaco{ButtonPress}. E então ler neles a
 informação de qual botão do mouse foi pressionado, adicionando-o para
 nossa lista de botões pressionados:
 
-\iniciocodigo
 @<X11: Tratar Eventos@>+=
 if(event.type == ButtonPress){
   unsigned button = event.xbutton.button;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 @
-\fimcodigo
 
 Para detectar um botão sendo solto, devemos checar por eventos do
 tipo \monoespaco{ButtonRelease} e ler no evento qual dos possíveis
 cinco botões foram soltos. Em seguida, nós removemos tal botão da
 lista de botões pressionados e o colocamos na lista de botões soltos:
 
-\iniciocodigo
 @<X11: Tratar Eventos@>+=
 if(event.type == ButtonRelease){
   unsigned button = event.xbutton.button;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
 @
-\fimcodigo
 
 E também temos que detectar movimentos do mouse. Para isso devemos
 esperar por eventos de movimento do mouse:
 
-\iniciocodigo
 @<X11: Tratar Eventos@>+=
 if(event.type == MotionNotify){
   int x, y;
@@ -4594,7 +4218,6 @@ if(event.type == MotionNotify){
   @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 @
-\fimcodigo
 
 Note que temos que fazer uma transformação na coordenada $y$, pois o
 Xlib considera a posição zero o topo da janela, enquanto aqui tratamos
@@ -4608,7 +4231,6 @@ relativo não so à nossa janela atual, mas também relacionado à janela
 acima e à janelas abaixo na hierarquia. Nós ignoramos a maioria de
 tais informações, exceto pela posição relativa à nossa janela atual.
 
-\iniciocodigo
 @<Obtém Posição do Mouse@>=
 #if defined(__linux__) || defined(BSD)
 {
@@ -4624,7 +4246,6 @@ tais informações, exceto pela posição relativa à nossa janela atual.
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{3.3.2. Lendo o Mouse no Web Assembly}
 
@@ -4633,7 +4254,6 @@ de cinco botões no Web Assembly, cada um deles numerado entre 1 e
 5. Também podemos aqui usar a posição zero para representar ``qualquer
 tecla'':
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -4644,33 +4264,27 @@ tecla'':
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
 @
-\fimcodigo
 
 Detectamos que um botão do mouse foi pressionado com o código abaixo:
 
-\iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_MOUSEBUTTONDOWN){
   unsigned button = event.button.button;
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 @
-\fimcodigo
 
 Detectamos que o botão foi solto com o código abaixo:
 
-\iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_MOUSEBUTTONUP){
   unsigned button = event.button.button;
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
 @
-\fimcodigo
 
 E detectamos o movimento do mouse abaixo:
 
-\iniciocodigo
 @<Web Assembly: Tratar Eventos@>+=
 if(event.type == SDL_MOUSEMOTION){
   int x, y;
@@ -4679,12 +4293,10 @@ if(event.type == SDL_MOUSEMOTION){
   @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 @
-\fimcodigo
 
 Já para obter a posição inicial do mouse, esmo que ele não tenhasido
 movido, usamos o código abaixo:
 
-\iniciocodigo
 @<Obtém Posição do Mouse@>+=
 #if defined(__EMSCRIPTEN__)
 {
@@ -4696,7 +4308,6 @@ movido, usamos o código abaixo:
 }
 #endif
 @
-\fimcodigo
 
 \subsubsecao{3.3.3. Lendo o Mouse no Windows}
 
@@ -4708,7 +4319,6 @@ será sua posição no vetor de botões de nossa estrutura de mouse. Então
 nós criamos nossa própria associação entre botões e números com as
 macros abaixo:
 
-\iniciocodigo
 @<Define Macros@>+=
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -4719,14 +4329,12 @@ macros abaixo:
 #define W_MOUSE_X2     5
 #endif
 @
-\fimcodigo
 
 Como o Windows cria eventos de tipos diferentes para cada um dos
 botões, e além disso trata como se fôsse um único botão o X1 e X2,
 apenas diferenciando-os por meio de um dos bits da mensagem, temos
 trabalho adicional para tratar os eventos de clique de mouse:
 
-\iniciocodigo
 @<Windows: Tratar Eventos de Mouse@>=
 if(event.message == WM_LBUTTONDOWN){
   unsigned button = W_MOUSE_LEFT;
@@ -4748,13 +4356,11 @@ else if(event.message == WM_XBUTTONDOWN){
   @<Adiciona 'button' à Lista de Botões Pressionados@>
 }
 @
-\fimcodigo
 
 Para detectar que um dos botões clicados foi solto, também temos que
 verificar um evento diferente para cada botão tratando os botões X1 e
 X2 de maneira diferente dos demais:
 
-\iniciocodigo
 @<Windows: Tratar Eventos de Mouse@>+=
 if(event.message == WM_LBUTTONUP){
   unsigned button = W_MOUSE_LEFT;
@@ -4776,11 +4382,9 @@ else if(event.message == WM_XBUTTONUP){
   @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>
 }
 @
-\fimcodigo
 
 E assim é como detectamos o evento no qual o mmouse se move:
 
-\iniciocodigo
 @<Windows: Tratar Eventos de Mouse@>+=
 if(event.message == WM_MOUSEMOVE){
   int x, y;
@@ -4789,7 +4393,6 @@ if(event.message == WM_MOUSEMOVE){
   @<Atualiza Posição do Mouse 'x' e 'y'@>
 }
 @
-\fimcodigo
 
 Como em todos os outros ambientes,mudamos a coordenada para que ela
 fique relatia ao canto inferior esquerdo da tela, não o canto superior
@@ -4798,7 +4401,6 @@ esquerdo como é mais comum.
 E para obter a posição inicial do mouse, mesmo que ele nunca tenha se
 movido, usamos o código:
 
-\iniciocodigo
 @<Obtém Posição do Mouse@>+=
 #if defined(_WIN32)
 {
@@ -4815,8 +4417,6 @@ movido, usamos o código:
 }
 #endif
 @
-\fimcodigo
-
 
 \subsecao{3.3.4. Código Adicional para Suporte de Mouse}
 
@@ -4829,7 +4429,6 @@ pressionado à nossa lista de botões pressionados. Lembre-se que a
 lista é um vetor de até 4 elementos onde marcamos qualquer fim
 prematuro da lista com um botão nulo:
 
-\iniciocodigo
 @<Adiciona 'button' à Lista de Botões Pressionados@>=
 {
   int i;
@@ -4847,14 +4446,12 @@ prematuro da lista com um botão nulo:
   if(i == 4) continue; // Ignorando: muitos botões pressionados
 }
 @
-\fimcodigo
 
 Assim como podemos adicionar botões à esta lista, vamos também
 removê-los com o código abaixo. E ao remover um botão da lista de
 botões pressionados, o adicionamos necessariamente à lista de botões
 soltos:
 
-\iniciocodigo
 @<Remove 'botton' da Lista de Botões Pressionados e Adiciona à Botões Soltos@>=
 {
   int i;
@@ -4887,14 +4484,12 @@ soltos:
   }
 }
 @
-\fimcodigo
 
 Assim como tivemos que fazer no teclado, depois de atualizarmos a
 lista de botões pressionados, temos que atualizar o vetor de botões do
 mouse, atualizando informação de por quanto tempo cada um está sendo
 pressionado:
 
-\iniciocodigo
 @<Depois de Obter Eventos da Janela@>+=
 {
   int i;
@@ -4909,13 +4504,11 @@ pressionado:
   }
 }
 @
-\fimcodigo
 
 Assim como antes de atualizarmos a lista de botões pressionados, temos
 que esvaziar a lista de botões soltos e marcamos no mouse que aquele
 boão não está mais sendo pressionado:
 
-\iniciocodigo
 @<Antes de Obter Eventos da Janela@>=
 {
   int i;
@@ -4927,7 +4520,6 @@ boão não está mais sendo pressionado:
   }
 }
 @
-\fimcodigo
 
 E agora mostramos o código para atualizar a posição do mouse, bem como
 sua velocidade e aceleração (a depender do quanto avançamos na
@@ -4935,7 +4527,6 @@ inicialização do mouse). Nós rodamos este código ao detectar o
 movimento do mouse e também quando lemos pela primeira vez a posição
 inicial do mouse.
 
-\iniciocodigo
 @<Atualiza Posição do Mouse 'x' e 'y'@>=
 {
   @<Corrige Posição do Mouse 'x' e 'y' se Forçamos Modo Paisagem@>
@@ -4955,7 +4546,6 @@ inicial do mouse.
     mouse_initialization --;
 }
 @
-\fimcodigo
 
 Acima nós também podemos precisar corrigir a posição do mouse se a
 macro \monoespaco{W\_FORCE\_LANDSCAPE} estiver definida. Neste caso,
@@ -4963,7 +4553,6 @@ se a altura de nossa janela for maior que a largura, vamos inverter os
 eixos $x$ e $y$. O que significa que vamos girar em 90 graus os eixos
 $x$ e $y$:
 
-\iniciocodigo
 @<Corrige Posição do Mouse 'x' e 'y' se Forçamos Modo Paisagem@>=
 #if defined(W_FORCE_LANDSCAPE)
 if(window_size_y > window_size_x){
@@ -4973,7 +4562,6 @@ if(window_size_y > window_size_x){
 }
 #endif
 @
-\fimcodigo
 
 \subsecao{3.4. Funções Adicionais de Entrada}
 
@@ -4985,7 +4573,6 @@ casos, o melhor a fazer é só ignorar esse fluxo inicial, já que não
 seremos capazes de tratá-lo corretamente. É para isso que usamos a
 seguinte função:
 
-\iniciocodigo
 @<Funções da API@>+=
 void _Wflush_window_input(struct _Wkeyboard *keyboard,
                           struct _Wmouse *mouse){
@@ -4997,25 +4584,20 @@ void _Wflush_window_input(struct _Wkeyboard *keyboard,
   @<Inicializando ou Reinicializando o Mouse@>
 }
 @
-\fimcodigo
-
 
 \secao{4. Estrutura Final do Arquivo}
 
 O arquivo com o código-fonte de todas as funções definidas neste
 artigo terá a seguinte forma:
 
-\iniciocodigo
 @(src/window.c@>=
 #include "window.h"
+#include <stdio.h>
 @<Cabeçalhos@>
 @<Funções Locais@>
 @<Variáveis Globais@>
 @<Variáveis Locais@>
 @<Funções da API@>
 @
-\fimcodigo
-
-
 
 \fim

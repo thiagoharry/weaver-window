@@ -15,7 +15,7 @@ other projects. This is only a library with two files:
 and
 [window.h](https://github.com/thiagoharry/weaver-window/blob/master/src/window.h).
 
-This is written in Literary Programming. And the code is tested on
+This is written in Literate Programming. And the code is tested on
 Linux, Open BSD, Windows 10 and Web Assembly. Therefore, if you plan
 to study how this library works, you can read the full source code
 with additional text explanations in
@@ -254,9 +254,9 @@ behaviour:
 * `W_WINDOW_NAME`: The window name. To be shown in the title bar.
 * `W_WINDOW_NO_FULLSCREEN`: If defined, all new windows begin in
   windowed mode, not in fullscreen mode.
-* `W_WINDOW_SIZE_X`: De default window width when creating a
+* `W_WINDOW_SIZE_X`: Default window width when creating a
   non-fullscreen window.
-* `W_WINDOW_SIZE_Y`: De default window height when creating a
+* `W_WINDOW_SIZE_Y`: Default window height when creating a
   non-fullscreen window.
 * `W_FORCE_LANDSCAPE`: If this macro is defined and if the window
   height is greater than window width, we swap coordinates x and y
