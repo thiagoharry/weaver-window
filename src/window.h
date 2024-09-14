@@ -348,28 +348,28 @@ typedef float GLclampf;
 #endif
 #line 2715 "weaver-window.cweb"
 /*:131*//*164:*/
-#line 3613 "weaver-window.cweb"
+#line 3617 "weaver-window.cweb"
 
 #if defined(__linux__) || defined(BSD)
 #define W_KEYBOARD_SIZE 256
 #endif
-#line 3617 "weaver-window.cweb"
+#line 3621 "weaver-window.cweb"
 /*:164*//*171:*/
-#line 3780 "weaver-window.cweb"
+#line 3784 "weaver-window.cweb"
 
 #if defined(__EMSCRIPTEN__)
 #define W_KEYBOARD_SIZE SDL_NUM_SCANCODES
 #endif
-#line 3784 "weaver-window.cweb"
+#line 3788 "weaver-window.cweb"
 /*:171*//*175:*/
-#line 3885 "weaver-window.cweb"
+#line 3889 "weaver-window.cweb"
 
 #if defined(_WIN32)
 #define W_KEYBOARD_SIZE 256
 #endif
-#line 3889 "weaver-window.cweb"
+#line 3893 "weaver-window.cweb"
 /*:175*//*187:*/
-#line 4175 "weaver-window.cweb"
+#line 4179 "weaver-window.cweb"
 
 #if defined(__linux__) || defined(BSD)
 #define W_MOUSE_SIZE 6
@@ -379,9 +379,9 @@ typedef float GLclampf;
 #define W_MOUSE_X1     Button4
 #define W_MOUSE_X2     Button5
 #endif
-#line 4184 "weaver-window.cweb"
+#line 4188 "weaver-window.cweb"
 /*:187*//*192:*/
-#line 4257 "weaver-window.cweb"
+#line 4261 "weaver-window.cweb"
 
 #if defined(__EMSCRIPTEN__)
 #define W_MOUSE_SIZE 6
@@ -391,9 +391,9 @@ typedef float GLclampf;
 #define W_MOUSE_X1     SDL_BUTTON_X1
 #define W_MOUSE_X2     SDL_BUTTON_X2
 #endif
-#line 4266 "weaver-window.cweb"
+#line 4270 "weaver-window.cweb"
 /*:192*//*197:*/
-#line 4322 "weaver-window.cweb"
+#line 4326 "weaver-window.cweb"
 
 #if defined(_WIN32)
 #define W_MOUSE_SIZE 6
@@ -403,18 +403,18 @@ typedef float GLclampf;
 #define W_MOUSE_X1     4
 #define W_MOUSE_X2     5
 #endif
-#line 4331 "weaver-window.cweb"
+#line 4335 "weaver-window.cweb"
 /*:197*/
 #line 229 "weaver-window.cweb"
 
 /*156:*/
-#line 3444 "weaver-window.cweb"
+#line 3448 "weaver-window.cweb"
 
 struct _Wkeyboard{
 long key[W_KEYBOARD_SIZE+1];
 };
 /*:156*//*157:*/
-#line 3479 "weaver-window.cweb"
+#line 3483 "weaver-window.cweb"
 
 struct _Wmouse{
 long button[W_MOUSE_SIZE];
@@ -672,7 +672,7 @@ extern void(__stdcall*glGetRenderbufferParameteriv)(GLenum,GLenum,int*);
 #endif
 #line 2610 "weaver-window.cweb"
 /*:128*//*169:*/
-#line 3725 "weaver-window.cweb"
+#line 3729 "weaver-window.cweb"
 
 extern int W_BACKSPACE,W_TAB,W_ENTER,W_UP,W_DOWN,W_LEFT,W_RIGHT,W_0,W_1,
 W_2,W_3,W_4,W_5,W_6,W_7,W_8,W_9,W_MINUS,W_PLUS,W_F1,W_F2,

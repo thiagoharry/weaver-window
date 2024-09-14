@@ -3126,7 +3126,7 @@ code. It waits until our window have the new size, but if this does
 not happen in 0.1 seconds, it halts the waiting:
 
 @<X11: Wait for Resizing@>=
-{ // Wait at most 0.5 seconds for the resizing
+{ // Wait at most 0.1 seconds for the resizing
   struct timeval begin_time, now;
   int new_width, new_height;
   gettimeofday(&begin_time, NULL);
@@ -3135,7 +3135,7 @@ not happen in 0.1 seconds, it halts the waiting:
     gettimeofday(&now, NULL);
   } while((new_width != new_size_x || new_height != new_size_y) &&
           (now.tv_sec - begin_time.tv_sec) * 1000000 +
-          (now.tv_usec - begin_time.tv_usec) < 500000);
+          (now.tv_usec - begin_time.tv_usec) < 100000);
 }
 @
 

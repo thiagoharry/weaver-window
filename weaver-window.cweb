@@ -3162,13 +3162,6 @@ void _Wtoggle_fullscreen(void){
   glViewport(0, 0, new_size_x, new_size_y);
   if(resizing_function != NULL)
     resizing_function(old_size_x, old_size_y, new_size_x, new_size_y);
-  {
-    //Window w;
-    //int t;
-    //XGetInputFocus(display, &w, &t);
-    //if(w != window)
-    //  XSetInputFocus(display, window, RevertToParent, CurrentTime);
-  }
 }
 #endif
 @
@@ -3191,7 +3184,7 @@ O trecho de código que nos permite esperar a mudança de tamanho surtir
 efeito é:
 
 @<X11: Esperar Redimencionamento Surtir Efeito@>=
-{ // Espera no máximo 0.5 segundos para que a mudança surta efeito
+{ // Espera no máximo 0.1 segundos para que a mudança surta efeito
   struct timeval begin_time, now;
   int new_width, new_height;
   gettimeofday(&begin_time, NULL);
@@ -3200,7 +3193,7 @@ efeito é:
     gettimeofday(&now, NULL);
   } while((new_width != new_size_x || new_height != new_size_y) &&
           (now.tv_sec - begin_time.tv_sec) * 1000000 +
-          (now.tv_usec - begin_time.tv_usec) < 500000);
+          (now.tv_usec - begin_time.tv_usec) < 100000);
 }
 @
 
