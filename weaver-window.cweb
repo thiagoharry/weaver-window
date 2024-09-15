@@ -2848,11 +2848,37 @@ No X, como pedimos para o EGL criar uma janela e por padrão ele cria
 uma janela com buffer duplo, para renderizarmos os comandos OpenGL
 após eles terem sido feitos, devemos fazer com que o buffer traseiro,
 onde estávamos desenhando, se torne o buffer dianteiro que é exibido
-na tela e vice-versa:
+na tela e vice-versa. Fazemos isso invocando a função
+\monoespaco{eglSwapBuffers}.
+
+Entretanto, além do comando para garantir a renderização na tela,
+devemos nos preocupar com outro cenário: existe uma miríade de
+gerenciadores de janela no X, e uma variedade muito grande de
+ambientes nos quais nossa janela irá rodar. Não temos muito controle
+de alguns eventos como o fato da nossa janela poder perder o foco de
+teclado e mouse, mas continuar ocupando a tela toda caso seja uma
+janela em tela-cheia. Como este é um cenário problemático, pois pode
+fazer com que não possamos mais interagir com o sistema, devemos
+garantir que se estamos em tela-cheia e detectarmos que nossa janela
+perdeu o foco, devemos reassumi-lo. Mas só fazemos isso se a nossa
+janela no momento estiver realmente visível (ou o X provoca um erro
+fatal, devemos sempre checar isso antes de mudar o foco para uma
+janela):
 
 @<Funções da API@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wrender_window(void){
+  if(_Wis_fullscreen()){ // Garante foco em tela-cheia
+    Window focused_window;
+    int focus_status;
+    XGetInputFocus(display, &focused_window, &focus_status);
+    if(focused_window != window){
+      XWindowAttributes attr;
+      XGetWindowAttributes(display, window, &attr);
+      if(attr.map_state == IsViewable)
+        XSetInputFocus(display, window, RevertToParent, CurrentTime);
+    }
+  }// Faz a troca de buffers para renderização:
   return eglSwapBuffers(egl_display, egl_window);
 }
 #endif

@@ -2802,12 +2802,35 @@ do this depends on our environment and API.
 In X, when we asked EGL to create a window, by default it creates a
 double buffered window. Rendering in the screen means in this case to
 swap the window buffers. The back buffer where we were drawing became
-the front buffer, what is shown in the screen, and vice-versa. This is
-achieved with the following code:
+the front buffer, what is shown in the screen, and vice-versa. This is done by function \monoespaco{eglSwapBuffers}.
+
+However, in addition to the command to ensure screen rendering, we
+must worry about another scenario: there are a myriad of window
+managers in X, and a very wide variety of environments in which our
+window will run. We do not have much control over some events, such as
+the fact that our window may lose keyboard and mouse focus, but
+continue to occupy the entire screen if it is a fullscreen
+window. Since this is a problematic scenario, since it can make us
+unable to interact with the system, we must ensure that if we are in
+fullscreen and detect that our window has lost focus, we must regain
+it. But we only do this if our window is actually visible at the time
+(or X causes a fatal error, we should always check this before
+changing focus to a window):
 
 @<API Functions@>+=
 #if defined(__linux__) || defined(BSD)
 bool _Wrender_window(void){
+  if(_Wis_fullscreen()){ // Ensure input focus when in fullscreen
+    Window focused_window;
+    int focus_status;
+    XGetInputFocus(display, &focused_window, &focus_status);
+    if(focused_window != window){
+      XWindowAttributes attr;
+      XGetWindowAttributes(display, window, &attr);
+      if(attr.map_state == IsViewable)
+        XSetInputFocus(display, window, RevertToParent, CurrentTime);
+    }
+  }// Swap buffers for rendering:
   return eglSwapBuffers(egl_display, egl_window);
 }
 #endif
