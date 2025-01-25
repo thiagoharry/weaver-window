@@ -119,7 +119,8 @@ void test_resizing(void){
 
 static int counter = 0;
 void update_counter(int old_width, int old_height, int new_width, int new_height){
-  counter ++;
+  if(new_width != old_width || new_height != old_height)
+    counter ++;
 }
 void test_resizing_function(void){
   int counter0, counter1, counter2, counter3, counter4;
@@ -407,7 +408,7 @@ void test_fullscreen(void){
   _Wdestroy_window();
 }
 
-int main(int argc, char **argv){
+int main(void){
   test_create_destroy_window();
   test_resolution();
   test_fullscreen();

@@ -1,3 +1,5 @@
+FLAGS=-Wall -O2 -Os -Wextra -Wshadow -Wundef -std=gnu99
+
 report:
 	magitex-cweb weaver-window.cweb
 	dvipdf weaver-window.dvi
@@ -12,11 +14,11 @@ src/window.c: weaver-window.cweb
 	rm weaver-window.c
 test:
 	ctangle weaver-window.cweb
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -g -Wall -O2 tests/test.c src/window.c  -o test_window -lX11 -lEGL -lGLESv2
+	$(CC) ${FLAGS} $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -g tests/test.c src/window.c  -o test_window -lX11 -lEGL -lGLESv2
 	./test_window
 test_en:
 	ctangle weaver-window_en.cweb
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -Wall -O2 tests/test.c src/window.c  -o test_window -lX11 -lEGL -lGLESv2
+	$(CC) ${FLAGS} $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) tests/test.c src/window.c  -o test_window -lX11 -lEGL -lGLESv2
 	./test_window
 test_web:
 	ctangle weaver-window.cweb
