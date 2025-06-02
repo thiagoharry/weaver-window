@@ -65,93 +65,93 @@
 
 2. Creating and Managing the Window \indice{05}
 
-2.1. Getting Screen Resolution \indice{05}
+2.1. Getting Screen Resolution and Dot Density \indice{05}
 
-2.1.1. Getting Screen Resolution on X \indice{05}
+2.1.1. Getting Screen Resolution and Dot Density on X \indice{05}
 
-2.1.2. Getting Screen Resolution on Web Assembly \indice{07}
+2.1.2. Getting Screen Resolution and Dot Density on Web Assembly \indice{07}
 
-2.1.3. Getting Screen Resolution on Windows \indice{07}
+2.1.3. Getting Screen Resolution and Dot Density on Windows \indice{08}
 
-2.2. Creating a Window \indice{07}
+2.2. Creating a Window \indice{08}
 
-2.2.1. Creating a Window on X \indice{07}
+2.2.1. Creating a Window on X \indice{08}
 
-2.2.2. Creating a Window on Web Assembly \indice{11}
+2.2.2. Creating a Window on Web Assembly \indice{12}
 
-2.2.3. Creating a Window on (Microsoft) Windows \indice{13}
+2.2.3. Creating a Window on (Microsoft) Windows \indice{14}
 
 2.2.4. Defining the  Window Creation Function for All Environments \indice{16}
 
-2.3. Configuring OpenGL \indice{16}
+2.3. Configuring OpenGL \indice{17}
 
-2.3.1. Configuring OpenGL ES in X11 \indice{16}
+2.3.1. Configuring OpenGL ES in X11 \indice{17}
 
-2.3.2.Configuring OpenGL on Web Assembly \indice{18}
+2.3.2.Configuring OpenGL on Web Assembly \indice{19}
 
 2.3.3. Configuring OpenGL on Windows \indice{19}
 
-2.3.4. Choosing OpenGL Version \indice{43}
+2.3.4. Choosing OpenGL Version \indice{44}
 
 2.4. Closing a Window \indice{44}
 
 2.4.1. Closing a Window on X \indice{44}
 
-2.4.2. Closing a Window in Web Assembly \indice{44}
+2.4.2. Closing a Window in Web Assembly \indice{45}
 
 2.4.3. Closing a Window on Windows \indice{45}
 
 2.5. Rendering the Window \indice{45}
 
-2.5.1. Rendering Window on X \indice{45}
+2.5.1. Rendering Window on X \indice{46}
 
-2.5.2. Rendering Window on Web Assembly \indice{45}
+2.5.2. Rendering Window on Web Assembly \indice{46}
 
 2.5.3. Rendering Window on Windows \indice{46}
 
-2.6. Getting Window Size \indice{46}
+2.6. Getting Window Size \indice{47}
 
-2.6.1. Getting Window Size on X \indice{46}
+2.6.1. Getting Window Size on X \indice{47}
 
-2.6.2. Getting Window Size on Web Assembly \indice{46}
+2.6.2. Getting Window Size on Web Assembly \indice{47}
 
-2.6.3. Getting Window Size on Windows \indice{47}
+2.6.3. Getting Window Size on Windows \indice{48}
 
 2.7. Checking Fullscreen Mode \indice{48}
 
 2.7.1. Checking Fullscreen Mode on X \indice{48}
 
-2.7.2. Checking Fullscreen Mode on Web Assembly \indice{48}
+2.7.2. Checking Fullscreen Mode on Web Assembly \indice{49}
 
-2.7.3. Checking Fullscreen Mode on Windows \indice{48}
+2.7.3. Checking Fullscreen Mode on Windows \indice{49}
 
 2.8. Changing Between Fullscreen and Windowed Mode \indice{49}
 
-2.8.1. Changing Between Fullscreen and Windowed Mode on X \indice{49}
+2.8.1. Changing Between Fullscreen and Windowed Mode on X \indice{50}
 
 2.8.2. Changing Between Fullscreen and Windowed Mode on Web Assembly \indice{51}
 
-2.8.3. Changing Between Fullscreen and Windowed Mode on Windows \indice{52}
+2.8.3. Changing Between Fullscreen and Windowed Mode on Windows \indice{53}
 
 2.9. Resizing the Window \indice{53}
 
 2.9.1. Resizing the Window on X \indice{53}
 
-2.9.2. Resizing the Window on Web Assembly \indice{53}
+2.9.2. Resizing the Window on Web Assembly \indice{54}
 
 2.9.3. Resizing the Window on Windows \indice{54}
 
-3. Managing Input \indice{54}
+3. Managing Input \indice{55}
 
-3.1. Defining the Keyboard and Mouse \indice{54}
+3.1. Defining the Keyboard and Mouse \indice{55}
 
-3.2. Reading the Keyboard \indice{56}
+3.2. Reading the Keyboard \indice{57}
 
 3.2.1. Reading the Keyboard on X \indice{57}
 
 3.2.2. Reading the Keyboard on Web Assembly \indice{60}
 
-3.2.3. Reading the Keyboard on Windows \indice{61}
+3.2.3. Reading the Keyboard on Windows \indice{62}
 
 3.2.4. Additional Code for Keyboard Support \indice{63}
 
@@ -304,6 +304,14 @@ data about the main window. In case of error, it returns false and
 stores zero as the resolution.
 
 @<Window Declarations@>=
+bool _Wget_screen_dpi(int *dpi_x, int *dpi_y);
+@
+
+This function will get the pixel density of the screen, measured in
+DPI (dots per inch). If an error occurs, it will return false and the
+values ​​passed as arguments will be initialized to zero.
+
+@<Window Declarations@>=
 bool _Wget_window_size(int *width, int *height);
 @
 
@@ -370,7 +378,7 @@ and height, followed by the new width and height.
 In this Section we will define the functions and core about creating a
 window and an OpenGL context compatible with Open GL ES 2.0.
 
-\subsecao{2.1. Getting Screen Resolution}
+\subsecao{2.1. Getting Screen Resolution and Dot Density}
 
 Before creating our window, it is important to check what is our
 window and screen resolution. If we are running in fullscreen mode,
@@ -391,7 +399,14 @@ height, so that we do not need to measure it all the time:
 static int window_size_y = 0, window_size_x = 0;
 @
 
-\subsubsecao{2.1.1. Getting Screen Resolution on X}
+In addition to resolution, another measurement that may be relevant is
+the number of dots per inch, which measures the pixel density per area
+of ​​our screen. The DPI value can be consulted by some applications,
+but it is not something we need to worry about having stored in the
+cache, since it is a value that does not change and will rarely need
+to be consulted.
+
+\subsubsecao{2.1.1. Getting Screen Resolution and Dot Density on X}
 
 The X Window System, also known as X11, is a windowing system present
 in many Operating System, as Linux, BSD and even in MacOX, where it
@@ -464,9 +479,38 @@ static Display *display = NULL; //Connection with server and info about screens
 #endif
 @
 
-\subsubsecao{2.1.2. Getting Screen Resolution on Web Assembly}
+Regarding the screen's dot density, measured in DPI, we must first
+check the screen resolution, and then use the functions
+\monoespaco{DisplayWidthMM} and \monoespaco{DisplayHeightMM} to obtain
+the screen size in millimeters. Calculating the number of dots per
+inch is done by simply converting millimeters to inches and
+dividing the number of pixels by that value, both horizontally and
+vertically.
 
-If we are running Web Assembly, then we are in a web broser. Our
+@<API Functions@>+=
+#if defined(__linux__) || defined(BSD)
+bool _Wget_screen_dpi(int *dpi_x, int *dpi_y){
+  int resolution_x, resolution_y;
+  double xres, yres;
+  if(!_Wget_screen_resolution(&resolution_x, &resolution_y)){
+    *dpi_x = *dpi_y = 0;
+    return false;
+  }
+  xres = ((((double) resolution_x) * 25.4) / 
+           ((double) DisplayWidthMM(display, 0)));
+  yres = ((((double) resolution_y) * 25.4) / 
+           ((double) DisplayHeightMM(display, 0)));
+  *dpi_x = (int) (xres + 0.5);
+  *dpi_y = (int) (yres + 0.5);
+  return true;
+}
+#endif
+@
+
+\subsubsecao{2.1.2. Getting Screen Resolution and Dot Density on Web
+Assembly}
+
+If we are running Web Assembly, then we are in a web browser. Our
 ``window'' will be a HTML canvas. And to obtain the screen size, we
 need to run javascript code. We can do this with the help of
 Emscripten API:
@@ -485,10 +529,30 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 #endif
 @
 
-\subsubsecao{2.1.3. Getting Screen Resolution on Windows}
+In WebAssembly, getting the pixel density of the screen is somewhat
+imprecise. Web browsers typically store a floating-point value as an
+attribute of the object representing the window called
+\monoespaco{devicePixelRatio}. It measures the ratio of the size of a
+CSS pixel to a physical pixel. A value of 1 typically represents a
+device with 96 DPI. The value can be interpreted as a multiplier over
+the base value of 96 DPI. Emscripten provides the function
+\monoespaco{emscripten\_get\_device\_pixel\_ratio} as a way to get this
+value more easily:
+
+@<API Functions@>+=
+#if defined(__EMSCRIPTEN__)
+bool _Wget_screen_dpi(int *dpi_x, int *dpi_y){
+  *dpi_x = emscripten_get_device_pixel_ratio() * 96.0;
+  *dpi_y = *resolution_x;
+  return true;
+}
+#endif
+@
+
+\subsubsecao{2.1.3. Getting Screen Resolution and Dot Density on Windows}
 
 Finally, on Windows, we do this calling an API function that gives us
-this information:
+these information. In the case of the resolution:
 
 @<Funções da API@>+=
 #if defined(_WIN32)
@@ -499,6 +563,26 @@ bool _Wget_screen_resolution(int *resolution_x, int *resolution_y){
 }
 #endif
 @
+
+And for the dot density:
+
+@<API Functions@>+=
+#if defined(_WIN32)
+bool _Wget_screen_dpi(int *dpi_x, int *dpi_y){
+  HMONITOR monitor;
+  monitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+  if(GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, dpi_x, dpi_y) != S_OK){
+    *dpi_x = *dpi_y = 0;
+    return false;
+  }
+  return true;
+}
+#endif
+@
+
+In the above function, we assumed the existence of a variable called
+\monoespaco{window} which stores the current windows identifier. This
+identifier will be defined and initialized later.
 
 \subsecao{2.2. Creating a Window}
 

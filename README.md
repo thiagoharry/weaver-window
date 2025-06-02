@@ -171,10 +171,19 @@ loop.
 
     bool _Wget_screen_resolution(int *resolution_x, int *resolution_y);
 
-Get the screen resolution and stores in the given pointers. If you
-have more than one screen, this function returns what your system
-recognizes as the main screen. It returns if the operation was
-successful.
+Retrieves the screen resolution and stores in the provided
+pointers. If you have more than one screen, this function returns what
+your system recognizes as the main screen. It returns if the operation
+was successful.
+
+#### Getting Screen Dot Density (DPI)
+
+    bool _Wget_screen_dpi(int *dpi_x, int *dpi_y);
+
+Retrieves the screen dot density, measured in dots per inch (DPI), and
+stores the values in the provided pointers. Returns whether the
+operation was successful. The precision of the values is highly
+platform-dependent.
 
 #### Getting Window Size
 
