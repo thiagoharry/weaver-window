@@ -83,16 +83,22 @@ void test_create_destroy_window(void){
 
 void test_resolution(void){
   int res_x, res_y;
-  int size_x, size_y;
+  int size_x, size_y, dpi_x, dpi_y;
   bool ret;
-  char message[128];
+  char message[128], message2[128];
   ret = _Wget_screen_resolution(&res_x, &res_y);
   snprintf(message, 128, "Getting screen resolution: %dx%d", res_x, res_y);
   assert(message, ret && (res_x > 0) && (res_y > 0));
+  //////
   _Wcreate_window(&keyboard, &mouse);
   _Wget_window_size(&size_x, &size_y);
   assert("Fullscreen window have same size than screen", size_x == res_x &&
 	 size_y == res_y);
+  /////
+  ret = _Wget_screen_dpi(&dpi_x, &dpi_y);
+  snprintf(message2, 128, "Getting screen dot density: %dx%d DPI",
+	   dpi_x, dpi_y);
+  assert(message2, ret && (dpi_x > 0) && (dpi_y > 0));
   _Wdestroy_window();
 }
 

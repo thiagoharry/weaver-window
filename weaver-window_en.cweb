@@ -543,7 +543,7 @@ value more easily:
 #if defined(__EMSCRIPTEN__)
 bool _Wget_screen_dpi(int *dpi_x, int *dpi_y){
   *dpi_x = emscripten_get_device_pixel_ratio() * 96.0;
-  *dpi_y = *resolution_x;
+  *dpi_y = *dpi_x;
   return true;
 }
 #endif
