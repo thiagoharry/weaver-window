@@ -751,7 +751,7 @@ ela de alguma forma seja redimencionada:
 
 O recurso acima requer o seguinte cabeçalho:
 
-@<Headers@>+=
+@<Cabeçalhos@>+=
 #if defined(__linux__) || defined(BSD)
 #include <X11/Xutil.h>
 #endif
@@ -824,7 +824,24 @@ XMapWindow(display, window);
     XNextEvent(display, &e);
   } while(e.type != MapNotify);
 }
+#if !defined(W_WINDOW_NO_FULLSCREEN)
+// Necessário esperar: Em alguns sistemas parece haver uma condição de corrida
+// se tentarmos obter o foco imediatamente após a janela ser mapeada. Pois
+// gerenciadores de janela e compositores podem tentar fazer algo com a janela
+// também. Este é um problema somente quando usamos
+// 'attributes.override_redirect = true;', como é o caso de nossas janelas
+// em tela cheia:
+usleep(150000);
+#endif
 XSetInputFocus(display, window, RevertToParent, CurrentTime);
+#endif
+@
+
+O uso de \monoespaco{usleep} requer a inclusão do cabeçalho:
+
+@<Cabeçalhos@>+=
+#if defined(__linux__) || defined(BSD)
+#include <unistd.h>
 #endif
 @
 

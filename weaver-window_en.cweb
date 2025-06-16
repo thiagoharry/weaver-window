@@ -803,7 +803,23 @@ XMapWindow(display, window);
     XNextEvent(display, &e);
   } while(e.type != MapNotify);
 }
+#if !defined(W_WINDOW_NO_FULLSCREEN)
+// We need to wait: In some systems we could have a race condition if we try to
+// get the focus right after the window mapping. Window managers and composers
+// also try to do things with our window. This problkem happens when we set
+// 'attributes.override_redirect = true;', as is the case in full screen
+// windows:
+usleep(150000);
+#endif
 XSetInputFocus(display, window, RevertToParent, CurrentTime);
+#endif
+@
+
+Using \monoespaco{usleep} requires the following header:
+
+@<Headers@>+=
+#if defined(__linux__) || defined(BSD)
+#include <unistd.h>
 #endif
 @
 
